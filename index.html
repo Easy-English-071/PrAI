@@ -1,39 +1,38 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light"> <!-- Mặc định là giao diện sáng -->
+<html lang="vi" data-theme="light"> <!-- Default to light theme -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Exo 2, sans-serif' font-size='48' font-weight='700' fill='white' text-anchor='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
+    <!-- NEW FAVICON -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cpath d='M30 70 V 30 H 45 M 55 70 L 70 50 L 55 30' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- CẬP NHẬT: Thêm thư viện Chart.js để vẽ biểu đồ -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V13 --- */
+        /* --- GLASSMORPHISM THEME V10 --- */
         :root {
-            /* Mặc định: Giao diện Sáng */
+            /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
             --bg-blob-1: #0ea5e9; /* sky-500 */
             --bg-blob-2: #14b8a6; /* teal-500 */
             --glass-bg: rgba(248, 250, 252, 0.6); /* slate-50 @ 60% */
-            --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.7); /* Brighter border for glass edge effect */
             --text-primary: #0f172a; /* slate-900 */
             --text-secondary: #475569; /* slate-600 */
             --accent-primary: #007CF0;
             --accent-danger: #ef4444; /* red-500 */
-            --accent-success: #16a34a; /* green-600 */
+            --accent-success: #22c55e; /* green-500 */
             --accent-warning: #f59e0b; /* amber-500 */
-            --btn-primary-bg: var(--accent-primary);
+            --btn-primary-bg: #007CF0;
             --btn-primary-hover-bg: #0056b3;
-            --btn-secondary-bg: rgba(241, 245, 249, 0.7);
-            --btn-secondary-hover-bg: rgba(226, 232, 240, 0.9);
+            --btn-secondary-bg: rgba(241, 245, 249, 0.7); /* slate-100 @ 70% */
+            --btn-secondary-hover-bg: rgba(226, 232, 240, 0.9); /* slate-200 @ 90% */
             --input-bg: rgba(255, 255, 255, 0.4);
             --input-focus-bg: rgba(255, 255, 255, 0.6);
-            --shadow-color: rgba(100, 116, 139, 0.2);
-            --highlight-correct: rgba(22, 163, 74, 0.1);
+            --shadow-color: rgba(100, 116, 139, 0.2); /* slate-400 */
+            --highlight-correct: rgba(34, 197, 94, 0.1);
             --highlight-approximate: rgba(245, 158, 11, 0.1);
             --highlight-incorrect: rgba(239, 68, 68, 0.1);
             --radius-sm: 0.75rem;
@@ -49,13 +48,11 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #f1f5f9; /* slate-100 */
             --text-secondary: #94a3b8; /* slate-400 */
-            --accent-primary: #00A9FF;
-            --btn-primary-bg: var(--accent-primary);
-            --btn-primary-hover-bg: #52C5FF;
-            --accent-success: #22c55e;
-            --btn-secondary-bg: rgba(51, 65, 85, 0.5);
+            --btn-primary-bg: #007CF0;
+            --btn-primary-hover-bg: #0095ff;
+            --btn-secondary-bg: rgba(51, 65, 85, 0.5); /* slate-700 @ 50% */
             --btn-secondary-hover-bg: rgba(51, 65, 85, 0.8);
-            --input-bg: rgba(15, 23, 42, 0.5);
+            --input-bg: rgba(15, 23, 42, 0.5); /* slate-900 @ 50% */
             --input-focus-bg: rgba(15, 23, 42, 0.7);
             --shadow-color: rgba(0, 0, 0, 0.35);
             --highlight-correct: rgba(74, 222, 128, 0.15);
@@ -200,39 +197,21 @@
         .score-medium #overall-score { color: var(--accent-warning); }
         .score-low #overall-score { color: var(--accent-danger); }
 
-        #detailed-ipa-text { color: var(--accent-primary); line-height: 1.8; }
-        /* CẬP NHẬT: Style cho âm tiết được nhấn trọng âm */
-        .stressed-ipa { font-weight: 700; transform: scale(1.05); display: inline-block; }
+        #detailed-ipa-text { color: var(--accent-primary); }
         
         .thought-group {
             padding: 0.25rem 0.75rem; border-radius: 0.5rem; margin: 0.1rem;
             display: inline-block; transition: background-color 0.3s;
         }
-        [data-theme="dark"] .thought-group-0 { background-color: rgba(96, 165, 250, 0.2); color: #bfdbfe; }
-        [data-theme="dark"] .thought-group-1 { background-color: rgba(52, 211, 153, 0.2); color: #a7f3d0; }
-        [data-theme="dark"] .thought-group-2 { background-color: rgba(250, 204, 21, 0.2); color: #fef08a; }
-        [data-theme="dark"] .thought-group-3 { background-color: rgba(192, 132, 252, 0.2); color: #e9d5ff; }
+        [data-theme="dark"] .thought-group-0 { background-color: rgba(96, 165, 250, 0.2); color: #bfdbfe; } /* blue */
+        [data-theme="dark"] .thought-group-1 { background-color: rgba(52, 211, 153, 0.2); color: #a7f3d0; } /* emerald */
+        [data-theme="dark"] .thought-group-2 { background-color: rgba(250, 204, 21, 0.2); color: #fef08a; } /* yellow */
+        [data-theme="dark"] .thought-group-3 { background-color: rgba(192, 132, 252, 0.2); color: #e9d5ff; } /* purple */
         [data-theme="light"] .thought-group-0 { background-color: rgba(59, 130, 246, 0.15); color: #1e40af; }
         [data-theme="light"] .thought-group-1 { background-color: rgba(16, 185, 129, 0.15); color: #065f46; }
         [data-theme="light"] .thought-group-2 { background-color: rgba(245, 158, 11, 0.15); color: #92400e; }
         [data-theme="light"] .thought-group-3 { background-color: rgba(168, 85, 247, 0.15); color: #6b21a8; }
         
-        /* CẬP NHẬT: Style để làm nổi bật các mục phân tích */
-        .analysis-box {
-            background-color: var(--input-bg); border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md); padding: 1.25rem;
-            border-left-width: 4px;
-        }
-        .analysis-box-phoneme { border-left-color: var(--accent-primary); }
-        .analysis-box-intonation { border-left-color: var(--accent-success); }
-        .analysis-box-stress { border-left-color: var(--accent-warning); }
-        .analysis-box-advanced { border-left-color: var(--accent-danger); }
-
-        .analysis-box-title {
-            display: flex; align-items: center; gap: 0.5rem;
-            font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem;
-        }
-
         .btn-spinner { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -261,6 +240,78 @@
         .history-item { cursor: pointer; transition: background-color 0.2s; }
         .history-item:hover { background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); }
         .history-item-text { color: var(--text-primary); }
+
+        /* --- NEW ANALYSIS UI STYLES --- */
+        .analysis-box-detailed {
+            background-color: color-mix(in srgb, var(--input-bg) 60%, transparent);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: inset 0 2px 4px color-mix(in srgb, var(--shadow-color) 50%, transparent);
+        }
+
+        .analysis-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .rhythm-score-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #rhythm-score-value {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        #rhythm-score-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        #prosody-tooltip-icon {
+            cursor: pointer;
+        }
+
+        .intonation-chart-container {
+            width: 100%;
+            height: 150px;
+            background-color: var(--input-bg);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 1rem;
+        }
+
+        .connected-speech-item {
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            border-left: 4px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connected-speech-item.type-catenation { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+        .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
+        .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
+        .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
+        .connected-speech-item.type-weak { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+
+        .cs-title { font-weight: 600; color: var(--text-primary); }
+        .cs-location { font-family: 'Noto Sans', sans-serif; background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+        .cs-details { font-size: 0.875rem; color: var(--text-secondary); }
+        .cs-feedback { margin-top: 0.5rem; font-style: italic; }
     </style>
 </head>
 <body class="antialiased">
@@ -301,7 +352,6 @@
         <main class="main-card glass-card space-y-8">
             <section class="input-section card-layer glass-card space-y-4">
                 <div>
-                    <!-- CẬP NHẬT: Xóa nút gạt Shadowing -->
                     <label for="text-input" class="block text-lg font-semibold text-text-primary mb-3">Nhập văn bản cần luyện tập:</label>
                     <textarea id="text-input" rows="3" maxlength="150" class="input-field" placeholder="Ví dụ: What are you doing?"></textarea>
                     <div id="char-counter" class="text-right text-sm text-text-secondary mt-1">0 / 150</div>
@@ -347,14 +397,13 @@
                      <div class="flex items-center justify-between">
                          <div class="min-w-0">
                              <div class="flex items-center gap-2 mb-1">
-                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm tự nhiên & Trọng âm</h3>
+                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy</h3>
                                  <div id="thought-group-info" class="has-tooltip relative hidden">
                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                                      <div id="thought-group-tooltip" class="tooltip absolute bottom-full left-1/2 mb-2 w-72 rounded-lg p-3 text-xs shadow-lg"></div>
                                  </div>
                              </div>
                              <div class="space-y-2">
-                                 <!-- CẬP NHẬT: Trọng âm sẽ được hiển thị trực tiếp tại đây -->
                                  <p id="detailed-ipa-text" class="text-xl text-accent-primary tracking-wider"></p>
                                  <div id="thought-group-display" class="text-lg tracking-wide leading-relaxed font-medium"></div>
                              </div>
@@ -377,9 +426,7 @@
                         </button>
                         <div class="flex flex-col items-center justify-center">
                             <button id="record-btn" class="btn-record flex items-center justify-center">
-                                <span class="icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-                                </span>
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
                                 <span class="text hidden text-lg font-semibold">Dừng</span>
                             </button>
                         </div>
@@ -398,81 +445,67 @@
                     <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
                 </div>
                 <p id="progress-text" class="text-text-secondary mt-4">PrAI đang lắng nghe và phân tích...</p>
+                <p id="fun-fact" class="text-sm text-text-secondary/70 mt-6 italic hidden"></p>
             </div>
 
+            <!-- UPDATED ANALYSIS RESULTS SECTION -->
             <section id="analysis-results" class="hidden space-y-6">
-                <div class="card-layer glass-card space-y-6">
-                    <h3 class="font-bold text-text-primary text-xl">Kết quả Phân tích</h3>
+                <div class="card-layer glass-card space-y-6 p-6">
+                    <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
+            
+                    <!-- Overall Score -->
                     <div class="score-container">
                         <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                     </div>
-                    <!-- CẬP NHẬT: Tích hợp điểm nhịp điệu vào đây -->
-                    <div class="flex items-center justify-center gap-2 -mt-2">
-                        <span class="text-sm font-semibold text-text-secondary">Điểm nhịp điệu:</span>
-                        <span id="rhythm-score" class="text-lg font-bold text-text-primary"></span>
-                        <div id="prosody-info" class="has-tooltip relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                            <div id="prosody-tooltip" class="tooltip"></div>
+            
+                    <!-- Rhythm Score -->
+                    <div class="rhythm-score-container">
+                        <span id="rhythm-score-label">Điểm nhịp điệu:</span>
+                        <span id="rhythm-score-value"></span>
+                        <div id="prosody-tooltip" class="has-tooltip relative">
+                            <svg id="prosody-tooltip-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            <div id="prosody-tooltip-text" class="tooltip w-72"></div>
                         </div>
                     </div>
-
-                    <div class="analysis-box analysis-box-phoneme">
-                        <h4 class="analysis-box-title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            
+                    <!-- Phoneme Analysis -->
+                    <div class="analysis-box-detailed">
+                        <h4 class="analysis-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg>
                             <span>Phân tích Âm vị</span>
                         </h4>
                         <div id="phoneme-analysis" class="flex flex-wrap gap-2"></div>
-                        <p class="text-xs text-text-secondary mt-2">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
+                        <p class="text-xs text-text-secondary mt-3">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                     </div>
-                    <!-- CẬP NHẬT: Thêm biểu đồ ngữ điệu -->
-                    <div class="analysis-box analysis-box-intonation">
-                        <h4 class="analysis-box-title">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                            <span>Biểu đồ Ngữ điệu</span>
+            
+                    <!-- Intonation Analysis -->
+                    <div class="analysis-box-detailed">
+                        <h4 class="analysis-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a14 14 0 0 0 12-7 14 14 0 0 0-12-7v14z"></path><path d="M21 17a14 14 0 0 0-12-7 14 14 0 0 0 12-7v14z"></path></svg>
+                            <span>Phân tích Ngữ điệu</span>
                         </h4>
-                        <div class="h-40 rounded-md bg-black/5 dark:bg-white/5 flex items-center justify-center">
-                            <canvas id="intonation-chart"></canvas>
-                            <p id="intonation-placeholder" class="text-text-secondary text-sm hidden">Không có đủ dữ liệu để vẽ biểu đồ.</p>
+                        <div class="intonation-chart-container">
+                            <svg id="intonation-chart" width="100%" height="100%"></svg>
                         </div>
+                        <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
                     </div>
-                    <div class="analysis-box analysis-box-stress">
-                         <h4 class="analysis-box-title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line><line x1="12" y1="1.05" x2="12" y2="7"></line><line x1="12" y1="17.01" x2="12" y2="22.96"></line></svg>
-                            <span>Phân tích Trọng âm</span>
+            
+                    <!-- Connected Speech Analysis -->
+                    <div class="analysis-box-detailed">
+                        <h4 class="analysis-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
+                            <span>Phân tích Nối âm & Cụm tư duy</span>
                         </h4>
-                        <div id="stress-analysis"></div>
+                        <div id="connected-speech-analysis" class="space-y-3"></div>
                     </div>
+            
                 </div>
-                
-                <div id="advanced-analysis" class="hidden space-y-4 card-layer glass-card analysis-box analysis-box-advanced">
-                    <h3 class="font-bold text-text-primary text-xl">Phân tích Nâng cao</h3>
-                    <div class="space-y-4">
-                        <div class="analysis-box !border-l-0">
-                            <h4 class="analysis-box-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 15 4-4 4 4 4-4 4 4"/></svg>
-                                <span>Ngữ điệu (Intonation)</span>
-                            </h4>
-                            <div id="intonation-analysis"></div>
-                        </div>
-                         <div class="analysis-box !border-l-0">
-                            <h4 class="analysis-box-title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
-                                <span>Nối âm (Connected Speech)</span>
-                            </h4>
-                            <div id="connected-speech-analysis" class="space-y-4"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <button id="show-more-btn" class="hidden btn btn-secondary">
-                        Thông tin thêm
-                    </button>
-                </div>
-
-                 <div id="practice-suggestions" class="hidden card-layer glass-card">
+            
+                <!-- Practice Suggestions Section -->
+                <div id="practice-suggestions" class="hidden card-layer glass-card">
                      <h3 class="font-bold text-text-primary text-xl mb-4">Xem ví dụ thực tế</h3>
                      <div id="suggestion-links" class="flex flex-col sm:flex-row gap-3 mt-2"></div>
-                 </div>
+                </div>
             </section>
         </main>
 
@@ -525,7 +558,6 @@
         const recordControls = document.getElementById('record-controls');
         const uploadBtn = document.getElementById('upload-btn');
         const recordBtn = document.getElementById('record-btn');
-        const recordBtnText = recordBtn.querySelector('.text');
         const listenAgainBtn = document.getElementById('listen-again-btn');
         const randomPracticeBtn = document.getElementById('random-practice-btn');
         const controlsSection = document.getElementById('controls-section');
@@ -535,7 +567,6 @@
         const analysisResults = document.getElementById('analysis-results');
         const overallScore = document.getElementById('overall-score');
         const phonemeAnalysis = document.getElementById('phoneme-analysis');
-        const stressAnalysis = document.getElementById('stress-analysis');
         const practiceSuggestions = document.getElementById('practice-suggestions');
         const suggestionLinks = document.getElementById('suggestion-links');
         const messageBox = document.getElementById('message-box');
@@ -543,9 +574,7 @@
         const waveformEl = document.getElementById('waveform');
         const replayAudio = document.getElementById('replay-audio');
         const audioUploadInput = document.getElementById('audio-upload-input');
-        const showMoreBtn = document.getElementById('show-more-btn');
-        const advancedAnalysis = document.getElementById('advanced-analysis');
-        const intonationAnalysis = document.getElementById('intonation-analysis');
+        const funFactEl = document.getElementById('fun-fact');
         const connectedSpeechAnalysis = document.getElementById('connected-speech-analysis');
         const progressText = document.getElementById('progress-text');
         const progressBarInner = document.getElementById('progress-bar-inner');
@@ -553,18 +582,13 @@
         const thoughtGroupDisplay = document.getElementById('thought-group-display');
         const thoughtGroupInfo = document.getElementById('thought-group-info');
         const thoughtGroupTooltip = document.getElementById('thought-group-tooltip');
+        
         const historyBtn = document.getElementById('history-btn');
         const historyModal = document.getElementById('history-modal');
         const closeHistoryBtn = document.getElementById('close-history-btn');
         const historyList = document.getElementById('history-list');
         const clearHistoryBtn = document.getElementById('clear-history-btn');
-        
-        // CẬP NHẬT: Khai báo các biến giao diện mới và tích hợp
-        const rhythmScore = document.getElementById('rhythm-score');
-        const prosodyTooltip = document.getElementById('prosody-tooltip');
-        const intonationChartEl = document.getElementById('intonation-chart');
-        const intonationPlaceholder = document.getElementById('intonation-placeholder');
-        
+
         let isRecording = false;
         let mediaRecorder;
         let audioChunks = [];
@@ -584,9 +608,8 @@
         let fetchIpaRequestID = 0;
         let analysisRequestID = 0;
         let progressInterval;
-        let progressTextTimeout;
+        let progressTextInterval;
         let currentThoughtGroups = [];
-        let currentIntonationChart = null; // Biến để giữ instance của biểu đồ
 
         // --- Caching Implementation ---
         const ipaCache = {
@@ -608,12 +631,25 @@
             }
         };
 
+
+        const funFacts = [
+            "'Ough' có thể được phát âm theo 10 cách khác nhau.",
+            "Âm câm (silent letters) là di tích lịch sử từ các ngôn ngữ khác.",
+            "'Pronunciation' (phát âm) trớ trêu lại là từ bị phát âm sai nhiều nhất.",
+            "Tiếng Anh có tới 20 âm nguyên âm theo hệ thống IPA, nhiều hơn hầu hết các ngôn ngữ khác.",
+            "'Strengths' là từ dài nhất chỉ có một nguyên âm.",
+        ];
+
         const practiceSentences = [
             "What are you doing?", "It's a piece of cake.", "I'll call you back later.",
             "How's it going?", "Can I have a bottle of water, please?", "It's a beautiful day, isn't it?",
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
         ];
 
+        // API KEY REMOVED FOR SECURITY
+        const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
+        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
+        // API URLS POINT TO THE PROXY FUNCTION
         const TEXT_API_URL = `/api/proxy`;
         const TTS_API_URL = `/api/proxy`;
 
@@ -641,17 +677,17 @@
 
         function setButtonLoading(button, loader, isLoading) {
             button.disabled = isLoading;
-            if (loader) {
+            if (loader) { // Logic for icon buttons with separate loaders
                 if(isLoading) {
                     button.classList.add('hidden');
                     loader.classList.remove('hidden');
-                    loader.classList.add('flex');
+                    loader.classList.add('flex'); // Ensure flex display for centering
                 } else {
                     button.classList.remove('hidden');
                     loader.classList.add('hidden');
                     loader.classList.remove('flex');
                 }
-            } else {
+            } else { // Logic for buttons with internal spinners
                 const textEl = button.querySelector('.text');
                 const iconEl = button.querySelector('.icon');
                 const spinnerEl = button.querySelector('.btn-spinner');
@@ -753,25 +789,11 @@
         function stopIpaLoadingAnimation() {
             clearInterval(ipaLoadingInterval);
         }
-        
-        // CẬP NHẬT: Tích hợp trọng âm vào phiên âm tự nhiên
+
         function displayIpaData(data) {
-            standardIPA = data.detailed_syllables ? data.detailed_syllables.map(s => s.syllable).join('') : data.simple;
+            standardIPA = data.detailed;
             simpleIpaText.textContent = data.simple;
-            
-            detailedIpaText.innerHTML = ''; // Xóa nội dung cũ
-            if (data.detailed_syllables) {
-                data.detailed_syllables.forEach(item => {
-                    const span = document.createElement('span');
-                    span.textContent = item.syllable;
-                    if (item.is_stressed) {
-                        span.classList.add('stressed-ipa');
-                    }
-                    detailedIpaText.appendChild(span);
-                });
-            } else {
-                detailedIpaText.textContent = data.simple; // Fallback
-            }
+            detailedIpaText.textContent = data.detailed;
 
             if (data.thought_groups && textInput.value.trim().includes(' ')) {
                 currentThoughtGroups = data.thought_groups.groups;
@@ -781,9 +803,9 @@
                 displayThoughtGroups([], '');
             }
             controlsSection.classList.remove('hidden');
+            thoughtGroupInfo.style.display = textInput.value.trim().includes(' ') ? 'block' : 'none';
         }
 
-        // CẬP NHẬT: Prompt yêu cầu trọng âm theo âm tiết IPA
         async function fetchAndDisplayIPA() {
             fetchIpaRequestID++;
             const currentRequestID = fetchIpaRequestID;
@@ -793,38 +815,52 @@
                 resetAll();
                 return false;
             }
-
+            
             const accent = accentSelect.value;
-            const cacheKey = `ipa_v2_${text}_${accent}`;
+            const cacheKey = `ipa_${text}_${accent}`;
             const cachedData = ipaCache.get(cacheKey);
 
             if (cachedData) {
                 displayIpaData(cachedData);
                 return true;
             }
-
+            
             const isSingleWord = !text.includes(' ');
+            let combinedPrompt;
 
-            const prompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with:
-            1. 'simple': A standard, citation-form IPA transcription.
-            2. 'detailed_syllables': An array of objects for the natural, connected speech transcription. Each object must have two keys: { "syllable": "string (a single IPA syllable)", "is_stressed": boolean }. The combined 'syllable' strings should form the complete natural transcription.
-            3. 'thought_groups': ${isSingleWord ? 'null' : `An object with two keys: 
-                a. 'groups' (an array of strings representing the most natural thought groups).
-                b. 'explanation' (a concise, practical explanation in Vietnamese about why this grouping is natural).`}
-            Respond with ONLY the JSON object.`;
-
+            if (isSingleWord) {
+                // --- FAST MODE PROMPT FOR SINGLE WORDS ---
+                combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
+            } else {
+                // --- DETAILED PROMPT FOR SENTENCES ---
+                combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
+                1. 'simple': A standard, citation-form IPA transcription.
+                2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
+                3. 'thought_groups': An object with two keys:
+                   a. 'groups': An array of strings representing the most natural, semantically-driven thought groups, based on grammatical units.
+                   b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping, referencing principles like separating grammatical units (e.g., prepositional phrases, clauses).
+                Respond with ONLY the JSON object.`;
+            }
+            
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
+            thoughtGroupDisplay.style.display = isSingleWord ? 'none' : 'block';
+            thoughtGroupInfo.style.display = isSingleWord ? 'none' : 'block';
+            
             startIpaLoadingAnimation();
-
+            
             try {
                 const payload = { 
-                    contents: [{ parts: [{ text: prompt }] }],
+                    contents: [{ parts: [{ text: combinedPrompt }] }],
                     generationConfig: { responseMimeType: "application/json" }
                 };
+
                 const response = await fetchWithBackoff(TEXT_API_URL, { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Target-API': 'text' // Add header for proxy
+                    }, 
                     body: JSON.stringify(payload) 
                 });
 
@@ -833,8 +869,14 @@
                 const resultText = response.candidates[0].content.parts[0].text;
                 let resultJson = JSON.parse(resultText);
 
-                ipaCache.set(cacheKey, resultJson);
+                // If it was a single word, the detailed IPA is the same as simple
+                if (isSingleWord) {
+                    resultJson.detailed = resultJson.simple;
+                }
+
+                ipaCache.set(cacheKey, resultJson); // Cache the new result
                 displayIpaData(resultJson);
+                
                 return true;
             } catch (error) {
                 if (currentRequestID === fetchIpaRequestID) {
@@ -909,11 +951,15 @@
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: { responseModalities: ["AUDIO"] },
+                    model: TTS_MODEL
                 };
 
                 const data = await fetchWithBackoff(TTS_API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Target-API': 'tts' // Add header for proxy
+                    },
                     body: JSON.stringify(payload)
                 });
 
@@ -947,9 +993,12 @@
 
         function startProgressSimulation() {
             if (!progressBarInner) return;
+            
             let width = 0;
             progressBarInner.style.width = '0%';
+            
             clearInterval(progressInterval);
+
             progressInterval = setInterval(() => {
                 if (width < 95) {
                     width += Math.random() * 2;
@@ -969,31 +1018,27 @@
 
         function startProgressTextAnimation() {
             const steps = [
-                "Đã nhận được bản ghi âm của bạn...",
-                "Đang phiên âm giọng nói...",
-                "So sánh với giọng chuẩn...",
-                "Kiểm tra ngữ điệu và nhịp điệu...",
-                "Sắp xong rồi! Cùng xem kết quả nhé!"
+                "Okie, PrAI đã nhận được bản ghi âm của bạn...",
+                "Đang đang phiên âm giọng nói của bạn!",
+                "So sánh từng âm một với giọng chuẩn...",
+                "Kiểm tra ngữ điệu và cả nhịp điệu...",
+                "Xong rồi! Cùng xem kết quả tuyệt vời của bạn nhé!"
             ];
             let currentStep = 0;
-            clearTimeout(progressTextTimeout);
-            function showNextStep() {
-                if (currentStep < steps.length) {
-                    progressText.textContent = steps[currentStep];
-                    currentStep++;
-                    if (currentStep < steps.length) {
-                        progressTextTimeout = setTimeout(showNextStep, 1800);
-                    }
-                }
-            }
-            showNextStep();
+            progressText.textContent = steps[currentStep];
+            
+            clearInterval(progressTextInterval);
+            progressTextInterval = setInterval(() => {
+                currentStep = (currentStep + 1) % steps.length;
+                progressText.textContent = steps[currentStep];
+            }, 2500);
         }
 
         function stopProgressTextAnimation() {
-            clearTimeout(progressTextTimeout);
+            clearInterval(progressTextInterval);
         }
 
-        // CẬP NHẬT: Prompt yêu cầu thêm dữ liệu nhịp điệu và biểu đồ
+
         async function analyzeAudio(audioBlob) {
             const currentAnalysisID = analysisRequestID;
 
@@ -1001,7 +1046,8 @@
             lastRecordingBlob = audioBlob;
             listenAgainBtn.disabled = false;
 
-            if (!standardIPA) {
+            const ipaReady = !!standardIPA;
+            if (!ipaReady) {
                 showMessage('Không thể phân tích vì không lấy được phiên âm chuẩn.', 'error');
                 return;
             }
@@ -1009,46 +1055,62 @@
             loader.classList.remove('hidden');
             startProgressTextAnimation();
             startProgressSimulation();
+            funFactEl.textContent = `💡 ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
+            funFactEl.classList.remove('hidden');
             
             const reader = new FileReader();
             reader.readAsDataURL(lastRecordingBlob);
             reader.onloadend = async () => {
-                if (currentAnalysisID !== analysisRequestID) return;
+                if (currentAnalysisID !== analysisRequestID) {
+                    console.log(`Analysis request ${currentAnalysisID} cancelled by new request ${analysisRequestID}.`);
+                    loader.classList.add('hidden');
+                    funFactEl.classList.add('hidden');
+                    stopProgressSimulation();
+                    stopProgressTextAnimation();
+                    return; 
+                }
 
                 const base64Audio = reader.result.split(',')[1];
                 
+                // --- UPDATED GEMINI PROMPT ---
                 const prompt = {
-                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI toàn diện.",
+                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu dựa trên các tài liệu học thuật về Cụm tư duy và Lời nói nối âm trong tiếng Anh. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt. Mục tiêu của bạn là vừa sửa lỗi một cách nghiêm khắc theo quy tắc, vừa là một người hướng dẫn động viên, khích lệ.",
                     "context": {
+                        "learner_profile": "Người học là người Việt, thường gặp các vấn đề sau: bỏ âm cuối, nhầm lẫn các cặp nguyên âm ngắn/dài, không phân biệt âm vô thanh/hữu thanh, và nói ngắt nghỉ từng từ (word-by-word) thay vì theo cụm tư duy.",
+                        "evaluation_philosophy": "Triết lý chấm điểm của bạn là phân biệt rõ ràng giữa 'Lỗi nghiêm trọng' (ảnh hưởng đến việc người nghe có hiểu hay không) và 'Điểm chưa hoàn hảo' (có thể cải thiện nhưng không gây hiểu nhầm). Hãy luôn dùng ngôn ngữ tích cực. Ví dụ, thay vì nói 'Sai rồi', hãy nói 'Bạn đã làm rất tốt phần đầu của âm này! Để hoàn thiện hơn, hãy thử...'",
                         "text_to_pronounce": textInput.value.trim(),
-                        "target_accent": accentSelect.value,
+                        "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
                         "standard_ipa": standardIPA,
+                        "thought_groups_base": currentThoughtGroups
                     },
-                    "task": "Thực hiện phân tích toàn diện giọng nói của người dùng, bao gồm:",
-                    "analysis_modules": [
-                        "1. Phoneme Analysis: Phân tích từng âm vị, chấm điểm và đưa ra phản hồi.",
-                        "2. Stress Analysis: Phân tích trọng âm.",
-                        "3. Prosody Analysis: Phân tích nhịp điệu và tốc độ nói.",
-                        "4. Intonation Analysis: Phân tích ngữ điệu và trích xuất dữ liệu biểu đồ.",
-                        "5. Connected Speech: Phân tích các hiện tượng nối âm."
-                    ],
+                    "task": "Phân tích file âm thanh, so sánh với phiên âm và cụm tư duy chuẩn. Sau đó, tính điểm 'overall_score' và các điểm thành phần dựa trên hệ thống trọng số lỗi. Đặc biệt, phân tích sâu các hiện tượng Lời nói nối âm và Cụm tư duy. Cung cấp toàn bộ phản hồi bằng tiếng Việt.",
+                    "scoring_system": {
+                        "base_score": 100,
+                        "error_weights": [
+                            { "type": "Lỗi nghiêm trọng (Critical Error)", "deduction": "Trừ 10-15 điểm/lỗi", "examples": ["Bỏ âm cuối (vd: 'like' đọc thành /laɪ/)", "Sai hoàn toàn một nguyên âm chính (vd: 'ship' /ʃɪp/ đọc thành /ʃiːp/)", "Sai trọng âm của từ"] },
+                            { "type": "Lỗi trung bình (Medium Error)", "deduction": "Trừ 5-8 điểm/lỗi", "examples": ["Thay thế các phụ âm khó nhưng vẫn có thể hiểu được (vd: /θ/ -> /s/)", "Nguyên âm hơi lệch nhưng không biến thành một nguyên âm khác hoàn toàn."] },
+                            { "type": "Lỗi nhỏ (Minor Error)", "deduction": "Trừ 1-3 điểm/lỗi", "examples": ["Độ dài nguyên âm chưa hoàn hảo", "Âm cuối bật ra hơi yếu nhưng vẫn có", "Ngữ điệu chưa tự nhiên nhưng không sai."] }
+                        ],
+                        "instruction": "Hãy tính điểm cuối cùng bằng cách lấy 100 trừ đi tổng điểm của các lỗi đã được phân loại. Hãy công bằng và chính xác."
+                    },
                     "output_format_instruction": {
                         "format": "JSON",
                         "schema": {
                             "speech_detected": "boolean",
                             "overall_score": "number | null",
-                            "phoneme_analysis": "[...]",
-                            "stress_analysis": "{...}",
-                            "prosody_analysis": {
+                            "user_ipa": "string | null",
+                            "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string | null\" } ] | null",
+                            "rhythm_and_pacing_analysis": {
                                 "rhythm_score": "number (0-100)",
-                                "feedback": "string (Nhận xét ngắn gọn về tốc độ và nhịp điệu)"
+                                "feedback": "string // Nhận xét chi tiết bằng tiếng Việt về nhịp điệu (stress-timed rhythm) và tốc độ nói (pacing). Ví dụ: 'Tốc độ của bạn hơi nhanh, dẫn đến một số âm tiết không được nhấn bị lướt qua. Hãy thử duy trì nhịp điệu đều đặn hơn giữa các từ được nhấn trọng âm.'"
                             },
                             "intonation_analysis": {
-                                "feedback": "string",
-                                "contour_data": "[number] (Một mảng gồm 10-20 số nguyên đại diện cho đường cong ngữ điệu)"
+                                "feedback": "string // Nhận xét bằng tiếng Việt về đường nét ngữ điệu chung (ví dụ: lên giọng ở cuối câu hỏi Yes/No, xuống giọng ở cuối câu trần thuật).",
+                                "model_pitch_contour": "[number] // Một mảng gồm 30-50 điểm dữ liệu cao độ của giọng mẫu, đã được chuẩn hóa trong khoảng 0-100.",
+                                "user_pitch_contour": "[number] // Một mảng gồm 30-50 điểm dữ liệu cao độ của giọng người dùng, đã được chuẩn hóa trong khoảng 0-100."
                             },
-                            "advanced_analysis?": "{ \"connected_speech\": [...] }",
-                            "practice_suggestions": "{...}"
+                            "connected_speech_analysis": "[{ \"type\": \"string ('Catenation', 'Assimilation', 'Elision', 'Intrusion', 'Weak Form')\", \"rule\": \"string // Tên quy tắc, ví dụ: 'Nối phụ âm - nguyên âm' hoặc 'Đồng hóa /t/ + /j/ -> /tʃ/'\", \"location\": \"string // Cụm từ nơi hiện tượng xảy ra, vd: 'in an'\", \"expected_pronunciation\": \"string // IPA của cách phát âm mong đợi, vd: /ɪn‿ən/\", \"user_pronunciation\": \"string // IPA của cách người dùng phát âm, vd: /ɪn æn/\", \"feedback\": \"string // Nhận xét cụ thể bằng tiếng Việt, vd: 'Tuyệt vời! Bạn đã nối âm /n/ với nguyên âm /æ/ rất tự nhiên.' hoặc 'Ở đây, bạn đã ngắt giữa hai từ. Hãy thử nối phụ âm cuối /t/ của 'want' với nguyên âm đầu của 'it' để nghe mượt mà hơn.'\" }] | null",
+                            "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                         }
                     }
                 };
@@ -1061,73 +1123,77 @@
                 try {
                     const data = await fetchWithBackoff(TEXT_API_URL, { 
                         method: 'POST', 
-                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-Target-API': 'text' // Add header for proxy
+                        }, 
                         body: JSON.stringify(payload) 
                     });
                     
-                    if (currentAnalysisID !== analysisRequestID) return;
+                    if (currentAnalysisID !== analysisRequestID) {
+                        console.log(`Analysis request ${currentAnalysisID} completed, but a newer request is active. Discarding results.`);
+                        return;
+                    }
 
                     const resultText = data.candidates[0].content.parts[0].text;
                     const resultJson = JSON.parse(resultText);
                     displayResults(resultJson);
                 } catch (error) {
-                    if (currentAnalysisID === analysisRequestID) handleApiError(error);
+                    if (currentAnalysisID === analysisRequestID) {
+                        handleApiError(error);
+                    }
                 } finally {
                     if (currentAnalysisID === analysisRequestID) {
                         stopProgressSimulation();
                         stopProgressTextAnimation();
-                        setTimeout(() => loader.classList.add('hidden'), 500);
+                        setTimeout(() => {
+                            loader.classList.add('hidden');
+                            funFactEl.classList.add('hidden');
+                        }, 500);
                     }
                 }
             };
         }
-
-        // CẬP NHẬT: Hiển thị kết quả tích hợp
+        
+        // --- NEW displayResults FUNCTION ---
         function displayResults(data) {
             if (!data.speech_detected || data.overall_score === null) {
-                showMessage("PrAI không nhận diện được giọng nói. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
+                showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
                 analysisResults.classList.add('hidden');
                 return;
             }
-
+        
             saveToHistory(textInput.value.trim(), data.overall_score);
-            analysisResults.classList.remove('hidden');
-
+        
             const scoreContainer = document.querySelector('.score-container');
+            analysisResults.classList.remove('hidden');
+        
+            // --- Animate Score ---
             const endScore = data.overall_score;
-            const duration = 1000;
-            const startTime = performance.now();
-
-            function animate(currentTime) {
-                const elapsedTime = currentTime - startTime;
-                const progress = Math.min(elapsedTime / duration, 1);
-                const currentScore = Math.floor(progress * endScore);
-                overallScore.textContent = `${currentScore}`;
-                if (progress < 1) requestAnimationFrame(animate);
-                else overallScore.textContent = `${endScore}`;
-            }
-            requestAnimationFrame(animate);
-
-            scoreContainer.classList.remove('score-high', 'score-medium', 'score-low');
-            if (data.overall_score > 85) scoreContainer.classList.add('score-high');
-            else if (data.overall_score > 70) scoreContainer.classList.add('score-medium');
+            animateValue(document.getElementById('overall-score'), 0, endScore, 1000);
+            scoreContainer.className = 'score-container'; // Reset classes
+            if (endScore > 85) scoreContainer.classList.add('score-high');
+            else if (endScore > 70) scoreContainer.classList.add('score-medium');
             else scoreContainer.classList.add('score-low');
-            
-            // Hiển thị điểm nhịp điệu và nhận xét
-            if (data.prosody_analysis) {
-                rhythmScore.textContent = `${data.prosody_analysis.rhythm_score}/100`;
-                prosodyTooltip.textContent = data.prosody_analysis.feedback;
+        
+            // --- Rhythm & Pacing ---
+            const rhythmScoreValue = document.getElementById('rhythm-score-value');
+            const prosodyTooltipText = document.getElementById('prosody-tooltip-text');
+            if (data.rhythm_and_pacing_analysis) {
+                animateValue(rhythmScoreValue, 0, data.rhythm_and_pacing_analysis.rhythm_score, 1000);
+                prosodyTooltipText.textContent = data.rhythm_and_pacing_analysis.feedback;
+                document.querySelector('.rhythm-score-container').style.display = 'flex';
+            } else {
+                document.querySelector('.rhythm-score-container').style.display = 'none';
             }
-
+        
+            // --- Phoneme Analysis ---
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
                 data.phoneme_analysis.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
-                    phonemeEl.className = 'phoneme has-tooltip';
-                    if (p.status === 'correct') phonemeEl.classList.add('status-correct');
-                    else if (p.status === 'approximate') phonemeEl.classList.add('status-approximate');
-                    else phonemeEl.classList.add('status-incorrect');
+                    phonemeEl.className = `phoneme has-tooltip status-${p.status}`;
                     if (p.feedback) {
                         const tooltip = document.createElement('div');
                         tooltip.className = 'tooltip';
@@ -1137,53 +1203,64 @@
                     phonemeAnalysis.appendChild(phonemeEl);
                 });
             }
-
-            // Hiển thị biểu đồ ngữ điệu
-            if (data.intonation_analysis && data.intonation_analysis.contour_data) {
-                renderIntonationChart(data.intonation_analysis.contour_data);
-                intonationPlaceholder.classList.add('hidden');
-                intonationChartEl.classList.remove('hidden');
+        
+            // --- Intonation Analysis ---
+            const intonationFeedbackEl = document.getElementById('intonation-analysis-feedback');
+            const intonationChartEl = document.getElementById('intonation-chart');
+            if (data.intonation_analysis) {
+                intonationFeedbackEl.textContent = data.intonation_analysis.feedback;
+                renderIntonationChart(
+                    intonationChartEl,
+                    data.intonation_analysis.model_pitch_contour,
+                    data.intonation_analysis.user_pitch_contour
+                );
+            }
+            
+            // --- Connected Speech Analysis ---
+            const connectedSpeechContainer = document.getElementById('connected-speech-analysis');
+            connectedSpeechContainer.innerHTML = '';
+            if (data.connected_speech_analysis && data.connected_speech_analysis.length > 0) {
+                data.connected_speech_analysis.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    const typeClass = `type-${item.type.split(' ')[0].toLowerCase()}`;
+                    itemEl.className = `connected-speech-item ${typeClass}`;
+                    
+                    itemEl.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="cs-title">${item.rule}</p>
+                                <p class="cs-details mt-1">
+                                    Vị trí: <span class="cs-location">${item.location}</span>
+                                </p>
+                            </div>
+                            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full ${typeClass} opacity-70">${item.type}</span>
+                        </div>
+                        <div class="cs-details mt-2">
+                            <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
+                            <p>Phát âm của bạn: <span class="ipa-text text-accent-warning">${item.user_pronunciation}</span></p>
+                        </div>
+                        <p class="cs-feedback text-sm">${item.feedback}</p>
+                    `;
+                    connectedSpeechContainer.appendChild(itemEl);
+                });
             } else {
-                if (currentIntonationChart) currentIntonationChart.destroy();
-                intonationPlaceholder.classList.remove('hidden');
-                intonationChartEl.classList.add('hidden');
+                connectedSpeechContainer.innerHTML = '<p class="text-text-secondary text-sm italic">Không có nhận xét nổi bật về nối âm trong câu này. Lời nói của bạn khá rõ ràng nhưng có thể chưa thể hiện được sự liên kết tự nhiên.</p>';
             }
-
-            if (data.stress_analysis) {
-                stressAnalysis.innerHTML = data.stress_analysis.feedback;
-            }
-
-            if (data.advanced_analysis) {
-                advancedAnalysis.classList.remove('hidden');
-                intonationAnalysis.innerHTML = data.intonation_analysis.feedback; // Lấy từ mục riêng
-                connectedSpeechAnalysis.innerHTML = '';
-                if (data.advanced_analysis.connected_speech && data.advanced_analysis.connected_speech.length > 0) {
-                    data.advanced_analysis.connected_speech.forEach(item => {
-                        const itemEl = document.createElement('div');
-                        itemEl.className = 'p-3 rounded-md bg-black/5 dark:bg-white/5';
-                        itemEl.innerHTML = `
-                            <h5 class="font-semibold text-accent-primary">${item.type} (${item.rule})</h5>
-                            <p class="text-sm mt-1"><strong class="text-text-secondary">Ví dụ:</strong> <span class="ipa-text text-amber-600 dark:text-amber-400">${item.example}</span></p>
-                            <p class="text-sm mt-1"><strong class="text-text-secondary">Giải thích:</strong> ${item.explanation}</p>
-                            <div class="mt-2 text-sm"><strong class="text-text-secondary">Nhận xét:</strong> ${item.feedback}</div>`;
-                        connectedSpeechAnalysis.appendChild(itemEl);
-                    });
-                } else {
-                     connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary">Không phát hiện hiện tượng nối âm nổi bật.</p>';
-                }
-                showMoreBtn.classList.remove('hidden');
-            } else {
-                advancedAnalysis.classList.add('hidden');
-                showMoreBtn.classList.add('hidden');
-            }
-
+        
+            // --- Practice Suggestions ---
             if (data.practice_suggestions) {
                 suggestionLinks.innerHTML = '';
                 const { youglish_us, youglish_uk } = data.practice_suggestions;
                 const usLink = document.createElement('a');
-                usLink.href = youglish_us; usLink.target = '_blank'; usLink.className = 'btn btn-primary flex-1'; usLink.textContent = 'Giọng Mỹ (YouGlish)';
+                usLink.href = youglish_us;
+                usLink.target = '_blank';
+                usLink.className = 'btn btn-primary flex-1';
+                usLink.textContent = 'Giọng Mỹ (YouGlish)';
                 const ukLink = document.createElement('a');
-                ukLink.href = youglish_uk; ukLink.target = '_blank'; ukLink.className = 'btn btn-primary flex-1'; ukLink.textContent = 'Giọng Anh (YouGlish)';
+                ukLink.href = youglish_uk;
+                ukLink.target = '_blank';
+                ukLink.className = 'btn btn-primary flex-1';
+                ukLink.textContent = 'Giọng Anh (YouGlish)';
                 suggestionLinks.appendChild(usLink);
                 suggestionLinks.appendChild(ukLink);
                 practiceSuggestions.classList.remove('hidden');
@@ -1191,53 +1268,10 @@
                 practiceSuggestions.classList.add('hidden');
             }
         }
-        
-        // CẬP NHẬT: Hàm vẽ biểu đồ
-        function renderIntonationChart(data) {
-            if (currentIntonationChart) {
-                currentIntonationChart.destroy();
-            }
-            const ctx = intonationChartEl.getContext('2d');
-            const labels = Array.from({ length: data.length }, (_, i) => i + 1);
-            
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim();
-
-            currentIntonationChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Ngữ điệu của bạn',
-                        data: data,
-                        borderColor: accentColor,
-                        backgroundColor: accentColor + '33', // Thêm alpha
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointBackgroundColor: accentColor,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { display: false },
-                        x: { display: false }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                }
-            });
-        }
 
         function resetAnalysisOnly() {
             analysisResults.classList.add('hidden');
             practiceSuggestions.classList.add('hidden');
-            showMoreBtn.classList.add('hidden');
-            advancedAnalysis.classList.add('hidden');
-            showMoreBtn.textContent = 'Thông tin thêm';
         }
 
         function resetAll() {
@@ -1259,17 +1293,18 @@
                 mediaRecorder.stop();
                 return;
             }
-
+            
             analysisRequestID++;
+
             if (!textInput.value.trim()) {
                 showMessage('Vui lòng nhập từ để ghi âm và phân tích.', 'warning');
                 return;
             }
-
+            
             resetAnalysisOnly(); 
             listenAgainBtn.disabled = true;
             lastRecordingBlob = null;
-
+            
             try {
                 if (!standardIPA) {
                     const ipaReady = await fetchAndDisplayIPA();
@@ -1289,7 +1324,9 @@
                     isRecording = false;
                     stopWaveform();
                     stream.getTracks().forEach(track => track.stop());
-
+                    
+                    const recordBtnText = recordBtn.querySelector('.text');
+                    recordBtnText.textContent = '';
                     recordBtnText.classList.add('hidden');
                     recordBtn.querySelector('.icon').classList.remove('hidden');
                     recordBtn.classList.remove('is-recording');
@@ -1302,6 +1339,7 @@
                 };
                 mediaRecorder.start();
                 startWaveform(stream);
+                const recordBtnText = recordBtn.querySelector('.text');
                 recordBtnText.textContent = 'Dừng';
                 recordBtnText.classList.remove('hidden');
                 recordBtn.querySelector('.icon').classList.add('hidden');
@@ -1374,20 +1412,6 @@
             uploadBtn.style.display = 'inline-flex';
             listenAgainBtn.style.display = 'inline-flex';
             waveformContainer.classList.add('hidden');
-        }
-
-        function toggleAdvancedAnalysis() {
-            const isHidden = advancedAnalysis.classList.contains('hidden');
-            advancedAnalysis.classList.toggle('hidden');
-            showMoreBtn.textContent = isHidden ? 'Ẩn bớt' : 'Thông tin thêm';
-        }
-
-        function handleRandomPractice() {
-            const randomSentence = practiceSentences[Math.floor(Math.random() * practiceSentences.length)];
-            textInput.value = randomSentence;
-            charCounter.textContent = `${randomSentence.length} / 150`;
-            resetAll();
-            fetchAndDisplayIPA();
         }
 
         function getHistory() {
@@ -1469,6 +1493,67 @@
                 deleteHistoryItem(text);
             }
         }
+        
+        // --- NEW HELPER FUNCTIONS ---
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        function renderIntonationChart(svgElement, modelData, userData) {
+            svgElement.innerHTML = ''; // Clear previous chart
+            if (!modelData || !userData || modelData.length === 0 || userData.length === 0) return;
+        
+            const padding = { top: 10, right: 10, bottom: 20, left: 10 };
+            const width = svgElement.clientWidth;
+            const height = svgElement.clientHeight;
+            const innerWidth = width - padding.left - padding.right;
+            const innerHeight = height - padding.top - padding.bottom;
+        
+            const allData = [...modelData, ...userData];
+            const yMin = Math.min(...allData);
+            const yMax = Math.max(...allData) > yMin ? Math.max(...allData) : yMin + 1; // Avoid division by zero
+            
+            const scaleX = (index, dataLength) => padding.left + (index / (dataLength - 1)) * innerWidth;
+            const scaleY = (value) => padding.top + innerHeight - ((value - yMin) / (yMax - yMin)) * innerHeight;
+        
+            const modelPoints = modelData.map((d, i) => `${scaleX(i, modelData.length)},${scaleY(d)}`).join(' ');
+            const userPoints = userData.map((d, i) => `${scaleX(i, userData.length)},${scaleY(d)}`).join(' ');
+        
+            const modelLine = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            modelLine.setAttribute('points', modelPoints);
+            modelLine.setAttribute('fill', 'none');
+            modelLine.setAttribute('stroke', 'var(--accent-primary)');
+            modelLine.setAttribute('stroke-width', '2');
+            
+            const userLine = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            userLine.setAttribute('points', userPoints);
+            userLine.setAttribute('fill', 'none');
+            userLine.setAttribute('stroke', 'var(--accent-warning)');
+            userLine.setAttribute('stroke-width', '2.5');
+            userLine.setAttribute('stroke-dasharray', '4 4');
+        
+            svgElement.appendChild(modelLine);
+            svgElement.appendChild(userLine);
+            
+            // Add Legend
+            const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            legend.innerHTML = `
+                <rect x="${innerWidth - 180}" y="${height - 15}" width="12" height="2" fill="var(--accent-primary)" />
+                <text x="${innerWidth - 165}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng mẫu</text>
+                <rect x="${innerWidth - 90}" y="${height - 15}" width="12" height="2" fill="var(--accent-warning)" stroke-dasharray="2 2" stroke="var(--accent-warning)" />
+                <text x="${innerWidth - 75}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>
+            `;
+            svgElement.appendChild(legend);
+        }
 
         function initApp() {
             accentSelect.value = 'British English';
@@ -1490,8 +1575,13 @@
             listenClearBtn.addEventListener('click', (e) => handleListen('clear', listenClearBtn, listenClearLoader));
             recordBtn.addEventListener('click', handleRecord);
             listenAgainBtn.addEventListener('click', handleListenAgain);
-            showMoreBtn.addEventListener('click', toggleAdvancedAnalysis);
-            randomPracticeBtn.addEventListener('click', handleRandomPractice);
+            randomPracticeBtn.addEventListener('click', () => {
+                const randomSentence = practiceSentences[Math.floor(Math.random() * practiceSentences.length)];
+                textInput.value = randomSentence;
+                charCounter.textContent = `${randomSentence.length} / 150`;
+                resetAll();
+                fetchAndDisplayIPA();
+            });
             uploadBtn.addEventListener('click', () => audioUploadInput.click());
 
             historyBtn.addEventListener('click', () => {
@@ -1529,6 +1619,7 @@
                 }
             });
 
+
             audioUploadInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file && file.type.startsWith('audio/')) {
@@ -1562,8 +1653,6 @@
                     fetchAndDisplayIPA();
                 }
             });
-            
-            // CẬP NHẬT: Xóa event listener của shadowing toggle
         }
 
         initApp();
