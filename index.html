@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
     <!-- FAVICON ĐÃ CẬP NHẬT -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232E3192;'/%3E%3Cstop offset='100%25' style='stop-color:%231BFFFF;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Exo 2, sans-serif' font-size='48' font-weight='700' fill='white' text-anchor='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Exo 2, sans-serif' font-size='48' font-weight='700' fill='white' text-anchor='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V11 --- */
+        /* --- GLASSMORPHISM THEME V12 --- */
         :root {
             /* Mặc định: Giao diện Sáng */
             --bg-color: #f8fafc; /* slate-50 */
@@ -21,18 +21,18 @@
             --glass-border: rgba(255, 255, 255, 0.7); /* Viền sáng hơn để tạo hiệu ứng cạnh kính */
             --text-primary: #0f172a; /* slate-900 */
             --text-secondary: #475569; /* slate-600 */
-            --accent-primary: #2E3192; /* Màu xanh đậm hiện đại */
+            --accent-primary: #007CF0; /* CẬP NHẬT: Trở về màu gốc */
             --accent-danger: #ef4444; /* red-500 */
-            --accent-success: #16a34a; /* CẬP NHẬT: Màu xanh lá cây dịu mắt hơn (green-600) */
+            --accent-success: #16a34a; /* Màu xanh lá cây dịu mắt hơn (green-600) */
             --accent-warning: #f59e0b; /* amber-500 */
             --btn-primary-bg: var(--accent-primary);
-            --btn-primary-hover-bg: #4A4ED9;
+            --btn-primary-hover-bg: #0056b3;
             --btn-secondary-bg: rgba(241, 245, 249, 0.7); /* slate-100 @ 70% */
             --btn-secondary-hover-bg: rgba(226, 232, 240, 0.9); /* slate-200 @ 90% */
             --input-bg: rgba(255, 255, 255, 0.4);
             --input-focus-bg: rgba(255, 255, 255, 0.6);
             --shadow-color: rgba(100, 116, 139, 0.2); /* slate-400 */
-            --highlight-correct: rgba(22, 163, 74, 0.1); /* CẬP NHẬT: Highlight xanh lá cây dịu mắt hơn */
+            --highlight-correct: rgba(22, 163, 74, 0.1); /* Highlight xanh lá cây dịu mắt hơn */
             --highlight-approximate: rgba(245, 158, 11, 0.1);
             --highlight-incorrect: rgba(239, 68, 68, 0.1);
             --radius-sm: 0.75rem;
@@ -48,9 +48,9 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #f1f5f9; /* slate-100 */
             --text-secondary: #94a3b8; /* slate-400 */
-            --btn-primary-bg: #1BFFFF;
-            --btn-primary-hover-bg: #7CFFFF;
-            --accent-primary: #1BFFFF; /* Màu xanh cyan cho dark mode */
+            --accent-primary: #00A9FF; /* CẬP NHẬT: Màu xanh sáng cho dark mode */
+            --btn-primary-bg: var(--accent-primary);
+            --btn-primary-hover-bg: #52C5FF;
             --accent-success: #22c55e; /* Giữ màu xanh lá neon cho dark mode vì độ tương phản tốt */
             --btn-secondary-bg: rgba(51, 65, 85, 0.5); /* slate-700 @ 50% */
             --btn-secondary-hover-bg: rgba(51, 65, 85, 0.8);
@@ -114,7 +114,6 @@
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-primary { background-color: var(--btn-primary-bg); color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        [data-theme="dark"] .btn-primary { color: #0f172a; }
         .btn-primary:hover:not(:disabled) { background-color: var(--btn-primary-hover-bg); }
 
         .btn-secondary {
@@ -300,7 +299,7 @@
         <main class="main-card glass-card space-y-8">
             <section class="input-section card-layer glass-card space-y-4">
                 <div>
-                    <!-- CẬP NHẬT: Thêm nút gạt Shadowing -->
+                    <!-- Thêm nút gạt Shadowing -->
                     <div class="flex justify-between items-center mb-3">
                         <label for="text-input" class="block text-lg font-semibold text-text-primary">Nhập văn bản cần luyện tập:</label>
                         <div class="flex items-center gap-2">
@@ -335,7 +334,6 @@
             
             <section id="controls-section" class="hidden space-y-6">
                  <div class="card-layer glass-card space-y-4">
-                     <!-- CẬP NHẬT: Thêm khu vực hiển thị trọng âm -->
                      <!-- Stress Visualization Area -->
                      <div id="stress-visualization-container" class="hidden">
                          <h3 class="font-semibold text-text-secondary text-md mb-2">Trọng âm câu</h3>
@@ -403,12 +401,15 @@
                 </div>
             </section>
 
+            <!-- CẬP NHẬT: Khôi phục thanh tiến trình -->
             <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">
-                <p id="progress-text" class="text-text-secondary mt-4 text-lg"></p>
+                <div class="w-full max-w-xs h-2 rounded-full overflow-hidden bg-[color:var(--input-bg)]">
+                    <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
+                </div>
+                <p id="progress-text" class="text-text-secondary mt-4">PrAI đang lắng nghe và phân tích...</p>
             </div>
 
             <section id="analysis-results" class="hidden space-y-6">
-                <!-- CẬP NHẬT: Thêm khu vực kết quả Shadowing -->
                 <!-- Shadowing Results -->
                 <div id="shadowing-analysis-container" class="hidden card-layer glass-card space-y-4">
                     <h3 class="font-bold text-text-primary text-xl">Kết quả Shadowing</h3>
@@ -422,49 +423,51 @@
                              <p id="prosody-feedback" class="text-text-primary"></p>
                         </div>
                     </div>
-                </div>
-                <div class="card-layer glass-card space-y-6">
-                    <h3 class="font-bold text-text-primary text-xl">Kết quả Phân tích</h3>
-                    <div class="score-container">
-                        <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
-                    </div>
-                    <div class="analysis-box">
-                        <h4 class="font-semibold text-text-secondary mb-2">Phân tích Âm vị</h4>
-                        <div id="phoneme-analysis" class="flex flex-wrap gap-2"></div>
-                        <p class="text-xs text-text-secondary mt-2">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
-                    </div>
-                    <div class="analysis-box">
-                        <h4 class="font-semibold text-text-secondary mb-2">Phân tích Trọng âm</h4>
-                        <div id="stress-analysis"></div>
+                     <!-- Intonation Chart Area - Chỉ hiển thị ở mode shadowing -->
+                    <div id="intonation-chart-container" class="analysis-box">
+                        <h4 class="font-semibold text-text-secondary mb-2">Biểu đồ Ngữ điệu</h4>
+                        <div class="h-40 rounded-md bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                            <canvas id="intonation-chart"></canvas>
+                            <p id="intonation-placeholder" class="text-text-secondary text-sm">Biểu đồ so sánh ngữ điệu sẽ sớm ra mắt!</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="advanced-analysis" class="hidden space-y-4 card-layer glass-card">
-                    <h3 class="font-bold text-text-primary text-xl">Phân tích Nâng cao</h3>
-                    <div class="space-y-4">
-                        <!-- CẬP NHẬT: Thêm khu vực biểu đồ ngữ điệu -->
-                        <!-- Intonation Chart Area -->
-                        <div class="analysis-box">
-                            <h4 class="font-semibold text-text-secondary mb-2">Biểu đồ Ngữ điệu</h4>
-                            <div class="h-40 rounded-md bg-black/5 dark:bg-white/5 flex items-center justify-center">
-                                <canvas id="intonation-chart"></canvas>
-                                <p id="intonation-placeholder" class="text-text-secondary text-sm">Biểu đồ so sánh ngữ điệu sẽ sớm ra mắt!</p>
-                            </div>
+                <div id="normal-analysis-container" class="space-y-6">
+                    <div class="card-layer glass-card space-y-6">
+                        <h3 class="font-bold text-text-primary text-xl">Kết quả Phân tích</h3>
+                        <div class="score-container">
+                            <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                         </div>
                         <div class="analysis-box">
-                            <h4 class="font-semibold text-text-secondary mb-2">Ngữ điệu (Intonation)</h4>
-                            <div id="intonation-analysis"></div>
+                            <h4 class="font-semibold text-text-secondary mb-2">Phân tích Âm vị</h4>
+                            <div id="phoneme-analysis" class="flex flex-wrap gap-2"></div>
+                            <p class="text-xs text-text-secondary mt-2">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                         </div>
-                         <div class="analysis-box">
-                            <h4 class="font-semibold text-text-secondary mb-2">Nối âm (Connected Speech)</h4>
-                            <div id="connected-speech-analysis" class="space-y-4"></div>
+                        <div class="analysis-box">
+                            <h4 class="font-semibold text-text-secondary mb-2">Phân tích Trọng âm</h4>
+                            <div id="stress-analysis"></div>
                         </div>
                     </div>
-                </div>
-                <div class="text-center">
-                    <button id="show-more-btn" class="hidden btn btn-secondary">
-                        Thông tin thêm
-                    </button>
+                    
+                    <div id="advanced-analysis" class="hidden space-y-4 card-layer glass-card">
+                        <h3 class="font-bold text-text-primary text-xl">Phân tích Nâng cao</h3>
+                        <div class="space-y-4">
+                            <div class="analysis-box">
+                                <h4 class="font-semibold text-text-secondary mb-2">Ngữ điệu (Intonation)</h4>
+                                <div id="intonation-analysis"></div>
+                            </div>
+                             <div class="analysis-box">
+                                <h4 class="font-semibold text-text-secondary mb-2">Nối âm (Connected Speech)</h4>
+                                <div id="connected-speech-analysis" class="space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button id="show-more-btn" class="hidden btn btn-secondary">
+                            Thông tin thêm
+                        </button>
+                    </div>
                 </div>
 
                  <div id="practice-suggestions" class="hidden card-layer glass-card">
@@ -546,6 +549,7 @@
         const intonationAnalysis = document.getElementById('intonation-analysis');
         const connectedSpeechAnalysis = document.getElementById('connected-speech-analysis');
         const progressText = document.getElementById('progress-text');
+        const progressBarInner = document.getElementById('progress-bar-inner');
         const charCounter = document.getElementById('char-counter');
         const thoughtGroupDisplay = document.getElementById('thought-group-display');
         const thoughtGroupInfo = document.getElementById('thought-group-info');
@@ -557,14 +561,16 @@
         const historyList = document.getElementById('history-list');
         const clearHistoryBtn = document.getElementById('clear-history-btn');
 
-        // CẬP NHẬT: Khai báo các biến giao diện mới
+        // Khai báo các biến giao diện mới
         const shadowingToggle = document.getElementById('shadowing-toggle');
         const stressVisualizationContainer = document.getElementById('stress-visualization-container');
         const stressVisualization = document.getElementById('stress-visualization');
         const detailedIpaSection = document.getElementById('detailed-ipa-section');
         const shadowingAnalysisContainer = document.getElementById('shadowing-analysis-container');
+        const normalAnalysisContainer = document.getElementById('normal-analysis-container');
         const rhythmScore = document.getElementById('rhythm-score');
         const prosodyFeedback = document.getElementById('prosody-feedback');
+        const intonationChartContainer = document.getElementById('intonation-chart-container');
         const intonationChart = document.getElementById('intonation-chart');
         const intonationPlaceholder = document.getElementById('intonation-placeholder');
 
@@ -586,9 +592,9 @@
         let lastTTSAccentClear = '';
         let fetchIpaRequestID = 0;
         let analysisRequestID = 0;
+        let progressInterval;
         let progressTextTimeout;
         let currentThoughtGroups = [];
-        // CẬP NHẬT: Thêm biến trạng thái
         let isShadowingMode = false;
 
 
@@ -646,17 +652,17 @@
 
         function setButtonLoading(button, loader, isLoading) {
             button.disabled = isLoading;
-            if (loader) { // Logic for icon buttons with separate loaders
+            if (loader) {
                 if(isLoading) {
                     button.classList.add('hidden');
                     loader.classList.remove('hidden');
-                    loader.classList.add('flex'); // Ensure flex display for centering
+                    loader.classList.add('flex');
                 } else {
                     button.classList.remove('hidden');
                     loader.classList.add('hidden');
                     loader.classList.remove('flex');
                 }
-            } else { // Logic for buttons with internal spinners
+            } else {
                 const textEl = button.querySelector('.text');
                 const iconEl = button.querySelector('.icon');
                 const spinnerEl = button.querySelector('.btn-spinner');
@@ -758,8 +764,7 @@
         function stopIpaLoadingAnimation() {
             clearInterval(ipaLoadingInterval);
         }
-
-        // CẬP NHẬT: Toàn bộ hàm displayIpaData
+        
         function displayIpaData(data) {
             standardIPA = data.detailed;
             simpleIpaText.textContent = data.simple;
@@ -781,7 +786,10 @@
                 stressVisualizationContainer.classList.add('hidden');
             }
 
-            if (data.thought_groups && textInput.value.trim().includes(' ')) {
+            // CẬP NHẬT: Chỉ hiển thị cụm tư duy khi không ở chế độ shadowing
+            const shouldShowThoughtGroups = data.thought_groups && textInput.value.trim().includes(' ') && !isShadowingMode;
+
+            if (shouldShowThoughtGroups) {
                 currentThoughtGroups = data.thought_groups.groups;
                 displayThoughtGroups(data.thought_groups.groups, data.thought_groups.explanation);
                 detailedIpaSection.classList.remove('hidden');
@@ -793,7 +801,6 @@
             controlsSection.classList.remove('hidden');
         }
 
-        // CẬP NHẬT: Toàn bộ hàm fetchAndDisplayIPA
         async function fetchAndDisplayIPA() {
             fetchIpaRequestID++;
             const currentRequestID = fetchIpaRequestID;
@@ -815,7 +822,6 @@
 
             const isSingleWord = !text.includes(' ');
 
-            // CẬP NHẬT: Prompt để yêu cầu thêm syllable_stress và cải thiện giải thích thought_groups
             const prompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
             1. 'simple': A standard, citation-form IPA transcription.
             2. 'detailed': A natural, connected speech transcription. For single words, this is the same as 'simple'. For sentences, apply liaison (‿) where phonetically correct, based on connected speech rules.
@@ -890,7 +896,7 @@
             const accent = accentSelect.value;
             if (!text) {
                 showMessage('Vui lòng nhập từ hoặc câu để nghe.', 'warning');
-                return;
+                return null;
             }
             
             const isNatural = type === 'natural';
@@ -969,24 +975,43 @@
             }
         }
 
-        // CẬP NHẬT: Hoạt ảnh loading chỉ chạy 1 lần
+        function startProgressSimulation() {
+            if (!progressBarInner) return;
+            let width = 0;
+            progressBarInner.style.width = '0%';
+            clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                if (width < 95) {
+                    width += Math.random() * 2;
+                } else {
+                    clearInterval(progressInterval);
+                }
+                progressBarInner.style.width = Math.min(width, 95) + '%';
+            }, 100);
+        }
+
+        function stopProgressSimulation() {
+            clearInterval(progressInterval);
+            if (progressBarInner) {
+                progressBarInner.style.width = '100%';
+            }
+        }
+
         function startProgressTextAnimation() {
             const steps = [
-                "PrAI đã nhận được bản ghi âm của bạn...",
-                "Đang phiên âm giọng nói của bạn!",
-                "So sánh từng âm một với giọng chuẩn...",
-                "Kiểm tra ngữ điệu và cả nhịp điệu...",
-                "Xong rồi! Cùng xem kết quả tuyệt vời của bạn nhé!"
+                "Đã nhận được bản ghi âm của bạn...",
+                "Đang phiên âm giọng nói...",
+                "So sánh với giọng chuẩn...",
+                "Kiểm tra ngữ điệu và nhịp điệu...",
+                "Sắp xong rồi! Cùng xem kết quả nhé!"
             ];
             let currentStep = 0;
-            
             clearTimeout(progressTextTimeout);
-
             function showNextStep() {
                 if (currentStep < steps.length) {
                     progressText.textContent = steps[currentStep];
                     currentStep++;
-                    if (currentStep < steps.length) { // Lên lịch cho bước tiếp theo nếu chưa phải bước cuối
+                    if (currentStep < steps.length) {
                         progressTextTimeout = setTimeout(showNextStep, 1800);
                     }
                 }
@@ -998,7 +1023,6 @@
             clearTimeout(progressTextTimeout);
         }
 
-        // CẬP NHẬT: Toàn bộ hàm analyzeAudio
         async function analyzeAudio(audioBlob) {
             const currentAnalysisID = analysisRequestID;
 
@@ -1014,6 +1038,7 @@
 
             loader.classList.remove('hidden');
             startProgressTextAnimation();
+            startProgressSimulation();
 
             const reader = new FileReader();
             reader.readAsDataURL(lastRecordingBlob);
@@ -1041,7 +1066,6 @@
                         }
                     };
                 } else {
-                    // CẬP NHẬT: Prompt phân tích nối âm chi tiết hơn
                     prompt = {
                         "role": "Bạn là PrAI, một chuyên gia ngữ âm AI cực kỳ logic, đồng cảm và thấu hiểu, với kiến thức sâu rộng về các quy tắc nối âm trong tiếng Anh.",
                         "context": {
@@ -1104,14 +1128,16 @@
                     if (currentAnalysisID === analysisRequestID) handleApiError(error);
                 } finally {
                     if (currentAnalysisID === analysisRequestID) {
+                        stopProgressSimulation();
                         stopProgressTextAnimation();
-                        loader.classList.add('hidden');
+                        setTimeout(() => {
+                            loader.classList.add('hidden');
+                        }, 500);
                     }
                 }
             };
         }
-
-        // CẬP NHẬT: Toàn bộ hàm displayResults
+        
         function displayResults(data) {
             if (!data.speech_detected || data.overall_score === null) {
                 showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
@@ -1122,13 +1148,18 @@
             saveToHistory(textInput.value.trim(), data.overall_score);
             analysisResults.classList.remove('hidden');
 
-            // Hiển thị kết quả shadowing nếu có
-            if (data.prosody_analysis) {
+            // Logic hiển thị dựa trên chế độ
+            if (isShadowingMode) {
                 shadowingAnalysisContainer.classList.remove('hidden');
-                rhythmScore.textContent = `${data.prosody_analysis.rhythm_score}/100`;
-                prosodyFeedback.textContent = `${data.prosody_analysis.pace_feedback} ${data.prosody_analysis.timing_feedback}`;
+                normalAnalysisContainer.classList.add('hidden');
+                
+                if (data.prosody_analysis) {
+                    rhythmScore.textContent = `${data.prosody_analysis.rhythm_score}/100`;
+                    prosodyFeedback.textContent = `${data.prosody_analysis.pace_feedback} ${data.prosody_analysis.timing_feedback}`;
+                }
             } else {
                 shadowingAnalysisContainer.classList.add('hidden');
+                normalAnalysisContainer.classList.remove('hidden');
             }
 
             const scoreContainer = document.querySelector('.score-container');
@@ -1177,7 +1208,7 @@
                 stressAnalysis.innerHTML = data.stress_analysis.feedback;
             }
 
-            if (data.advanced_analysis) {
+            if (data.advanced_analysis && !isShadowingMode) {
                 advancedAnalysis.classList.remove('hidden');
                 intonationAnalysis.innerHTML = data.advanced_analysis.intonation.feedback;
                 connectedSpeechAnalysis.innerHTML = '';
@@ -1226,6 +1257,7 @@
             advancedAnalysis.classList.add('hidden');
             showMoreBtn.textContent = 'Thông tin thêm';
             shadowingAnalysisContainer.classList.add('hidden');
+            normalAnalysisContainer.classList.remove('hidden');
         }
 
         function resetAll() {
@@ -1242,20 +1274,17 @@
             displayThoughtGroups([], '');
         }
 
-        // CẬP NHẬT: Thêm hàm mới
         async function startShadowingFlow() {
             const audio = await handleListen('natural', listenNaturalBtn, listenNaturalLoader);
             if (audio) {
                 audio.onended = () => {
-                    // Tự động bắt đầu ghi âm sau khi TTS kết thúc
                     setTimeout(() => {
-                         handleRecord(true); // Truyền cờ để chỉ ra đây là ghi âm shadowing
+                         handleRecord(true);
                     }, 100);
                 };
             }
         }
 
-        // CẬP NHẬT: Toàn bộ hàm handleRecord
         async function handleRecord(isShadowingRecord = false) {
             if (isRecording) {
                 mediaRecorder.stop();
@@ -1297,7 +1326,6 @@
                     stopWaveform();
                     stream.getTracks().forEach(track => track.stop());
 
-                    recordBtnText.textContent = '';
                     recordBtnText.classList.add('hidden');
                     recordBtn.querySelector('.icon').classList.remove('hidden');
                     recordBtn.classList.remove('is-recording');
@@ -1321,7 +1349,6 @@
             }
         }
 
-        // CẬP NHẬT: Thêm hàm mới
         function updateRecordButtonText() {
             const icon = recordBtn.querySelector('.icon');
             if (isShadowingMode) {
@@ -1507,10 +1534,7 @@
             transcribeBtn.addEventListener('click', () => fetchAndDisplayIPA());
             listenNaturalBtn.addEventListener('click', (e) => handleListen('natural', listenNaturalBtn, listenNaturalLoader));
             listenClearBtn.addEventListener('click', (e) => handleListen('clear', listenClearBtn, listenClearLoader));
-            
-            // CẬP NHẬT: Gắn sự kiện cho nút ghi âm
             recordBtn.addEventListener('click', () => handleRecord(false));
-            
             listenAgainBtn.addEventListener('click', handleListenAgain);
             showMoreBtn.addEventListener('click', toggleAdvancedAnalysis);
             randomPracticeBtn.addEventListener('click', handleRandomPractice);
@@ -1551,7 +1575,6 @@
                 }
             });
 
-
             audioUploadInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file && file.type.startsWith('audio/')) {
@@ -1586,11 +1609,14 @@
                 }
             });
 
-            // CẬP NHẬT: Gắn sự kiện cho nút gạt Shadowing
             shadowingToggle.addEventListener('click', () => {
                 isShadowingMode = !isShadowingMode;
                 shadowingToggle.classList.toggle('active', isShadowingMode);
                 updateRecordButtonText();
+                // Ẩn/hiện phần cụm tư duy ngay khi chuyển chế độ
+                if (textInput.value.trim()) {
+                    fetchAndDisplayIPA();
+                }
             });
         }
 
