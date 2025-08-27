@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230ea5e9;'/%3E%3Cstop offset='100%25' style='stop-color:%2314b8a6;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='rgba(255,255,255,0.2)' stroke-width='2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Exo 2, sans-serif' font-size='40' font-weight='bold' fill='%230056b3'%3EPr%3Ctspan fill='%23FFFFFF'%3EAI%3C/tspan%3E%3C/text%3E%3C/svg%3E">
+    <!-- NEW FAVICON -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cpath d='M30 70 V 30 H 45 M 55 70 L 70 50 L 55 30' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -564,8 +565,10 @@
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
         ];
 
+        // API KEY REMOVED FOR SECURITY
         const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
         const TTS_MODEL = "gemini-2.5-flash-preview-tts";
+        // API URLS POINT TO THE PROXY FUNCTION
         const TEXT_API_URL = `/api/proxy`;
         const TTS_API_URL = `/api/proxy`;
 
@@ -719,7 +722,7 @@
                 displayThoughtGroups([], '');
             }
             controlsSection.classList.remove('hidden');
-            thoughtGroupInfo.classList.toggle('hidden', !textInput.value.trim().includes(' '));
+            thoughtGroupInfo.style.display = textInput.value.trim().includes(' ') ? 'block' : 'none';
         }
 
         async function fetchAndDisplayIPA() {
@@ -740,30 +743,28 @@
                 displayIpaData(cachedData);
                 return true;
             }
+            
+            const isSingleWord = !text.includes(' ');
+            let combinedPrompt;
 
-            const combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
-            1. 'simple': A standard, citation-form IPA transcription.
-            2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
-            3. 'thought_groups': An object with two keys:
-               a. 'groups': An array of strings representing the most natural, semantically-driven thought groups. Follow these rules STRICTLY:
-                 - **Rule 1 (Primary):** Break at major grammatical boundaries like clauses, especially where conjunctions like 'and', 'but', 'so', 'because' appear.
-                 - **Rule 2 (Phrasal Integrity):** Keep complete grammatical phrases together. This is critical.
-                   - **Prepositional Phrases:** NEVER split them (e.g., 'in the house', 'on the table').
-                   - **Verb Phrases:** Keep auxiliary verbs with main verbs (e.g., 'have been waiting', 'should go').
-                   - **Noun Phrases:** Keep articles and adjectives with their nouns (e.g., 'a beautiful day').
-                 - **Rule 3 (No Stranding):** NEVER leave short function words (e.g., 'a', 'the', 'in', 'on', 'at', 'to', 'of', 'is', 'are') isolated at the end of a group. They must belong with the phrase that follows. For example, "I'm looking forward / to it" is WRONG. It must be "I'm looking forward to it". "I have a / piece of cake" is WRONG. It should be "I have / a piece of cake" or "I have a piece of cake".
-                 - **Rule 4 (Semantic Units):** Group words that form a single idea. For example, "a piece of cake" is a single semantic unit.
-               b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping. Your explanation should be detailed and feel like it's from a human coach, not a machine.
-                    - **Focus on the 'why':** Explain the logic behind the grouping based on meaning and grammar. For instance, point out how a group forms a complete idea (e.g., 'a piece of cake' is one unit of meaning) or how a pause naturally occurs at a grammatical boundary (like before a conjunction or between clauses).
-                    - **Avoid robotic language:** Do NOT use phrases like "Theo quy tắc số 1...". Instead, explain the concept naturally (e.g., "Chúng ta thường ngắt nghỉ một chút ở đây để tách biệt hai ý chính của câu.").
-                    - **Acknowledge flexibility:** Clearly state that this is a common and natural way to group the words to create a smooth rhythm, but emphasize that speakers can change these pauses to add emphasis or convey different emotions. This makes the advice more practical and less rigid.
-                    - **No generic greetings:** Do not start the explanation with "Chào bạn" or any similar greeting. Get straight to the point.
-            Respond with ONLY the JSON object.`;
+            if (isSingleWord) {
+                // --- FAST MODE PROMPT FOR SINGLE WORDS ---
+                combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
+            } else {
+                // --- DETAILED PROMPT FOR SENTENCES ---
+                combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
+                1. 'simple': A standard, citation-form IPA transcription.
+                2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
+                3. 'thought_groups': An object with two keys:
+                   a. 'groups': An array of strings representing the most natural, semantically-driven thought groups.
+                   b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping.
+                Respond with ONLY the JSON object.`;
+            }
             
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
-            thoughtGroupDisplay.classList.toggle('hidden', !text.includes(' '));
-            thoughtGroupInfo.classList.toggle('hidden', !text.includes(' '));
+            thoughtGroupDisplay.style.display = isSingleWord ? 'none' : 'block';
+            thoughtGroupInfo.style.display = isSingleWord ? 'none' : 'block';
             
             startIpaLoadingAnimation();
             
@@ -775,16 +776,22 @@
 
                 const response = await fetchWithBackoff(TEXT_API_URL, { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json',
-        'X-Target-API': 'text'
-		 }, 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Target-API': 'text' // Add header for proxy
+                    }, 
                     body: JSON.stringify(payload) 
                 });
 
                 if (currentRequestID !== fetchIpaRequestID) return false;
 
                 const resultText = response.candidates[0].content.parts[0].text;
-                const resultJson = JSON.parse(resultText);
+                let resultJson = JSON.parse(resultText);
+
+                // If it was a single word, the detailed IPA is the same as simple
+                if (isSingleWord) {
+                    resultJson.detailed = resultJson.simple;
+                }
 
                 ipaCache.set(cacheKey, resultJson); // Cache the new result
                 displayIpaData(resultJson);
@@ -807,15 +814,17 @@
         function displayThoughtGroups(groups, explanation) {
             thoughtGroupDisplay.innerHTML = '';
             thoughtGroupTooltip.textContent = explanation || '';
-            thoughtGroupInfo.classList.toggle('hidden', !explanation);
-
-            if (groups && groups.length > 0) {
+            
+            if (groups && groups.length > 0 && explanation) {
+                thoughtGroupInfo.style.display = 'block';
                 groups.forEach((group, index) => {
                     const groupSpan = document.createElement('span');
                     groupSpan.textContent = group;
                     groupSpan.className = `thought-group thought-group-${index % 4}`;
                     thoughtGroupDisplay.appendChild(groupSpan);
                 });
+            } else {
+                thoughtGroupInfo.style.display = 'none';
             }
         }
 
@@ -866,8 +875,10 @@
 
                 const data = await fetchWithBackoff(TTS_API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json',
-        'X-Target-API': 'tts' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Target-API': 'tts' // Add header for proxy
+                    },
                     body: JSON.stringify(payload)
                 });
 
@@ -927,9 +938,9 @@
         function startProgressTextAnimation() {
             const steps = [
                 "Okie, PrAI đã nhận được bản ghi âm của bạn...",
-                "Đang gỡ băng... à không, đang phiên âm giọng nói của bạn!",
+                "Đang đang phiên âm giọng nói của bạn!",
                 "So sánh từng âm một với giọng chuẩn...",
-                "Check ngữ điệu và cả nhịp điệu nữa nè...",
+                "Kiểm tra ngữ điệu và cả nhịp điệu...",
                 "Xong rồi! Cùng xem kết quả tuyệt vời của bạn nhé!"
             ];
             let currentStep = 0;
@@ -980,7 +991,6 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                // --- UPDATED "FAIR SCORING" PROMPT ---
                 const prompt = {
                     "role": "Bạn là PrAI, một chuyên gia ngữ âm AI đồng cảm và thấu hiểu. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt. Mục tiêu của bạn là vừa sửa lỗi một cách nghiêm khắc, vừa là một người hướng dẫn động viên, khích lệ.",
                     "context": {
@@ -1032,7 +1042,14 @@
                 };
 
                 try {
-                    const data = await fetchWithBackoff(TEXT_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await fetchWithBackoff(TEXT_API_URL, { 
+                        method: 'POST', 
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-Target-API': 'text' // Add header for proxy
+                        }, 
+                        body: JSON.stringify(payload) 
+                    });
                     
                     if (currentAnalysisID !== analysisRequestID) {
                         console.log(`Analysis request ${currentAnalysisID} completed, but a newer request is active. Discarding results.`);
