@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light"> <!-- Default to light theme -->
+<html lang="vi" data-theme="light"> <!-- Mặc định là giao diện sáng -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
-    <!-- NEW FAVICON -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cpath d='M30 70 V 30 H 45 M 55 70 L 70 50 L 55 30' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <!-- FAVICON ĐÃ CẬP NHẬT -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232E3192;'/%3E%3Cstop offset='100%25' style='stop-color:%231BFFFF;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Exo 2, sans-serif' font-size='48' font-weight='700' fill='white' text-anchor='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V10 --- */
+        /* --- GLASSMORPHISM THEME V11 --- */
         :root {
-            /* Default: Light Theme */
+            /* Mặc định: Giao diện Sáng */
             --bg-color: #f8fafc; /* slate-50 */
             --bg-blob-1: #0ea5e9; /* sky-500 */
             --bg-blob-2: #14b8a6; /* teal-500 */
             --glass-bg: rgba(248, 250, 252, 0.6); /* slate-50 @ 60% */
-            --glass-border: rgba(255, 255, 255, 0.7); /* Brighter border for glass edge effect */
+            --glass-border: rgba(255, 255, 255, 0.7); /* Viền sáng hơn để tạo hiệu ứng cạnh kính */
             --text-primary: #0f172a; /* slate-900 */
             --text-secondary: #475569; /* slate-600 */
-            --accent-primary: #007CF0;
+            --accent-primary: #2E3192; /* Màu xanh đậm hiện đại */
             --accent-danger: #ef4444; /* red-500 */
-            --accent-success: #22c55e; /* green-500 */
+            --accent-success: #16a34a; /* CẬP NHẬT: Màu xanh lá cây dịu mắt hơn (green-600) */
             --accent-warning: #f59e0b; /* amber-500 */
-            --btn-primary-bg: #007CF0;
-            --btn-primary-hover-bg: #0056b3;
+            --btn-primary-bg: var(--accent-primary);
+            --btn-primary-hover-bg: #4A4ED9;
             --btn-secondary-bg: rgba(241, 245, 249, 0.7); /* slate-100 @ 70% */
             --btn-secondary-hover-bg: rgba(226, 232, 240, 0.9); /* slate-200 @ 90% */
             --input-bg: rgba(255, 255, 255, 0.4);
             --input-focus-bg: rgba(255, 255, 255, 0.6);
             --shadow-color: rgba(100, 116, 139, 0.2); /* slate-400 */
-            --highlight-correct: rgba(34, 197, 94, 0.1);
+            --highlight-correct: rgba(22, 163, 74, 0.1); /* CẬP NHẬT: Highlight xanh lá cây dịu mắt hơn */
             --highlight-approximate: rgba(245, 158, 11, 0.1);
             --highlight-incorrect: rgba(239, 68, 68, 0.1);
             --radius-sm: 0.75rem;
@@ -48,8 +48,10 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #f1f5f9; /* slate-100 */
             --text-secondary: #94a3b8; /* slate-400 */
-            --btn-primary-bg: #007CF0;
-            --btn-primary-hover-bg: #0095ff;
+            --btn-primary-bg: #1BFFFF;
+            --btn-primary-hover-bg: #7CFFFF;
+            --accent-primary: #1BFFFF; /* Màu xanh cyan cho dark mode */
+            --accent-success: #22c55e; /* Giữ màu xanh lá neon cho dark mode vì độ tương phản tốt */
             --btn-secondary-bg: rgba(51, 65, 85, 0.5); /* slate-700 @ 50% */
             --btn-secondary-hover-bg: rgba(51, 65, 85, 0.8);
             --input-bg: rgba(15, 23, 42, 0.5); /* slate-900 @ 50% */
@@ -112,6 +114,7 @@
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-primary { background-color: var(--btn-primary-bg); color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        [data-theme="dark"] .btn-primary { color: #0f172a; }
         .btn-primary:hover:not(:disabled) { background-color: var(--btn-primary-hover-bg); }
 
         .btn-secondary {
@@ -245,6 +248,18 @@
         .history-item { cursor: pointer; transition: background-color 0.2s; }
         .history-item:hover { background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); }
         .history-item-text { color: var(--text-primary); }
+
+        /* --- CÁC STYLE MỚI --- */
+        /* Stress Visualization */
+        #stress-visualization { line-height: 1.5; font-size: 1.125rem; }
+        .stress-syllable { transition: all 0.2s ease-in-out; }
+        .stress-syllable.stressed { font-weight: 700; color: var(--accent-primary); transform: scale(1.05); display: inline-block; }
+
+        /* Shadowing Mode Toggle */
+        .toggle-switch { width: 50px; height: 28px; background-color: var(--input-bg); border-radius: 9999px; position: relative; cursor: pointer; border: 1px solid var(--glass-border); }
+        .toggle-switch::before { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background-color: var(--text-secondary); top: 2px; left: 3px; transition: transform 0.2s ease-in-out; }
+        .toggle-switch.active { background-color: var(--accent-success); }
+        .toggle-switch.active::before { background-color: white; transform: translateX(21px); }
     </style>
 </head>
 <body class="antialiased">
@@ -285,7 +300,14 @@
         <main class="main-card glass-card space-y-8">
             <section class="input-section card-layer glass-card space-y-4">
                 <div>
-                    <label for="text-input" class="block text-lg font-semibold text-text-primary mb-3">Nhập văn bản cần luyện tập:</label>
+                    <!-- CẬP NHẬT: Thêm nút gạt Shadowing -->
+                    <div class="flex justify-between items-center mb-3">
+                        <label for="text-input" class="block text-lg font-semibold text-text-primary">Nhập văn bản cần luyện tập:</label>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-text-secondary">Shadowing</span>
+                            <div id="shadowing-toggle" class="toggle-switch"></div>
+                        </div>
+                    </div>
                     <textarea id="text-input" rows="3" maxlength="150" class="input-field" placeholder="Ví dụ: What are you doing?"></textarea>
                     <div id="char-counter" class="text-right text-sm text-text-secondary mt-1">0 / 150</div>
                     <div class="mt-4 flex flex-col sm:flex-row items-center gap-4">
@@ -313,6 +335,12 @@
             
             <section id="controls-section" class="hidden space-y-6">
                  <div class="card-layer glass-card space-y-4">
+                     <!-- CẬP NHẬT: Thêm khu vực hiển thị trọng âm -->
+                     <!-- Stress Visualization Area -->
+                     <div id="stress-visualization-container" class="hidden">
+                         <h3 class="font-semibold text-text-secondary text-md mb-2">Trọng âm câu</h3>
+                         <div id="stress-visualization" class="p-3 rounded-md bg-black/5 dark:bg-white/5"></div>
+                     </div>
                      <div class="flex items-center justify-between">
                          <div class="min-w-0">
                              <h3 class="font-semibold text-text-secondary text-md">Phiên âm cơ bản</h3>
@@ -327,10 +355,10 @@
                              </div>
                          </div>
                      </div>
-                     <div class="flex items-center justify-between">
+                     <div id="detailed-ipa-section" class="flex items-center justify-between">
                          <div class="min-w-0">
                              <div class="flex items-center gap-2 mb-1">
-                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy</h3>
+                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm tự nhiên & Cụm tư duy</h3>
                                  <div id="thought-group-info" class="has-tooltip relative hidden">
                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                                      <div id="thought-group-tooltip" class="tooltip absolute bottom-full left-1/2 mb-2 w-72 rounded-lg p-3 text-xs shadow-lg"></div>
@@ -359,7 +387,9 @@
                         </button>
                         <div class="flex flex-col items-center justify-center">
                             <button id="record-btn" class="btn-record flex items-center justify-center">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                                <span class="icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                                </span>
                                 <span class="text hidden text-lg font-semibold">Dừng</span>
                             </button>
                         </div>
@@ -374,14 +404,25 @@
             </section>
 
             <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">
-                <div class="w-full max-w-xs h-2 rounded-full overflow-hidden bg-[color:var(--input-bg)]">
-                    <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
-                </div>
-                <p id="progress-text" class="text-text-secondary mt-4">PrAI đang lắng nghe và phân tích...</p>
-                <p id="fun-fact" class="text-sm text-text-secondary/70 mt-6 italic hidden"></p>
+                <p id="progress-text" class="text-text-secondary mt-4 text-lg"></p>
             </div>
 
             <section id="analysis-results" class="hidden space-y-6">
+                <!-- CẬP NHẬT: Thêm khu vực kết quả Shadowing -->
+                <!-- Shadowing Results -->
+                <div id="shadowing-analysis-container" class="hidden card-layer glass-card space-y-4">
+                    <h3 class="font-bold text-text-primary text-xl">Kết quả Shadowing</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="analysis-box text-center">
+                             <h4 class="font-semibold text-text-secondary mb-2">Điểm Nhịp điệu</h4>
+                             <p class="text-3xl font-bold" id="rhythm-score"></p>
+                        </div>
+                        <div class="analysis-box">
+                             <h4 class="font-semibold text-text-secondary mb-2">Nhận xét Tốc độ & Thời gian</h4>
+                             <p id="prosody-feedback" class="text-text-primary"></p>
+                        </div>
+                    </div>
+                </div>
                 <div class="card-layer glass-card space-y-6">
                     <h3 class="font-bold text-text-primary text-xl">Kết quả Phân tích</h3>
                     <div class="score-container">
@@ -401,6 +442,15 @@
                 <div id="advanced-analysis" class="hidden space-y-4 card-layer glass-card">
                     <h3 class="font-bold text-text-primary text-xl">Phân tích Nâng cao</h3>
                     <div class="space-y-4">
+                        <!-- CẬP NHẬT: Thêm khu vực biểu đồ ngữ điệu -->
+                        <!-- Intonation Chart Area -->
+                        <div class="analysis-box">
+                            <h4 class="font-semibold text-text-secondary mb-2">Biểu đồ Ngữ điệu</h4>
+                            <div class="h-40 rounded-md bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                                <canvas id="intonation-chart"></canvas>
+                                <p id="intonation-placeholder" class="text-text-secondary text-sm">Biểu đồ so sánh ngữ điệu sẽ sớm ra mắt!</p>
+                            </div>
+                        </div>
                         <div class="analysis-box">
                             <h4 class="font-semibold text-text-secondary mb-2">Ngữ điệu (Intonation)</h4>
                             <div id="intonation-analysis"></div>
@@ -473,6 +523,7 @@
         const recordControls = document.getElementById('record-controls');
         const uploadBtn = document.getElementById('upload-btn');
         const recordBtn = document.getElementById('record-btn');
+        const recordBtnText = recordBtn.querySelector('.text');
         const listenAgainBtn = document.getElementById('listen-again-btn');
         const randomPracticeBtn = document.getElementById('random-practice-btn');
         const controlsSection = document.getElementById('controls-section');
@@ -490,13 +541,11 @@
         const waveformEl = document.getElementById('waveform');
         const replayAudio = document.getElementById('replay-audio');
         const audioUploadInput = document.getElementById('audio-upload-input');
-        const funFactEl = document.getElementById('fun-fact');
         const showMoreBtn = document.getElementById('show-more-btn');
         const advancedAnalysis = document.getElementById('advanced-analysis');
         const intonationAnalysis = document.getElementById('intonation-analysis');
         const connectedSpeechAnalysis = document.getElementById('connected-speech-analysis');
         const progressText = document.getElementById('progress-text');
-        const progressBarInner = document.getElementById('progress-bar-inner');
         const charCounter = document.getElementById('char-counter');
         const thoughtGroupDisplay = document.getElementById('thought-group-display');
         const thoughtGroupInfo = document.getElementById('thought-group-info');
@@ -507,6 +556,17 @@
         const closeHistoryBtn = document.getElementById('close-history-btn');
         const historyList = document.getElementById('history-list');
         const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        // CẬP NHẬT: Khai báo các biến giao diện mới
+        const shadowingToggle = document.getElementById('shadowing-toggle');
+        const stressVisualizationContainer = document.getElementById('stress-visualization-container');
+        const stressVisualization = document.getElementById('stress-visualization');
+        const detailedIpaSection = document.getElementById('detailed-ipa-section');
+        const shadowingAnalysisContainer = document.getElementById('shadowing-analysis-container');
+        const rhythmScore = document.getElementById('rhythm-score');
+        const prosodyFeedback = document.getElementById('prosody-feedback');
+        const intonationChart = document.getElementById('intonation-chart');
+        const intonationPlaceholder = document.getElementById('intonation-placeholder');
 
         let isRecording = false;
         let mediaRecorder;
@@ -526,9 +586,11 @@
         let lastTTSAccentClear = '';
         let fetchIpaRequestID = 0;
         let analysisRequestID = 0;
-        let progressInterval;
-        let progressTextInterval;
+        let progressTextTimeout;
         let currentThoughtGroups = [];
+        // CẬP NHẬT: Thêm biến trạng thái
+        let isShadowingMode = false;
+
 
         // --- Caching Implementation ---
         const ipaCache = {
@@ -550,25 +612,13 @@
             }
         };
 
-
-        const funFacts = [
-            "'Ough' có thể được phát âm theo 10 cách khác nhau.",
-            "Âm câm (silent letters) là di tích lịch sử từ các ngôn ngữ khác.",
-            "'Pronunciation' (phát âm) trớ trêu lại là từ bị phát âm sai nhiều nhất.",
-            "Tiếng Anh có tới 20 âm nguyên âm theo hệ thống IPA, nhiều hơn hầu hết các ngôn ngữ khác.",
-            "'Strengths' là từ dài nhất chỉ có một nguyên âm.",
-        ];
-
         const practiceSentences = [
             "What are you doing?", "It's a piece of cake.", "I'll call you back later.",
             "How's it going?", "Can I have a bottle of water, please?", "It's a beautiful day, isn't it?",
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
         ];
 
-        // API KEY REMOVED FOR SECURITY
-        const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
-        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
-        // API URLS POINT TO THE PROXY FUNCTION
+        // API URLs point to the proxy function
         const TEXT_API_URL = `/api/proxy`;
         const TTS_API_URL = `/api/proxy`;
 
@@ -709,22 +759,41 @@
             clearInterval(ipaLoadingInterval);
         }
 
+        // CẬP NHẬT: Toàn bộ hàm displayIpaData
         function displayIpaData(data) {
             standardIPA = data.detailed;
             simpleIpaText.textContent = data.simple;
             detailedIpaText.textContent = data.detailed;
 
+            if (data.syllable_stress) {
+                stressVisualization.innerHTML = '';
+                data.syllable_stress.forEach(item => {
+                    const span = document.createElement('span');
+                    span.textContent = item.syllable + ' ';
+                    span.className = 'stress-syllable';
+                    if (item.is_stressed) {
+                        span.classList.add('stressed');
+                    }
+                    stressVisualization.appendChild(span);
+                });
+                stressVisualizationContainer.classList.remove('hidden');
+            } else {
+                stressVisualizationContainer.classList.add('hidden');
+            }
+
             if (data.thought_groups && textInput.value.trim().includes(' ')) {
                 currentThoughtGroups = data.thought_groups.groups;
                 displayThoughtGroups(data.thought_groups.groups, data.thought_groups.explanation);
+                detailedIpaSection.classList.remove('hidden');
             } else {
                 currentThoughtGroups = [textInput.value.trim()];
                 displayThoughtGroups([], '');
+                detailedIpaSection.classList.add('hidden');
             }
             controlsSection.classList.remove('hidden');
-            thoughtGroupInfo.style.display = textInput.value.trim().includes(' ') ? 'block' : 'none';
         }
 
+        // CẬP NHẬT: Toàn bộ hàm fetchAndDisplayIPA
         async function fetchAndDisplayIPA() {
             fetchIpaRequestID++;
             const currentRequestID = fetchIpaRequestID;
@@ -734,7 +803,7 @@
                 resetAll();
                 return false;
             }
-            
+
             const accent = accentSelect.value;
             const cacheKey = `ipa_${text}_${accent}`;
             const cachedData = ipaCache.get(cacheKey);
@@ -743,34 +812,27 @@
                 displayIpaData(cachedData);
                 return true;
             }
-            
-            const isSingleWord = !text.includes(' ');
-            let combinedPrompt;
 
-            if (isSingleWord) {
-                // --- FAST MODE PROMPT FOR SINGLE WORDS ---
-                combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
-            } else {
-                // --- DETAILED PROMPT FOR SENTENCES ---
-                combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
-                1. 'simple': A standard, citation-form IPA transcription.
-                2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
-                3. 'thought_groups': An object with two keys:
-                   a. 'groups': An array of strings representing the most natural, semantically-driven thought groups.
-                   b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping.
-                Respond with ONLY the JSON object.`;
-            }
-            
+            const isSingleWord = !text.includes(' ');
+
+            // CẬP NHẬT: Prompt để yêu cầu thêm syllable_stress và cải thiện giải thích thought_groups
+            const prompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
+            1. 'simple': A standard, citation-form IPA transcription.
+            2. 'detailed': A natural, connected speech transcription. For single words, this is the same as 'simple'. For sentences, apply liaison (‿) where phonetically correct, based on connected speech rules.
+            3. 'syllable_stress': An array of objects, where each object is { "syllable": "string", "is_stressed": boolean }.
+            4. 'thought_groups': ${isSingleWord ? 'null' : `An object with two keys: 
+                a. 'groups' (an array of strings representing the most natural thought groups).
+                b. 'explanation' (a concise, practical explanation in Vietnamese about why this grouping is natural, e.g., based on meaning or grammar. Also, mention that this is just one common way to group, and variations are possible).`}
+            Respond with ONLY the JSON object.`;
+
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
-            thoughtGroupDisplay.style.display = isSingleWord ? 'none' : 'block';
-            thoughtGroupInfo.style.display = isSingleWord ? 'none' : 'block';
-            
+
             startIpaLoadingAnimation();
-            
+
             try {
                 const payload = { 
-                    contents: [{ parts: [{ text: combinedPrompt }] }],
+                    contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: { responseMimeType: "application/json" }
                 };
 
@@ -778,7 +840,7 @@
                     method: 'POST', 
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Target-API': 'text' // Add header for proxy
+                        'X-Target-API': 'text' 
                     }, 
                     body: JSON.stringify(payload) 
                 });
@@ -788,14 +850,9 @@
                 const resultText = response.candidates[0].content.parts[0].text;
                 let resultJson = JSON.parse(resultText);
 
-                // If it was a single word, the detailed IPA is the same as simple
-                if (isSingleWord) {
-                    resultJson.detailed = resultJson.simple;
-                }
-
-                ipaCache.set(cacheKey, resultJson); // Cache the new result
+                ipaCache.set(cacheKey, resultJson);
                 displayIpaData(resultJson);
-                
+
                 return true;
             } catch (error) {
                 if (currentRequestID === fetchIpaRequestID) {
@@ -847,13 +904,14 @@
 
             if (cachedAudio && cachedText === text && cachedAccent === accent) {
                 cachedAudio.play();
-                return;
+                return cachedAudio;
             }
 
             const ipaFetched = await fetchAndDisplayIPA();
-            if (!ipaFetched) return;
+            if (!ipaFetched) return null;
 
             setButtonLoading(button, loader, true);
+            let audioToReturn = null;
             try {
                 let prompt;
                 if (isNatural) {
@@ -870,14 +928,13 @@
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: { responseModalities: ["AUDIO"] },
-                    model: TTS_MODEL
                 };
 
                 const data = await fetchWithBackoff(TTS_API_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Target-API': 'tts' // Add header for proxy
+                        'X-Target-API': 'tts'
                     },
                     body: JSON.stringify(payload)
                 });
@@ -894,6 +951,7 @@
                     const audioUrl = URL.createObjectURL(wavBlob);
                     const audio = new Audio(audioUrl);
                     audio.play();
+                    audioToReturn = audio;
 
                     if(isNatural) {
                         [lastTTSAudioNatural, lastTTSTextNatural, lastTTSAccentNatural] = [audio, text, accent];
@@ -907,57 +965,40 @@
                 handleApiError(error);
             } finally {
                 setButtonLoading(button, loader, false);
+                return audioToReturn;
             }
         }
 
-        function startProgressSimulation() {
-            if (!progressBarInner) return;
-            
-            let width = 0;
-            progressBarInner.style.width = '0%';
-            
-            clearInterval(progressInterval);
-
-            progressInterval = setInterval(() => {
-                if (width < 95) {
-                    width += Math.random() * 2;
-                } else {
-                    clearInterval(progressInterval);
-                }
-                progressBarInner.style.width = Math.min(width, 95) + '%';
-            }, 100);
-        }
-
-        function stopProgressSimulation() {
-            clearInterval(progressInterval);
-            if (progressBarInner) {
-                progressBarInner.style.width = '100%';
-            }
-        }
-
+        // CẬP NHẬT: Hoạt ảnh loading chỉ chạy 1 lần
         function startProgressTextAnimation() {
             const steps = [
-                "Okie, PrAI đã nhận được bản ghi âm của bạn...",
-                "Đang đang phiên âm giọng nói của bạn!",
+                "PrAI đã nhận được bản ghi âm của bạn...",
+                "Đang phiên âm giọng nói của bạn!",
                 "So sánh từng âm một với giọng chuẩn...",
                 "Kiểm tra ngữ điệu và cả nhịp điệu...",
                 "Xong rồi! Cùng xem kết quả tuyệt vời của bạn nhé!"
             ];
             let currentStep = 0;
-            progressText.textContent = steps[currentStep];
             
-            clearInterval(progressTextInterval);
-            progressTextInterval = setInterval(() => {
-                currentStep = (currentStep + 1) % steps.length;
-                progressText.textContent = steps[currentStep];
-            }, 2500);
+            clearTimeout(progressTextTimeout);
+
+            function showNextStep() {
+                if (currentStep < steps.length) {
+                    progressText.textContent = steps[currentStep];
+                    currentStep++;
+                    if (currentStep < steps.length) { // Lên lịch cho bước tiếp theo nếu chưa phải bước cuối
+                        progressTextTimeout = setTimeout(showNextStep, 1800);
+                    }
+                }
+            }
+            showNextStep();
         }
 
         function stopProgressTextAnimation() {
-            clearInterval(progressTextInterval);
+            clearTimeout(progressTextTimeout);
         }
 
-
+        // CẬP NHẬT: Toàn bộ hàm analyzeAudio
         async function analyzeAudio(audioBlob) {
             const currentAnalysisID = analysisRequestID;
 
@@ -970,71 +1011,74 @@
                 showMessage('Không thể phân tích vì không lấy được phiên âm chuẩn.', 'error');
                 return;
             }
-            
+
             loader.classList.remove('hidden');
             startProgressTextAnimation();
-            startProgressSimulation();
-            funFactEl.textContent = `💡 ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
-            funFactEl.classList.remove('hidden');
-            
+
             const reader = new FileReader();
             reader.readAsDataURL(lastRecordingBlob);
             reader.onloadend = async () => {
-                if (currentAnalysisID !== analysisRequestID) {
-                    console.log(`Analysis request ${currentAnalysisID} cancelled by new request ${analysisRequestID}.`);
-                    loader.classList.add('hidden');
-                    funFactEl.classList.add('hidden');
-                    stopProgressSimulation();
-                    stopProgressTextAnimation();
-                    return; 
-                }
+                if (currentAnalysisID !== analysisRequestID) return;
 
                 const base64Audio = reader.result.split(',')[1];
-                
-                const prompt = {
-                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI đồng cảm và thấu hiểu. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt. Mục tiêu của bạn là vừa sửa lỗi một cách nghiêm khắc, vừa là một người hướng dẫn động viên, khích lệ.",
-                    "context": {
-                        "learner_profile": "Người học là người Việt, thường gặp các vấn đề sau: bỏ âm cuối, nhầm lẫn các cặp nguyên âm ngắn/dài (vd: /ɪ/ và /iː/), không phân biệt âm vô thanh/hữu thanh, thay thế các âm khó (/θ/, /ð/) bằng âm tương tự trong tiếng Việt.",
-                        "evaluation_philosophy": "Triết lý chấm điểm của bạn là phân biệt rõ ràng giữa 'Lỗi nghiêm trọng' (ảnh hưởng đến việc người nghe có hiểu hay không) và 'Điểm chưa hoàn hảo' (có thể cải thiện nhưng không gây hiểu nhầm). Hãy luôn dùng ngôn ngữ tích cực. Ví dụ, thay vì nói 'Sai rồi', hãy nói 'Bạn đã làm rất tốt phần đầu của âm này! Để hoàn thiện hơn, hãy thử...'",
-                        "text_to_pronounce": textInput.value.trim(),
-                        "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
-                        "standard_ipa": standardIPA,
-                    },
-                    "task": "Phân tích file âm thanh và so sánh với phiên âm chuẩn. Sau đó, tính điểm 'overall_score' dựa trên HỆ THỐNG TRỌNG SỐ LỖI sau đây:",
-                    "scoring_system": {
-                        "base_score": 100,
-                        "error_weights": [
-                            { 
-                                "type": "Lỗi nghiêm trọng (Critical Error)",
-                                "deduction": "Trừ 10-15 điểm/lỗi",
-                                "examples": ["Bỏ âm cuối (vd: 'like' đọc thành /laɪ/)", "Sai hoàn toàn một nguyên âm chính (vd: 'ship' /ʃɪp/ đọc thành /ʃiːp/)", "Sai trọng âm của từ (vd: nhấn âm 2 từ 'happy')"]
-                            },
-                            {
-                                "type": "Lỗi trung bình (Medium Error)",
-                                "deduction": "Trừ 5-8 điểm/lỗi",
-                                "examples": ["Thay thế các phụ âm khó nhưng vẫn có thể hiểu được (vd: /θ/ -> /s/, /ð/ -> /d/, /tʃ/ -> /s/)", "Nguyên âm hơi lệch nhưng không biến thành một nguyên âm khác hoàn toàn."]
-                            },
-                            {
-                                "type": "Lỗi nhỏ (Minor Error)",
-                                "deduction": "Trừ 1-3 điểm/lỗi",
-                                "examples": ["Độ dài nguyên âm chưa hoàn hảo (hơi ngắn hoặc hơi dài)", "Âm cuối bật ra hơi yếu nhưng vẫn có", "Ngữ điệu chưa tự nhiên nhưng không sai."]
+
+                let prompt;
+                if (isShadowingMode) {
+                    prompt = {
+                        "role": "Bạn là PrAI, chuyên gia phân tích nhịp điệu và tốc độ nói.",
+                        "context": { "analysis_mode": "Shadowing", "text_to_pronounce": textInput.value.trim(), "standard_ipa": standardIPA },
+                        "task": "Thực hiện phân tích 'shadowing'. So sánh âm thanh của người dùng với âm thanh mẫu (dựa trên standard_ipa) trên các phương diện: 1. Độ chính xác âm vị (tính điểm overall_score). 2. Nhịp điệu và Tốc độ (tính điểm rhythm_score và đưa ra nhận xét).",
+                        "output_format_instruction": {
+                            "format": "JSON",
+                            "schema": {
+                                "speech_detected": "boolean", "overall_score": "number", "phoneme_analysis": "[...]", "stress_analysis": "{...}",
+                                "prosody_analysis": {
+                                    "rhythm_score": "number (0-100)",
+                                    "pace_feedback": "string (vd: 'Tốc độ của bạn gần như hoàn hảo so với mẫu.')",
+                                    "timing_feedback": "string (vd: 'Bạn bắt đầu hơi chậm khoảng 0.2 giây so với mẫu, hãy cố gắng phản xạ nhanh hơn một chút.')"
+                                }
                             }
-                        ],
-                        "instruction": "Hãy tính điểm cuối cùng bằng cách lấy 100 trừ đi tổng điểm của các lỗi đã được phân loại. Hãy công bằng và chính xác."
-                    },
-                    "output_format_instruction": {
-                        "format": "JSON",
-                        "schema": {
-                            "speech_detected": "boolean",
-                            "overall_score": "number | null",
-                            "user_ipa": "string | null",
-                            "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string | null\" } ] | null",
-                            "stress_analysis": "{ \"correctly_placed\": \"boolean\", \"feedback\": \"string\" } | null",
-                            "advanced_analysis?": "{ \"intonation\": { \"feedback\": \"string\" }, \"connected_speech\": [ { \"type\": \"string\", \"rule\": \"string\", \"example\": \"string\", \"explanation\": \"string\", \"feedback\": \"string\" } ] } | null",
-                            "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                         }
-                    }
-                };
+                    };
+                } else {
+                    // CẬP NHẬT: Prompt phân tích nối âm chi tiết hơn
+                    prompt = {
+                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI cực kỳ logic, đồng cảm và thấu hiểu, với kiến thức sâu rộng về các quy tắc nối âm trong tiếng Anh.",
+                        "context": {
+                            "learner_profile": "Người học là người Việt...",
+                            "evaluation_philosophy": "Triết lý của bạn là chấm điểm công bằng...",
+                            "text_to_pronounce": textInput.value.trim(), "target_accent": accentSelect.value, "standard_ipa": standardIPA,
+                        },
+                        "task": "Hãy thực hiện một quy trình phân tích gồm 5 bước, đặc biệt chú trọng vào việc giải thích các hiện tượng nối âm.",
+                        "internal_thought_process": [
+                            "Bước 1 (Transcription): Chuyển giọng nói thành IPA.",
+                            "Bước 2 (Alignment & Error Identification): So sánh và phân loại lỗi.",
+                            "Bước 3 (Score Calculation): Bắt đầu với 100 điểm và trừ điểm.",
+                            "Bước 4 (Feedback Generation): Viết phản hồi.",
+                            "Bước 5 (Final Output): Tạo JSON."
+                        ],
+                        "scoring_system": {
+                            "base_score": 100,
+                            "error_weights": [
+                                { "type": "Lỗi nghiêm trọng", "deduction": "Trừ 10-15 điểm/lỗi", "examples": ["Bỏ âm cuối", "Sai nguyên âm chính", "Sai trọng âm"] },
+                                { "type": "Lỗi trung bình", "deduction": "Trừ 5-8 điểm/lỗi", "examples": ["Thay thế phụ âm khó (vd: /ð/ -> /d/)", "Nguyên âm hơi lệch"] },
+                                { "type": "Lỗi nhỏ", "deduction": "Trừ 1-3 điểm/lỗi", "examples": ["Độ dài nguyên âm chưa hoàn hảo", "Âm cuối yếu"] }
+                            ],
+                        },
+                        "output_format_instruction": {
+                            "format": "JSON",
+                            "schema": {
+                                "speech_detected": "boolean", "overall_score": "number | null", "user_ipa": "string | null",
+                                "phoneme_analysis": "[...]", "stress_analysis": "{...}",
+                                "advanced_analysis?": {
+                                    "intonation": { "feedback": "string" },
+                                    "connected_speech": "[ { \"type\": \"string (vd: Nối Phụ âm với Nguyên âm)\", \"rule\": \"string (Tên quy tắc, vd: Catenation C-V)\", \"example\": \"string (Ví dụ cụ thể, vd: 'an apple' -> /əˈnæpəl/)\", \"explanation\": \"string (Giải thích ngắn gọn BẰNG TIẾNG VIỆT tại sao lại có hiện tượng này, vd: 'Phụ âm /n/ ở cuối từ 'an' được nối sang nguyên âm /æ/ ở đầu từ 'apple' để tạo sự liền mạch, tránh ngắt quãng.')\", \"feedback\": \"string (Nhận xét về việc người dùng có thực hiện được nối âm này không)\" } ]"
+                                },
+                                "practice_suggestions": "{...}"
+                            }
+                        }
+                    };
+                }
 
                 const payload = {
                     contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
@@ -1046,36 +1090,28 @@
                         method: 'POST', 
                         headers: { 
                             'Content-Type': 'application/json',
-                            'X-Target-API': 'text' // Add header for proxy
+                            'X-Target-API': 'text'
                         }, 
                         body: JSON.stringify(payload) 
                     });
-                    
-                    if (currentAnalysisID !== analysisRequestID) {
-                        console.log(`Analysis request ${currentAnalysisID} completed, but a newer request is active. Discarding results.`);
-                        return;
-                    }
+
+                    if (currentAnalysisID !== analysisRequestID) return;
 
                     const resultText = data.candidates[0].content.parts[0].text;
                     const resultJson = JSON.parse(resultText);
                     displayResults(resultJson);
                 } catch (error) {
-                    if (currentAnalysisID === analysisRequestID) {
-                        handleApiError(error);
-                    }
+                    if (currentAnalysisID === analysisRequestID) handleApiError(error);
                 } finally {
                     if (currentAnalysisID === analysisRequestID) {
-                        stopProgressSimulation();
                         stopProgressTextAnimation();
-                        setTimeout(() => {
-                            loader.classList.add('hidden');
-                            funFactEl.classList.add('hidden');
-                        }, 500);
+                        loader.classList.add('hidden');
                     }
                 }
             };
         }
 
+        // CẬP NHẬT: Toàn bộ hàm displayResults
         function displayResults(data) {
             if (!data.speech_detected || data.overall_score === null) {
                 showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
@@ -1084,12 +1120,18 @@
             }
 
             saveToHistory(textInput.value.trim(), data.overall_score);
-
-            const scoreContainer = document.querySelector('.score-container');
             analysisResults.classList.remove('hidden');
 
-            // Animate score
-            let startScore = 0;
+            // Hiển thị kết quả shadowing nếu có
+            if (data.prosody_analysis) {
+                shadowingAnalysisContainer.classList.remove('hidden');
+                rhythmScore.textContent = `${data.prosody_analysis.rhythm_score}/100`;
+                prosodyFeedback.textContent = `${data.prosody_analysis.pace_feedback} ${data.prosody_analysis.timing_feedback}`;
+            } else {
+                shadowingAnalysisContainer.classList.add('hidden');
+            }
+
+            const scoreContainer = document.querySelector('.score-container');
             const endScore = data.overall_score;
             const duration = 1000;
             const startTime = performance.now();
@@ -1107,32 +1149,20 @@
             }
             requestAnimationFrame(animate);
 
-
             scoreContainer.classList.remove('score-high', 'score-medium', 'score-low');
-            
-            if (data.overall_score > 85) {
-                scoreContainer.classList.add('score-high');
-            } else if (data.overall_score > 70) {
-                scoreContainer.classList.add('score-medium');
-            } else {
-                scoreContainer.classList.add('score-low');
-            }
-            
+            if (data.overall_score > 85) scoreContainer.classList.add('score-high');
+            else if (data.overall_score > 70) scoreContainer.classList.add('score-medium');
+            else scoreContainer.classList.add('score-low');
+
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
                 data.phoneme_analysis.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
                     phonemeEl.className = 'phoneme has-tooltip';
-                    
-                    if (p.status === 'correct') { 
-                        phonemeEl.classList.add('status-correct');
-                    } else if (p.status === 'approximate') { 
-                        phonemeEl.classList.add('status-approximate');
-                    } else { 
-                        phonemeEl.classList.add('status-incorrect');
-                    }
-
+                    if (p.status === 'correct') phonemeEl.classList.add('status-correct');
+                    else if (p.status === 'approximate') phonemeEl.classList.add('status-approximate');
+                    else phonemeEl.classList.add('status-incorrect');
                     if (p.feedback) {
                         const tooltip = document.createElement('div');
                         tooltip.className = 'tooltip';
@@ -1145,51 +1175,42 @@
 
             if (data.stress_analysis) {
                 stressAnalysis.innerHTML = data.stress_analysis.feedback;
-                stressAnalysis.classList.toggle('text-green-400', data.stress_analysis.correctly_placed);
-                stressAnalysis.classList.toggle('text-red-400', !data.stress_analysis.correctly_placed);
             }
 
             if (data.advanced_analysis) {
+                advancedAnalysis.classList.remove('hidden');
                 intonationAnalysis.innerHTML = data.advanced_analysis.intonation.feedback;
                 connectedSpeechAnalysis.innerHTML = '';
                 if (data.advanced_analysis.connected_speech && data.advanced_analysis.connected_speech.length > 0) {
                     data.advanced_analysis.connected_speech.forEach(item => {
                         const itemEl = document.createElement('div');
-                        itemEl.className = 'p-3 rounded-md';
+                        itemEl.className = 'p-3 rounded-md bg-black/5 dark:bg-white/5';
                         itemEl.innerHTML = `
-                            <h5 class="font-semibold text-accent-primary">${item.type}</h5>
-                            <p class="text-sm mt-1"><strong class="text-text-secondary">Quy tắc:</strong> ${item.rule}</p>
-                            <p class="text-sm"><strong class="text-text-secondary">Ví dụ:</strong> <span class="text-accent-warning ipa-text">${item.example}</span></p>
-                            <div class="mt-2 p-3 rounded-md bg-black/5 dark:bg-white/5 text-sm border-l-4 border-accent-primary/50">
+                            <h5 class="font-semibold text-accent-primary">${item.type} (${item.rule})</h5>
+                            <p class="text-sm mt-1"><strong class="text-text-secondary">Ví dụ:</strong> <span class="ipa-text text-amber-600 dark:text-amber-400">${item.example}</span></p>
+                            <p class="text-sm mt-1"><strong class="text-text-secondary">Giải thích:</strong> ${item.explanation}</p>
+                            <div class="mt-2 text-sm">
                                 <strong class="text-text-secondary">Nhận xét:</strong> ${item.feedback}
                             </div>
                         `;
                         connectedSpeechAnalysis.appendChild(itemEl);
                     });
                 } else {
-                    connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary">Không phát hiện hiện tượng nối âm nổi bật trong câu này.</p>';
+                     connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary">Không phát hiện hiện tượng nối âm nổi bật.</p>';
                 }
                 showMoreBtn.classList.remove('hidden');
             } else {
+                advancedAnalysis.classList.add('hidden');
                 showMoreBtn.classList.add('hidden');
             }
 
             if (data.practice_suggestions) {
                 suggestionLinks.innerHTML = '';
                 const { youglish_us, youglish_uk } = data.practice_suggestions;
-                
                 const usLink = document.createElement('a');
-                usLink.href = youglish_us;
-                usLink.target = '_blank';
-                usLink.className = 'btn btn-primary flex-1';
-                usLink.textContent = 'Giọng Mỹ (YouGlish)';
-                
+                usLink.href = youglish_us; usLink.target = '_blank'; usLink.className = 'btn btn-primary flex-1'; usLink.textContent = 'Giọng Mỹ (YouGlish)';
                 const ukLink = document.createElement('a');
-                ukLink.href = youglish_uk;
-                ukLink.target = '_blank';
-                ukLink.className = 'btn btn-primary flex-1';
-                ukLink.textContent = 'Giọng Anh (YouGlish)';
-
+                ukLink.href = youglish_uk; ukLink.target = '_blank'; ukLink.className = 'btn btn-primary flex-1'; ukLink.textContent = 'Giọng Anh (YouGlish)';
                 suggestionLinks.appendChild(usLink);
                 suggestionLinks.appendChild(ukLink);
                 practiceSuggestions.classList.remove('hidden');
@@ -1204,6 +1225,7 @@
             showMoreBtn.classList.add('hidden');
             advancedAnalysis.classList.add('hidden');
             showMoreBtn.textContent = 'Thông tin thêm';
+            shadowingAnalysisContainer.classList.add('hidden');
         }
 
         function resetAll() {
@@ -1220,27 +1242,42 @@
             displayThoughtGroups([], '');
         }
 
-        async function handleRecord() {
+        // CẬP NHẬT: Thêm hàm mới
+        async function startShadowingFlow() {
+            const audio = await handleListen('natural', listenNaturalBtn, listenNaturalLoader);
+            if (audio) {
+                audio.onended = () => {
+                    // Tự động bắt đầu ghi âm sau khi TTS kết thúc
+                    setTimeout(() => {
+                         handleRecord(true); // Truyền cờ để chỉ ra đây là ghi âm shadowing
+                    }, 100);
+                };
+            }
+        }
+
+        // CẬP NHẬT: Toàn bộ hàm handleRecord
+        async function handleRecord(isShadowingRecord = false) {
             if (isRecording) {
                 mediaRecorder.stop();
                 return;
             }
-            
-            analysisRequestID++;
 
+            if (isShadowingMode && !isShadowingRecord) {
+                startShadowingFlow();
+                return;
+            }
+
+            analysisRequestID++;
             if (!textInput.value.trim()) {
                 showMessage('Vui lòng nhập từ để ghi âm và phân tích.', 'warning');
                 return;
             }
-            
-            // --- Preserve State Change ---
-            // Call resetAnalysisOnly instead of resetAll to keep the IPA
+
             resetAnalysisOnly(); 
             listenAgainBtn.disabled = true;
             lastRecordingBlob = null;
-            
+
             try {
-                // Check if IPA is ready before starting recording
                 if (!standardIPA) {
                     const ipaReady = await fetchAndDisplayIPA();
                     if (!ipaReady) {
@@ -1259,12 +1296,12 @@
                     isRecording = false;
                     stopWaveform();
                     stream.getTracks().forEach(track => track.stop());
-                    
-                    const recordBtnText = recordBtn.querySelector('.text');
+
                     recordBtnText.textContent = '';
                     recordBtnText.classList.add('hidden');
                     recordBtn.querySelector('.icon').classList.remove('hidden');
                     recordBtn.classList.remove('is-recording');
+                    updateRecordButtonText();
 
                     if (soundDetected) {
                         analyzeAudio(new Blob(audioChunks, { type: 'audio/webm' }));
@@ -1274,7 +1311,6 @@
                 };
                 mediaRecorder.start();
                 startWaveform(stream);
-                const recordBtnText = recordBtn.querySelector('.text');
                 recordBtnText.textContent = 'Dừng';
                 recordBtnText.classList.remove('hidden');
                 recordBtn.querySelector('.icon').classList.add('hidden');
@@ -1282,6 +1318,16 @@
             } catch (error) {
                 console.error("Error accessing microphone:", error);
                 showMessage('Không thể truy cập micro. Vui lòng cấp quyền và thử lại.', 'error');
+            }
+        }
+
+        // CẬP NHẬT: Thêm hàm mới
+        function updateRecordButtonText() {
+            const icon = recordBtn.querySelector('.icon');
+            if (isShadowingMode) {
+                icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/><path d="M12 12 8 8"/><path d="m8 12 4 4"/></svg>`;
+            } else {
+                icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>`;
             }
         }
 
@@ -1461,7 +1507,10 @@
             transcribeBtn.addEventListener('click', () => fetchAndDisplayIPA());
             listenNaturalBtn.addEventListener('click', (e) => handleListen('natural', listenNaturalBtn, listenNaturalLoader));
             listenClearBtn.addEventListener('click', (e) => handleListen('clear', listenClearBtn, listenClearLoader));
-            recordBtn.addEventListener('click', handleRecord);
+            
+            // CẬP NHẬT: Gắn sự kiện cho nút ghi âm
+            recordBtn.addEventListener('click', () => handleRecord(false));
+            
             listenAgainBtn.addEventListener('click', handleListenAgain);
             showMoreBtn.addEventListener('click', toggleAdvancedAnalysis);
             randomPracticeBtn.addEventListener('click', handleRandomPractice);
@@ -1511,8 +1560,6 @@
                             showMessage('Vui lòng nhập văn bản tương ứng với file âm thanh trước.', 'warning');
                             return;
                         }
-                        // --- Preserve State Change ---
-                        // Call resetAnalysisOnly to keep the IPA if it exists
                         resetAnalysisOnly(); 
                         let ipaReady = !!standardIPA;
                         if (!ipaReady) {
@@ -1537,6 +1584,13 @@
                     event.preventDefault();
                     fetchAndDisplayIPA();
                 }
+            });
+
+            // CẬP NHẬT: Gắn sự kiện cho nút gạt Shadowing
+            shadowingToggle.addEventListener('click', () => {
+                isShadowingMode = !isShadowingMode;
+                shadowingToggle.classList.toggle('active', isShadowingMode);
+                updateRecordButtonText();
             });
         }
 
