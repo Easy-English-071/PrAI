@@ -283,7 +283,7 @@
 
         .intonation-chart-container {
             width: 100%;
-            height: 150px;
+            height: 180px; /* Increased height for stressed words */
             background-color: var(--input-bg);
             border-radius: var(--radius-sm);
             padding: 0.5rem;
@@ -587,9 +587,6 @@
         let lastRecordingBlob = null;
         let soundDetected = false;
         let ipaLoadingInterval;
-        let lastTTSAudioNatural = null;
-        let lastTTSTextNatural = '';
-        let lastTTSAccentNatural = '';
         let lastTTSAudioClear = null;
         let lastTTSTextClear = '';
         let lastTTSAccentClear = '';
@@ -598,7 +595,16 @@
         let progressInterval;
         let progressTextTimeoutIds = [];
         let currentThoughtGroups = [];
-        let isPrefetching = false;
+        
+        // --- NEW: Model Pronunciation Data Cache ---
+        let modelPronunciationData = {
+            text: '',
+            accent: '',
+            audio: null,
+            pitchContour: [],
+            stressedWords: []
+        };
+
 
         // --- Caching Implementation ---
         const ipaCache = {
@@ -795,52 +801,106 @@
             thoughtGroupInfo.style.display = textInput.value.trim().includes(' ') ? 'block' : 'none';
         }
         
-        async function prefetchNaturalTTS(text, accent) {
-            if (isPrefetching) return;
-            if (lastTTSTextNatural === text && lastTTSAccentNatural === accent && lastTTSAudioNatural) return;
+        async function prefetchModelPronunciation(text, accent) {
+            // If model is already cached for this text/accent, do nothing.
+            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) {
+                return;
+            }
         
-            isPrefetching = true;
+            // Reset cache
+            modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] };
+        
             try {
-                let prompt;
+                // Step 1: Generate Audio using TTS
+                let promptTTS;
                 if (!text.includes(' ') || currentThoughtGroups.length <= 1) {
-                    prompt = `Read ONLY the following text in ${accent}. Pronounce it naturally and fluently. Text: ${text}`;
+                    promptTTS = `Read ONLY the following text in ${accent}. Pronounce it naturally and fluently. Text: ${text}`;
                 } else {
                     const textWithPauses = currentThoughtGroups.join(" | ");
-                    prompt = `Read ONLY the following text in ${accent}. Do not read any instructions. The pipe symbol "|" indicates a slight, natural hesitation between thought groups, not a full stop. The speech should flow smoothly and connectively within each group. Text: ${textWithPauses}`;
+                    promptTTS = `Read ONLY the following text in ${accent}. Do not read any instructions. The pipe symbol "|" indicates a slight, natural hesitation between thought groups. Text: ${textWithPauses}`;
                 }
-        
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
+                const payloadTTS = {
+                    contents: [{ parts: [{ text: promptTTS }] }],
                     generationConfig: { responseModalities: ["AUDIO"] },
                     model: TTS_MODEL
                 };
-        
-                const data = await fetchWithBackoff(TTS_API_URL, {
+                const dataTTS = await fetchWithBackoff(TTS_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payloadTTS)
                 });
         
-                const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
-                if (audioPart && audioPart.inlineData) {
-                    const audioData = audioPart.inlineData.data;
-                    const mimeType = audioPart.inlineData.mimeType;
-                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    const audio = new Audio(audioUrl);
-                    
-                    [lastTTSAudioNatural, lastTTSTextNatural, lastTTSAccentNatural] = [audio, text, accent];
-                    console.log("TTS audio prefetched successfully.");
-                }
+                const audioPart = dataTTS?.candidates?.[0]?.content?.parts?.[0];
+                if (!audioPart || !audioPart.inlineData) throw new Error("TTS audio data not received.");
+                
+                const audioData = audioPart.inlineData.data;
+                const mimeType = audioPart.inlineData.mimeType;
+                const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                const pcmData = base64ToArrayBuffer(audioData);
+                const pcm16 = new Int16Array(pcmData);
+                const wavBlob = pcmToWav(pcm16, sampleRate);
+                const audioUrl = URL.createObjectURL(wavBlob);
+                modelPronunciationData.audio = new Audio(audioUrl);
+        
+                // Step 2: Analyze the generated audio for pitch and stress
+                const promptAnalysis = `Analyze the provided audio of the sentence "${text}". Your task is to extract a scientifically accurate, undulating pitch contour and identify the stressed words. The output must be a single JSON object.`;
+                const payloadAnalysis = {
+                    contents: [{ role: "user", parts: [
+                        { text: promptAnalysis }, 
+                        { inlineData: { mimeType: "audio/wav", data: await blobToBase64(wavBlob) } }
+                    ] }],
+                    generationConfig: { responseMimeType: "application/json", responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "pitch_contour": { 
+                                type: "ARRAY",
+                                items: { type: "NUMBER" },
+                                description: "An array of 40-50 normalized (0-100) pitch points, reflecting natural rises on stressed words and falls at sentence ends."
+                            },
+                            "stressed_words": {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        "word": { type: "STRING" },
+                                        "time_stamp_normalized": { type: "NUMBER", description: "A value from 0.0 to 1.0 indicating the word's position in the sentence." }
+                                    }
+                                }
+                            }
+                        }
+                    }}
+                };
+        
+                const dataAnalysis = await fetchWithBackoff(TEXT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' },
+                    body: JSON.stringify(payloadAnalysis)
+                });
+        
+                const resultText = dataAnalysis.candidates[0].content.parts[0].text;
+                const resultJson = JSON.parse(resultText);
+                
+                modelPronunciationData.pitchContour = resultJson.pitch_contour || [];
+                modelPronunciationData.stressedWords = resultJson.stressed_words || [];
+        
+                console.log("Model pronunciation data prefetched and cached successfully.", modelPronunciationData);
+        
             } catch (error) {
-                console.error("TTS prefetch failed:", error);
-            } finally {
-                isPrefetching = false;
+                console.error("Model pronunciation prefetch failed:", error);
+                // Reset cache on failure
+                modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
             }
+        }
+        
+        // Helper to convert blob to base64 for the analysis prompt
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
 
 
@@ -860,10 +920,7 @@
 
             if (cachedData) {
                 displayIpaData(cachedData);
-                // Prefetch audio for cached results as well
-                if (!text.includes(' ')) {
-                   prefetchNaturalTTS(text, accent);
-                }
+                prefetchModelPronunciation(text, accent); // Prefetch model data
                 return true;
             }
             
@@ -916,9 +973,8 @@
                 ipaCache.set(cacheKey, resultJson);
                 displayIpaData(resultJson);
                 
-                if (!isSingleWord) {
-                    prefetchNaturalTTS(text, accent);
-                }
+                // Start prefetching model pronunciation data right after getting IPA
+                prefetchModelPronunciation(text, accent);
                 
                 return true;
             } catch (error) {
@@ -961,72 +1017,63 @@
             }
             
             const isNatural = type === 'natural';
-            
-            let cachedAudio, cachedText, cachedAccent;
+
             if (isNatural) {
-                [cachedAudio, cachedText, cachedAccent] = [lastTTSAudioNatural, lastTTSTextNatural, lastTTSAccentNatural];
+                // Use the cached model voice
+                if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) {
+                    modelPronunciationData.audio.currentTime = 0;
+                    modelPronunciationData.audio.play();
+                    return;
+                }
             } else {
-                [cachedAudio, cachedText, cachedAccent] = [lastTTSAudioClear, lastTTSTextClear, lastTTSAccentClear];
+                // Handle clear voice (which is not pre-cached)
+                if (lastTTSTextClear === text && lastTTSAccentClear === accent && lastTTSAudioClear) {
+                    lastTTSAudioClear.play();
+                    return;
+                }
             }
-
-            if (cachedAudio && cachedText === text && cachedAccent === accent) {
-                cachedAudio.play();
-                return;
-            }
-
-            const ipaFetched = await fetchAndDisplayIPA();
-            if (!ipaFetched) return;
-
+            
             setButtonLoading(button, loader, true);
             try {
-                let prompt;
-                if (isNatural) {
-                    if (!text.includes(' ') || currentThoughtGroups.length <= 1) {
-                        prompt = `Read ONLY the following text in ${accent}. Pronounce it naturally and fluently. Text: ${text}`;
-                    } else {
-                        const textWithPauses = currentThoughtGroups.join(" | ");
-                        prompt = `Read ONLY the following text in ${accent}. Do not read any instructions. The pipe symbol "|" indicates a slight, natural hesitation between thought groups, not a full stop. The speech should flow smoothly and connectively within each group. Text: ${textWithPauses}`;
-                    }
-                } else { // Clear
-                    prompt = `Say very clearly, with only a slight pause between each word, in ${accent}: ${text}`;
-                }
-
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseModalities: ["AUDIO"] },
-                    model: TTS_MODEL
-                };
-
-                const data = await fetchWithBackoff(TTS_API_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Target-API': 'tts'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
-                if (audioPart && audioPart.inlineData) {
-                    const audioData = audioPart.inlineData.data;
-                    const mimeType = audioPart.inlineData.mimeType;
-                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    const audio = new Audio(audioUrl);
-                    audio.play();
-
-                    if(isNatural) {
-                        [lastTTSAudioNatural, lastTTSTextNatural, lastTTSAccentNatural] = [audio, text, accent];
-                    } else {
-                        [lastTTSAudioClear, lastTTSTextClear, lastTTSAccentClear] = [audio, text, accent];
-                    }
-                } else {
-                    throw new Error("Không nhận được dữ liệu âm thanh hợp lệ.");
-                }
+                 // If we are here, it means the audio was not cached, so we fetch it.
+                 let prompt;
+                 if (isNatural) {
+                     // This is a fallback if prefetching failed or is in progress
+                     await prefetchModelPronunciation(text, accent);
+                     if (modelPronunciationData.audio) {
+                         modelPronunciationData.audio.currentTime = 0;
+                         modelPronunciationData.audio.play();
+                     } else {
+                         throw new Error("Không thể tạo giọng đọc mẫu.");
+                     }
+                 } else { // Clear voice logic remains the same
+                     prompt = `Say very clearly, with only a slight pause between each word, in ${accent}: ${text}`;
+                     const payload = {
+                         contents: [{ parts: [{ text: prompt }] }],
+                         generationConfig: { responseModalities: ["AUDIO"] },
+                         model: TTS_MODEL
+                     };
+                     const data = await fetchWithBackoff(TTS_API_URL, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
+                         body: JSON.stringify(payload)
+                     });
+                     const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
+                     if (audioPart && audioPart.inlineData) {
+                         const audioData = audioPart.inlineData.data;
+                         const mimeType = audioPart.inlineData.mimeType;
+                         const sampleRate = mimeType.match(/rate=(\d+)/) ? parseInt(mimeType.match(/rate=(\d+)/)[1], 10) : 24000;
+                         const pcmData = base64ToArrayBuffer(audioData);
+                         const pcm16 = new Int16Array(pcmData);
+                         const wavBlob = pcmToWav(pcm16, sampleRate);
+                         const audioUrl = URL.createObjectURL(wavBlob);
+                         const audio = new Audio(audioUrl);
+                         audio.play();
+                         [lastTTSAudioClear, lastTTSTextClear, lastTTSAccentClear] = [audio, text, accent];
+                     } else {
+                         throw new Error("Không nhận được dữ liệu âm thanh hợp lệ.");
+                     }
+                 }
             } catch (error) {
                 handleApiError(error);
             } finally {
@@ -1101,6 +1148,15 @@
                 return;
             }
             
+            // Ensure model data is ready before analyzing
+            if (modelPronunciationData.text !== textInput.value.trim() || modelPronunciationData.accent !== accentSelect.value) {
+                await prefetchModelPronunciation(textInput.value.trim(), accentSelect.value);
+            }
+             if (!modelPronunciationData.pitchContour || modelPronunciationData.pitchContour.length === 0) {
+                showMessage('Chưa có dữ liệu ngữ điệu mẫu, vui lòng thử lại.', 'error');
+                return;
+            }
+
             loader.classList.remove('hidden');
             startProgressTextAnimation();
             startProgressSimulation();
@@ -1111,7 +1167,6 @@
             reader.readAsDataURL(lastRecordingBlob);
             reader.onloadend = async () => {
                 if (currentAnalysisID !== analysisRequestID) {
-                    console.log(`Analysis request ${currentAnalysisID} cancelled by new request ${analysisRequestID}.`);
                     loader.classList.add('hidden');
                     funFactEl.classList.add('hidden');
                     stopProgressSimulation();
@@ -1123,24 +1178,31 @@
                 
                 // --- UPDATED GEMINI PROMPT ---
                 const prompt = {
-                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu dựa trên các tài liệu học thuật về Cụm tư duy và Lời nói nối âm trong tiếng Anh. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt. Mục tiêu của bạn là vừa sửa lỗi một cách nghiêm khắc theo quy tắc, vừa là một người hướng dẫn động viên, khích lệ.",
+                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt.",
                     "context": {
-                        "learner_profile": "Người học là người Việt, thường gặp các vấn đề sau: bỏ âm cuối, nhầm lẫn các cặp nguyên âm ngắn/dài, không phân biệt âm vô thanh/hữu thanh, và nói ngắt nghỉ từng từ (word-by-word) thay vì theo cụm tư duy.",
-                        "evaluation_philosophy": "Triết lý chấm điểm của bạn là phân biệt rõ ràng giữa 'Lỗi nghiêm trọng' (ảnh hưởng đến việc người nghe có hiểu hay không) và 'Điểm chưa hoàn hảo' (có thể cải thiện nhưng không gây hiểu nhầm). Hãy luôn dùng ngôn ngữ tích cực. Ví dụ, thay vì nói 'Sai rồi', hãy nói 'Bạn đã làm rất tốt phần đầu của âm này! Để hoàn thiện hơn, hãy thử...'",
+                        "learner_profile": "Người học là người Việt, thường gặp các vấn đề sau: bỏ âm cuối, nhầm lẫn các cặp nguyên âm, không phân biệt âm vô thanh/hữu thanh, và nói ngắt nghỉ từng từ.",
                         "text_to_pronounce": textInput.value.trim(),
                         "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
                         "standard_ipa": standardIPA,
-                        "thought_groups_base": currentThoughtGroups
+                        "model_pitch_contour": modelPronunciationData.pitchContour, // Provide the consistent model pitch
                     },
-                    "task": "Phân tích file âm thanh, so sánh với phiên âm và cụm tư duy chuẩn. Sau đó, tính điểm 'overall_score' và các điểm thành phần dựa trên hệ thống trọng số lỗi. Đặc biệt, phân tích sâu các hiện tượng Lời nói nối âm và Cụm tư duy. Cung cấp toàn bộ phản hồi bằng tiếng Việt.",
-                    "scoring_system": {
+                    "task": "Phân tích file âm thanh của người dùng và so sánh với dữ liệu chuẩn được cung cấp. Cung cấp toàn bộ phản hồi bằng tiếng Việt.",
+                     "scoring_system": {
                         "base_score": 100,
                         "error_weights": [
-                            { "type": "Lỗi nghiêm trọng (Critical Error)", "deduction": "Trừ 10-15 điểm/lỗi", "examples": ["Bỏ âm cuối (vd: 'like' đọc thành /laɪ/)", "Sai hoàn toàn một nguyên âm chính (vd: 'ship' /ʃɪp/ đọc thành /ʃiːp/)", "Sai trọng âm của từ"] },
-                            { "type": "Lỗi trung bình (Medium Error)", "deduction": "Trừ 5-8 điểm/lỗi", "examples": ["Thay thế các phụ âm khó nhưng vẫn có thể hiểu được (vd: /θ/ -> /s/)", "Nguyên âm hơi lệch nhưng không biến thành một nguyên âm khác hoàn toàn."] },
-                            { "type": "Lỗi nhỏ (Minor Error)", "deduction": "Trừ 1-3 điểm/lỗi", "examples": ["Độ dài nguyên âm chưa hoàn hảo", "Âm cuối bật ra hơi yếu nhưng vẫn có", "Ngữ điệu chưa tự nhiên nhưng không sai."] }
+                            { "type": "Lỗi nghiêm trọng", "deduction": "Trừ 10-15 điểm/lỗi", "examples": ["Bỏ âm cuối", "Sai hoàn toàn một nguyên âm chính", "Sai trọng âm từ"] },
+                            { "type": "Lỗi trung bình", "deduction": "Trừ 5-8 điểm/lỗi", "examples": ["Thay thế phụ âm khó (vd: /θ/ -> /s/)", "Nguyên âm hơi lệch"] },
+                            { "type": "Lỗi nhỏ", "deduction": "Trừ 1-3 điểm/lỗi", "examples": ["Độ dài nguyên âm chưa hoàn hảo", "Âm cuối bật hơi yếu"] }
                         ],
-                        "instruction": "Hãy tính điểm cuối cùng bằng cách lấy 100 trừ đi tổng điểm của các lỗi đã được phân loại. Hãy công bằng và chính xác."
+                        "leniency_rules": {
+                            "context": "Với người học Việt Nam, hãy khoan dung với các lỗi không ảnh hưởng lớn đến giao tiếp.",
+                            "rules": [{ 
+                                "phoneme": "ʔ (glottal stop)", 
+                                "condition": "Khi thay thế cho âm /t/ cuối không bật hơi.", 
+                                "adjustment": "Nếu người dùng phát âm /t/ đầy đủ hoặc bỏ qua, chỉ phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm."
+                            }]
+                        },
+                        "instruction": "Tính điểm cuối cùng bằng cách lấy 100 trừ đi tổng điểm lỗi đã được điều chỉnh theo quy tắc khoan dung."
                     },
                     "output_format_instruction": {
                         "format": "JSON",
@@ -1151,14 +1213,13 @@
                             "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string | null\" } ] | null",
                             "rhythm_and_pacing_analysis": {
                                 "rhythm_score": "number (0-100)",
-                                "feedback": "string // Nhận xét chi tiết bằng tiếng Việt về nhịp điệu (stress-timed rhythm) và tốc độ nói (pacing). Ví dụ: 'Tốc độ của bạn hơi nhanh, dẫn đến một số âm tiết không được nhấn bị lướt qua. Hãy thử duy trì nhịp điệu đều đặn hơn giữa các từ được nhấn trọng âm.'"
+                                "feedback": "string"
                             },
                             "intonation_analysis": {
-                                "feedback": "string // Nhận xét bằng tiếng Việt về đường nét ngữ điệu chung (ví dụ: lên giọng ở cuối câu hỏi Yes/No, xuống giọng ở cuối câu trần thuật).",
-                                "model_pitch_contour": "[number] // Một mảng gồm 30-50 điểm dữ liệu cao độ của giọng mẫu, đã được chuẩn hóa trong khoảng 0-100.",
-                                "user_pitch_contour": "[number] // Một mảng gồm 30-50 điểm dữ liệu cao độ của giọng người dùng, đã được chuẩn hóa trong khoảng 0-100."
+                                "feedback": "string",
+                                "user_pitch_contour": "[number]"
                             },
-                            "connected_speech_analysis": "[{ \"type\": \"string ('Catenation', 'Assimilation', 'Elision', 'Intrusion', 'Weak Form')\", \"rule\": \"string // Tên quy tắc, ví dụ: 'Nối phụ âm - nguyên âm' hoặc 'Đồng hóa /t/ + /j/ -> /tʃ/'\", \"location\": \"string // Cụm từ nơi hiện tượng xảy ra, vd: 'in an'\", \"expected_pronunciation\": \"string // IPA của cách phát âm mong đợi, vd: /ɪn‿ən/\", \"user_pronunciation\": \"string // IPA của cách người dùng phát âm, vd: /ɪn æn/\", \"feedback\": \"string // Nhận xét cụ thể bằng tiếng Việt, vd: 'Tuyệt vời! Bạn đã nối âm /n/ với nguyên âm /æ/ rất tự nhiên.' hoặc 'Ở đây, bạn đã ngắt giữa hai từ. Hãy thử nối phụ âm cuối /t/ của 'want' với nguyên âm đầu của 'it' để nghe mượt mà hơn.'\" }] | null",
+                            "connected_speech_analysis": "[{ \"type\": \"string ('Catenation', 'Assimilation', 'Elision', 'Intrusion', 'Weak Form')\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
                             "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                         }
                     }
@@ -1172,25 +1233,17 @@
                 try {
                     const data = await fetchWithBackoff(TEXT_API_URL, { 
                         method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'X-Target-API': 'text'
-                        }, 
+                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
                         body: JSON.stringify(payload) 
                     });
                     
-                    if (currentAnalysisID !== analysisRequestID) {
-                        console.log(`Analysis request ${currentAnalysisID} completed, but a newer request is active. Discarding results.`);
-                        return;
-                    }
+                    if (currentAnalysisID !== analysisRequestID) return;
 
                     const resultText = data.candidates[0].content.parts[0].text;
                     const resultJson = JSON.parse(resultText);
                     displayResults(resultJson);
                 } catch (error) {
-                    if (currentAnalysisID === analysisRequestID) {
-                        handleApiError(error);
-                    }
+                    if (currentAnalysisID === analysisRequestID) handleApiError(error);
                 } finally {
                     if (currentAnalysisID === analysisRequestID) {
                         stopProgressSimulation();
@@ -1256,12 +1309,13 @@
             // --- Intonation Analysis ---
             const intonationFeedbackEl = document.getElementById('intonation-analysis-feedback');
             const intonationChartEl = document.getElementById('intonation-chart');
-            if (data.intonation_analysis) {
+            if (data.intonation_analysis && modelPronunciationData.pitchContour) {
                 intonationFeedbackEl.textContent = data.intonation_analysis.feedback;
                 renderIntonationChart(
                     intonationChartEl,
-                    data.intonation_analysis.model_pitch_contour,
-                    data.intonation_analysis.user_pitch_contour
+                    modelPronunciationData.pitchContour,
+                    data.intonation_analysis.user_pitch_contour,
+                    modelPronunciationData.stressedWords
                 );
             }
             
@@ -1327,9 +1381,12 @@
             standardIPA = '';
             controlsSection.classList.add('hidden');
             resetAnalysisOnly();
-            lastTTSAudioNatural = null;
-            lastTTSTextNatural = '';
-            lastTTSAccentNatural = '';
+            // Reset model cache only if text or accent changes
+            const text = textInput.value.trim();
+            const accent = accentSelect.value;
+            if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accent) {
+                 modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
+            }
             lastTTSAudioClear = null;
             lastTTSTextClear = '';
             lastTTSAccentClear = '';
@@ -1557,11 +1614,11 @@
             window.requestAnimationFrame(step);
         }
         
-        function renderIntonationChart(svgElement, modelData, userData) {
-            svgElement.innerHTML = ''; // Clear previous chart
+        function renderIntonationChart(svgElement, modelData, userData, stressedWords = []) {
+            svgElement.innerHTML = ''; 
             if (!modelData || !userData || modelData.length === 0 || userData.length === 0) return;
         
-            const padding = { top: 10, right: 10, bottom: 20, left: 10 };
+            const padding = { top: 30, right: 10, bottom: 20, left: 10 }; // Increased top padding
             const width = svgElement.clientWidth;
             const height = svgElement.clientHeight;
             const innerWidth = width - padding.left - padding.right;
@@ -1569,7 +1626,7 @@
         
             const allData = [...modelData, ...userData];
             const yMin = Math.min(...allData);
-            const yMax = Math.max(...allData) > yMin ? Math.max(...allData) : yMin + 1; // Avoid division by zero
+            const yMax = Math.max(...allData) > yMin ? Math.max(...allData) : yMin + 1;
             
             const scaleX = (index, dataLength) => padding.left + (index / (dataLength - 1)) * innerWidth;
             const scaleY = (value) => padding.top + innerHeight - ((value - yMin) / (yMax - yMin)) * innerHeight;
@@ -1592,6 +1649,20 @@
         
             svgElement.appendChild(modelLine);
             svgElement.appendChild(userLine);
+
+            // --- NEW: Render Stressed Words ---
+            stressedWords.forEach(item => {
+                const x = padding.left + (item.time_stamp_normalized * innerWidth);
+                const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textEl.setAttribute('x', x);
+                textEl.setAttribute('y', padding.top - 8);
+                textEl.setAttribute('text-anchor', 'middle');
+                textEl.setAttribute('font-size', '12');
+                textEl.setAttribute('font-weight', '600');
+                textEl.setAttribute('fill', 'var(--text-primary)');
+                textEl.textContent = item.word;
+                svgElement.appendChild(textEl);
+            });
             
             // Add Legend
             const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
