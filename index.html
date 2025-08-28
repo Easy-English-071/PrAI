@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V12 --- */
+        /* --- GLASSMORPHISM THEME V13 --- */
         :root {
             /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
@@ -267,7 +267,6 @@
             margin-bottom: 1rem;
         }
 
-        /* NEW: Syllable Chart Styles */
         .syllable-chart-container {
             display: flex;
             gap: 0.5rem;
@@ -303,18 +302,19 @@
             overflow: hidden;
         }
 
+        /* RESTORED: Background colors for connected speech items */
         .connected-speech-item.type-catenation { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
         .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
         .connected-speech-item.type-weak-form { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
 
+
         .cs-title { font-weight: 600; color: var(--text-primary); }
         .cs-location { font-family: 'Noto Sans', sans-serif; background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
         .cs-details { font-size: 0.875rem; color: var(--text-secondary); }
         .cs-feedback { margin-top: 0.5rem; font-style: italic; }
 
-        /* NEW: IPA Loader Animation */
         .ipa-loader-animation {
             display: flex;
             justify-content: center;
@@ -339,6 +339,32 @@
         .pixel-bar:nth-child(4) { animation-delay: 0.3s; }
         .pixel-bar:nth-child(5) { animation-delay: 0.4s; }
         .pixel-bar:nth-child(6) { animation-delay: 0.5s; }
+
+        /* NEW: Mismatch Warning Banner */
+        .mismatch-warning-banner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background-color: color-mix(in srgb, var(--accent-warning) 15%, transparent);
+            border: 1px solid var(--accent-warning);
+            color: var(--accent-warning);
+        }
+        [data-theme="dark"] .mismatch-warning-banner {
+             color: #fcd34d; /* yellow-300 */
+        }
+        .mismatch-warning-banner svg {
+            flex-shrink: 0;
+        }
+        .mismatch-warning-banner p {
+            margin: 0;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        [data-theme="dark"] .mismatch-warning-banner p {
+             color: var(--text-primary);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -405,7 +431,6 @@
                 </div>
             </section>
             
-            <!-- NEW: IPA Loader Animation Container -->
             <div id="ipa-loader-animation" class="ipa-loader-animation hidden">
                 <div class="pixel-bar"></div>
                 <div class="pixel-bar"></div>
@@ -485,42 +510,37 @@
                 <p id="fun-fact" class="text-sm text-text-secondary/70 mt-6 italic hidden"></p>
             </div>
 
-            <!-- UPDATED ANALYSIS RESULTS SECTION -->
+            <!-- NEW: Mismatch Warning Banner Container -->
+            <div id="mismatch-warning-container" class="hidden my-6"></div>
+
             <section id="analysis-results" class="hidden space-y-6">
                 <div class="card-layer glass-card space-y-6 p-6">
                     <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
             
-                    <!-- Overall Score -->
                     <div class="score-container">
                         <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                     </div>
             
-                    <!-- Phoneme Analysis -->
                     <div class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Âm vị</h4>
                         <div id="phoneme-analysis" class="flex flex-wrap gap-2 justify-center"></div>
                         <p class="text-xs text-text-secondary mt-3 text-center">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                     </div>
             
-                    <!-- Intonation / Syllable Analysis -->
                     <div id="prosody-analysis-container" class="analysis-box-detailed">
-                        <!-- Title will be set dynamically -->
                         <h4 id="prosody-analysis-title" class="analysis-title"></h4>
-                        <!-- Container for Sentence Intonation Chart -->
                         <div id="intonation-analysis-content">
                             <div class="intonation-chart-container">
                                 <svg id="intonation-chart" width="100%" height="100%"></svg>
                             </div>
                             <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
                         </div>
-                        <!-- Container for Single Word Syllable Chart -->
                         <div id="syllable-analysis-content">
                             <div id="syllable-chart-container" class="syllable-chart-container"></div>
                             <div id="syllable-analysis-feedback" class="text-sm text-text-secondary text-center"></div>
                         </div>
                     </div>
             
-                    <!-- Connected Speech Analysis -->
                     <div id="connected-speech-container" class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Nối âm & Cụm tư duy</h4>
                         <div id="connected-speech-analysis" class="space-y-3"></div>
@@ -528,7 +548,6 @@
             
                 </div>
             
-                <!-- Practice Suggestions Section -->
                 <div id="practice-suggestions" class="hidden card-layer glass-card">
                      <h3 class="font-bold text-text-primary text-xl mb-4">Xem ví dụ thực tế</h3>
                      <div id="suggestion-links" class="flex flex-col sm:flex-row gap-3 mt-2"></div>
@@ -611,8 +630,8 @@
         const thoughtGroupTooltip = document.getElementById('thought-group-tooltip');
         const detailedIpaContainer = document.getElementById('detailed-ipa-container');
         const ipaLoaderAnimation = document.getElementById('ipa-loader-animation');
+        const mismatchWarningContainer = document.getElementById('mismatch-warning-container');
         
-        // NEW ANALYSIS SECTION ELEMENTS
         const prosodyAnalysisContainer = document.getElementById('prosody-analysis-container');
         const prosodyAnalysisTitle = document.getElementById('prosody-analysis-title');
         const intonationAnalysisContent = document.getElementById('intonation-analysis-content');
@@ -644,8 +663,10 @@
         let progressInterval;
         let progressTextTimeoutIds = [];
         let currentIpaData = {};
-        
         let isSingleWordMode = false;
+        // NEW: State for handling listen button clicks during prefetch
+        let isNaturalAudioFetching = false;
+        let playNaturalAudioWhenReady = false;
 
         // --- CACHING ---
         const ipaCache = {
@@ -799,10 +820,12 @@
         async function prefetchModelPronunciation(text, accent) {
             if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) return;
             modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] };
+            isNaturalAudioFetching = true;
         
             try {
                 const textWithPauses = currentIpaData.thought_groups?.groups.join(" | ") || text;
-                const promptTTS = `Read ONLY the following text in ${accent}. The pipe symbol "|" indicates a slight, natural hesitation. Text: ${textWithPauses}`;
+                // REFINED TTS PROMPT
+                const promptTTS = `Read the following text fluently in ${accent}. The pipe symbol "|" indicates a very brief, natural pause between thought groups, not a full stop. Maintain a natural conversational flow. Text: ${textWithPauses}`;
                 
                 const [ttsData, analysisData] = await Promise.all([
                     fetchWithBackoff(TTS_API_URL, {
@@ -833,10 +856,17 @@
                 modelPronunciationData.stressedWords = analysisJson.stressed_words || [];
         
                 console.log("Model pronunciation data prefetched successfully.");
+                if (playNaturalAudioWhenReady) {
+                    modelPronunciationData.audio.play();
+                }
         
             } catch (error) {
                 console.error("Model pronunciation prefetch failed:", error);
                 modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
+            } finally {
+                isNaturalAudioFetching = false;
+                playNaturalAudioWhenReady = false;
+                setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
             }
         }
 
@@ -963,8 +993,6 @@
                 if (audioPart?.inlineData) {
                     clearPronunciationAudio = await createAudioFromBase64(audioPart.inlineData.data, audioPart.inlineData.mimeType);
                     console.log("Clear pronunciation audio prefetched.");
-                } else {
-                    throw new Error("Invalid audio data for clear voice.");
                 }
             } catch (error) {
                 console.error("Failed to prefetch clear pronunciation:", error);
@@ -975,26 +1003,25 @@
             const text = textInput.value.trim();
             if (!text) return;
 
-            const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
-            const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
-            
-            setButtonLoading(button, loader, true);
-
-            try {
-                if (type === 'natural') {
-                    if (modelPronunciationData.audio) {
-                        modelPronunciationData.audio.currentTime = 0;
-                        modelPronunciationData.audio.play();
-                    } else {
-                        await prefetchModelPronunciation(text, accentSelect.value);
-                        if (modelPronunciationData.audio) {
-                             modelPronunciationData.audio.currentTime = 0;
-                             modelPronunciationData.audio.play();
-                        } else {
-                            throw new Error("Không thể tạo giọng đọc mẫu.");
-                        }
-                    }
+            if (type === 'natural') {
+                setButtonLoading(listenNaturalBtn, listenNaturalLoader, true);
+                if (isNaturalAudioFetching) {
+                    playNaturalAudioWhenReady = true;
+                    return; // Let the ongoing fetch handle playing
+                }
+                if (modelPronunciationData.audio) {
+                    modelPronunciationData.audio.currentTime = 0;
+                    modelPronunciationData.audio.play();
+                    setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
                 } else {
+                    playNaturalAudioWhenReady = true;
+                    await prefetchModelPronunciation(text, accentSelect.value);
+                }
+            } else { // Clear voice
+                const button = listenClearBtn;
+                const loader = listenClearLoader;
+                setButtonLoading(button, loader, true);
+                try {
                     if (clearPronunciationAudio) {
                         clearPronunciationAudio.currentTime = 0;
                         clearPronunciationAudio.play();
@@ -1007,11 +1034,11 @@
                             throw new Error("Không thể tạo giọng đọc mẫu.");
                         }
                     }
+                } catch(error) {
+                    handleApiError(error);
+                } finally {
+                    setButtonLoading(button, loader, false);
                 }
-            } catch (error) {
-                handleApiError(error);
-            } finally {
-                setButtonLoading(button, loader, false);
             }
         }
         
@@ -1058,19 +1085,6 @@
         function stopProgressTextAnimation() {
             progressTextTimeoutIds.forEach(clearTimeout);
             progressTextTimeoutIds = [];
-        }
-
-        // NEW: Helper function for client-side sentence comparison
-        function calculateSentenceSimilarity(words1, words2) {
-            if (!words1.length || !words2.length) return 0;
-            const set1 = new Set(words1);
-            let matchCount = 0;
-            for (const word of words2) {
-                if (set1.has(word)) {
-                    matchCount++;
-                }
-            }
-            return matchCount / Math.max(words1.length, words2.length);
         }
 
         async function analyzeAudio(audioBlob) {
@@ -1154,7 +1168,7 @@
                         "output_format_instruction": {
                             "format": "JSON",
                             "schema": {
-                                "user_transcribed_text": "string // Phiên âm audio ra văn bản thông thường.",
+                                "sentence_match_confidence": "number // Điểm từ 0.0 đến 1.0 thể hiện mức độ tự tin câu nói của người dùng khớp với câu mẫu.",
                                 "overall_score": "number | null",
                                 "user_ipa": "string | null",
                                 "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
@@ -1162,7 +1176,7 @@
                                     "feedback": "string // Nhận xét về ngữ điệu, tốc độ và nhịp điệu. So sánh với mẫu.",
                                     "user_pitch_contour": "[number]"
                                 },
-                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
+                                "connected_speech_analysis": "[{ \"type\": \"string ('Catenation', 'Assimilation', 'Elision', 'Intrusion', 'Weak Form')\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
                                 "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                             }
                         }
@@ -1183,19 +1197,6 @@
                     
                     if (currentAnalysisID !== analysisRequestID) return;
                     const resultJson = JSON.parse(data.candidates[0].content.parts[0].text);
-                    
-                    // NEW: Client-side validation for sentences
-                    if (!isSingleWordMode) {
-                        const originalWords = textInput.value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/);
-                        const transcribedWords = (resultJson.user_transcribed_text || "").toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/);
-                        const similarity = calculateSentenceSimilarity(originalWords, transcribedWords);
-                        
-                        if (similarity < 0.7) {
-                            showMessage("Câu bạn nói dường như không khớp với câu mẫu. Vui lòng thử lại.", 'warning');
-                            return; // Stop further processing
-                        }
-                    }
-                    
                     displayResults(resultJson);
 
                 } catch (error) {
@@ -1214,14 +1215,31 @@
         }
         
         function displayResults(data) {
+            mismatchWarningContainer.classList.add('hidden'); // Hide previous warnings
+            mismatchWarningContainer.innerHTML = '';
+
             if (data.word_match === false) {
-                showMessage(`Bạn dường như đã phát âm từ "${data.transcribed_word}" thay vì từ mẫu. Vui lòng thử lại.`, 'warning');
+                mismatchWarningContainer.innerHTML = `
+                    <div class="mismatch-warning-banner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <p>Bạn dường như đã phát âm từ <strong>"${data.transcribed_word}"</strong>. Vui lòng thử lại với từ mẫu.</p>
+                    </div>`;
+                mismatchWarningContainer.classList.remove('hidden');
                 return;
             }
             
             if (data.overall_score === null) {
                 showMessage("PrAI không nhận diện được giọng nói. Vui lòng thử lại và nói to, rõ hơn.", 'warning');
                 return;
+            }
+
+            if (!isSingleWordMode && data.sentence_match_confidence < 0.75) {
+                mismatchWarningContainer.innerHTML = `
+                    <div class="mismatch-warning-banner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <p>Câu nói của bạn có vẻ không khớp hoàn toàn với câu mẫu. Kết quả phân tích có thể không chính xác.</p>
+                    </div>`;
+                mismatchWarningContainer.classList.remove('hidden');
             }
         
             saveToHistory(textInput.value.trim(), data.overall_score);
@@ -1273,12 +1291,13 @@
                 if (data.connected_speech_analysis?.length > 0) {
                     data.connected_speech_analysis.forEach(item => {
                         const itemEl = document.createElement('div');
-                        const typeClass = `type-${item.type.toLowerCase().replace(/\s/g, '-')}`;
+                        // SIMPLIFIED CLASS NAME LOGIC
+                        const typeClass = `type-${item.type.toLowerCase()}`;
                         itemEl.className = `connected-speech-item ${typeClass}`;
                         itemEl.innerHTML = `
                             <div class="flex justify-between items-start">
                                 <div><p class="cs-title">${item.rule}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item.location}</span></p></div>
-                                <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full ${typeClass} opacity-70">${item.type}</span>
+                                <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full opacity-70">${item.type}</span>
                             </div>
                             <div class="cs-details mt-2">
                                 <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
@@ -1318,6 +1337,7 @@
         function resetAnalysisOnly() {
             analysisResults.classList.add('hidden');
             practiceSuggestions.classList.add('hidden');
+            mismatchWarningContainer.classList.add('hidden');
         }
 
         function resetAll() {
