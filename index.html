@@ -335,7 +335,6 @@
             overflow: hidden;
         }
 
-        /* FIX: Ensure these classes apply background colors */
         .connected-speech-item.type-catenation, .connected-speech-item.type-linking { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
         .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
@@ -1252,7 +1251,6 @@
                 
                 let prompt;
                 if (isSingleWord) {
-                    // FIX #3: Complete overhaul of the single-word analysis prompt.
                     prompt = {
                         "role": "Bạn là một chuyên gia phiên âm và phân tích ngữ âm AI cực kỳ nghiêm ngặt.",
                         "task_instructions": {
@@ -1266,7 +1264,7 @@
                         "output_format_instruction": {
                             "format": "JSON", "schema": {
                                 "speech_detected": "boolean",
-                                "user_ipa": "string | null", // Mandatory field for the new process
+                                "user_ipa": "string | null", 
                                 "overall_score": "number",
                                 "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" } ]",
                                 "stress_analysis": {
@@ -1278,7 +1276,6 @@
                         }
                     };
                 } else { // For sentences
-                    // FIX #1: Overhauled scoring rules for sentences.
                     prompt = {
                         "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu.",
                         "task_instructions": {
@@ -1357,40 +1354,30 @@
         
             const isSingleWord = !textInput.value.trim().includes(' ');
         
-            // FIX #3: New, powerful safeguard for single-word analysis.
+            // --- FIX A: Safeguard for single-word analysis when user says the wrong word ---
             if (isSingleWord && data.user_ipa) {
-                // A simple way to check if two IPA strings are grossly different.
-                // This is a basic check and can be improved, but it catches the "hello" vs "museum" case.
-                const similarityThreshold = 0.5;
-                const standardSimple = standardIPA.replace(/ˈ|ˌ/g, '');
-                const userSimple = data.user_ipa.replace(/ˈ|ˌ/g, '');
+                const similarityThreshold = 0.4; // Set a threshold for similarity
+                const standardSimple = standardIPA.replace(/ˈ|ˌ|/g, '');
+                const userSimple = data.user_ipa.replace(/ˈ|ˌ|/g, '');
+                
+                // Basic similarity check
                 const commonChars = [...new Set(standardSimple)].filter(char => userSimple.includes(char)).length;
-                const similarity = commonChars / Math.max(standardSimple.length, userSimple.length);
+                const similarity = commonChars / Math.max(standardSimple.length, userSimple.length || 1);
 
                 if (similarity < similarityThreshold) {
-                     showMessage(`Có vẻ bạn đã phát âm một từ khác. Hệ thống ghi nhận "${data.user_ipa}" thay vì "${standardIPA}".`, 'error');
-                     data.overall_score = 0;
-                     // Force all phonemes to be incorrect for visual feedback
+                     showMessage(`Lỗi nghiêm trọng: Có vẻ bạn đã phát âm một từ hoàn toàn khác. Hệ thống ghi nhận "${data.user_ipa}" thay vì "${standardIPA}".`, 'error');
+                     data.overall_score = 0; // Override score to 0
+                     // Force all phonemes to be incorrect for clear visual feedback
                      if(data.phoneme_analysis) {
-                         data.phoneme_analysis.forEach(p => p.status = 'incorrect');
+                         data.phoneme_analysis.forEach(p => {
+                             p.status = 'incorrect';
+                             p.feedback = "Âm vị này thuộc về một từ khác."
+                         });
                      }
                      if(data.stress_analysis) {
                          data.stress_analysis.user_stressed_correctly = false;
+                         data.stress_analysis.feedback = "Trọng âm sai hoàn toàn do phát âm sai từ."
                      }
-                }
-            }
-
-            // FIX #1: Safeguard for sentence scoring
-            if (!isSingleWord && data.phoneme_analysis) {
-                const incorrectCount = data.phoneme_analysis.filter(p => p.status === 'incorrect').length;
-                const approximateCount = data.phoneme_analysis.filter(p => p.status === 'approximate').length;
-                const maxPossibleDeduction = (incorrectCount * 15) + (approximateCount * 7) + 15; // A generous upper limit
-                const actualDeduction = 100 - data.overall_score;
-
-                if (actualDeduction > maxPossibleDeduction) {
-                    console.warn(`AI returned a disproportionately low score. Adjusting for fairness. Actual deduction: ${actualDeduction}, Max expected: ${maxPossibleDeduction}`);
-                    data.overall_score = 100 - Math.min(actualDeduction, maxPossibleDeduction);
-                    showMessage("Điểm của bạn đã được điều chỉnh do AI đánh giá ban đầu quá khắt khe.", 'info');
                 }
             }
 
@@ -1464,9 +1451,11 @@
                 connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
-                    // FIX: Robust class name generation for connected speech items
                     const type = item.type || 'unknown';
-                    const typeClass = `type-${type.split(' ')[0].toLowerCase().replace(/[^a-z-]/g, '')}`;
+                    
+                    // --- FIX B: Robust class name generation for connected speech items to fix color bug ---
+                    const typeClass = `type-${type.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
+
                     itemEl.className = `connected-speech-item ${typeClass}`;
                     itemEl.innerHTML = `
                         <div class="flex justify-between items-start">
