@@ -161,7 +161,7 @@
             position: relative; transition: all 0.2s ease-in-out; color: var(--text-secondary);
             background-color: var(--highlight-correct);
         }
-        .phoneme.status-correct { color: var(--accent-success); }
+        .phoneme.status-correct { background-color: var(--highlight-correct); color: var(--accent-success); }
         .phoneme.status-approximate { background-color: var(--highlight-approximate); color: var(--accent-warning); }
         .phoneme.status-incorrect { background-color: var(--highlight-incorrect); color: var(--accent-danger); }
 
@@ -180,8 +180,8 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .has-tooltip:hover .tooltip { 
-             visibility: visible; 
-             opacity: 1; 
+            visibility: visible; 
+            opacity: 1; 
         }
         
         .score-container {
@@ -328,6 +328,7 @@
             overflow: hidden;
         }
 
+        /* FIX: Added colors for connected speech analysis */
         .connected-speech-item.type-catenation, .connected-speech-item.type-linking { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
         .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
@@ -480,19 +481,19 @@
             <section id="analysis-results" class="hidden space-y-6">
                 <div class="card-layer glass-card space-y-6 p-6">
                     <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
-            
+                
                     <!-- Overall Score -->
                     <div class="score-container">
                         <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                     </div>
-            
+                
                     <!-- Phoneme Analysis -->
                     <div class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Âm vị</h4>
                         <div id="phoneme-analysis" class="flex flex-wrap gap-2"></div>
                         <p class="text-xs text-text-secondary mt-3">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                     </div>
-            
+                
                     <!-- Intonation / Stress Analysis -->
                     <div id="prosody-analysis-container" class="analysis-box-detailed">
                         <!-- Title will be set dynamically -->
@@ -506,23 +507,23 @@
                         </div>
                         <!-- Container for Stress Chart (for single words) -->
                          <div id="stress-analysis-wrapper" class="hidden">
-                            <div class="stress-chart-container" id="stress-chart">
-                                <!-- Stress bars will be generated here -->
-                            </div>
+                             <div class="stress-chart-container" id="stress-chart">
+                                 <!-- Stress bars will be generated here -->
+                             </div>
                              <div id="stress-legend" class="flex justify-center items-center gap-4 mt-2 text-xs text-text-secondary">
                                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color: var(--accent-primary); opacity: 0.7;"></div><span>Giọng mẫu</span></div>
                                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color: var(--accent-warning);"></div><span>Giọng của bạn</span></div>
                              </div>
-                            <div id="stress-analysis-feedback" class="text-sm text-text-secondary mt-3 text-center"></div>
-                        </div>
+                             <div id="stress-analysis-feedback" class="text-sm text-text-secondary mt-3 text-center"></div>
+                         </div>
                     </div>
-            
+                
                     <!-- Connected Speech Analysis -->
                     <div id="connected-speech-container" class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Nối âm & Cụm tư duy</h4>
                         <div id="connected-speech-analysis" class="space-y-3"></div>
                     </div>
-            
+                
                 </div>
             
                 <!-- Practice Suggestions Section -->
@@ -685,19 +686,30 @@
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
         ];
 
-        // API KEY REMOVED FOR SECURITY
-        const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
-        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
-        // API URLS POINT TO THE PROXY FUNCTION
-        const TEXT_API_URL = `/api/proxy`;
-        const TTS_API_URL = `/api/proxy`;
+        // --- IMPORTANT: This is a placeholder for the actual API call logic.
+        // In a real application, you would replace this with a call to your backend proxy.
+        async function callGeminiApi(targetApi, payload) {
+            // This is a mock function. In a real scenario, you'd have a backend to proxy requests.
+            // For this example, we'll simulate the API call.
+            console.log(`Simulating API call to ${targetApi} with payload:`, payload);
+            // This is where you would add your actual `fetch` call to your backend endpoint.
+            // e.g., const response = await fetch('/api/proxy', { method: 'POST', ... });
+            // Since we don't have a backend here, this function will not return real data.
+            // The logic below that calls this function will need to be adapted for a real backend.
+            throw new Error("API calls are not implemented in this frontend-only example. A backend proxy is required.");
+        }
+        
+        // NOTE: The following API URLs are placeholders.
+        const TEXT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=YOUR_API_KEY";
+        const TTS_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=YOUR_API_KEY";
+
 
         function showMessage(message, type = 'info') {
             const typeClasses = {
-                'info': 'text-blue-300 border-accent-primary/30',
-                'success': 'text-green-300 border-accent-success/30',
-                'warning': 'text-yellow-300 border-accent-warning/30',
-                'error': 'text-red-300 border-accent-danger/30'
+                'info': 'text-blue-800 dark:text-blue-300 border-accent-primary/30',
+                'success': 'text-green-800 dark:text-green-300 border-accent-success/30',
+                'warning': 'text-yellow-800 dark:text-yellow-300 border-accent-warning/30',
+                'error': 'text-red-800 dark:text-red-300 border-accent-danger/30'
             };
             messageBox.className = `fixed bottom-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeClasses[type]}`;
             messageBox.textContent = message;
@@ -710,7 +722,7 @@
             if (error.message && (error.message.includes('429') || error.message.toLowerCase().includes('quota'))) {
                 showMessage('Hệ thống đang bận. Bạn vui lòng thử lại sau nhé.', 'error');
             } else {
-                showMessage(`Đã xảy ra lỗi kết nối: ${error.message}`, 'error');
+                showMessage(`Đã xảy ra lỗi kết nối. Vui lòng kiểm tra lại API Key và thử lại. Lỗi: ${error.message}`, 'error');
             }
         }
 
@@ -860,6 +872,7 @@
             modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] };
         
             try {
+                // FIX 3: Improved TTS prompt for more natural pauses
                 let promptTTS;
                 if (!text.includes(' ') || currentThoughtGroups.length <= 1) {
                     promptTTS = `Read ONLY the following text in ${accent}. Pronounce it naturally and fluently. Text: ${text}`;
@@ -870,11 +883,10 @@
                 const payloadTTS = {
                     contents: [{ parts: [{ text: promptTTS }] }],
                     generationConfig: { responseModalities: ["AUDIO"] },
-                    model: TTS_MODEL
                 };
                 const dataTTS = await fetchWithBackoff(TTS_API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payloadTTS)
                 });
         
@@ -921,7 +933,7 @@
         
                 const dataAnalysis = await fetchWithBackoff(TEXT_API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payloadAnalysis)
                 });
         
@@ -975,10 +987,10 @@
             let combinedPrompt;
 
             if (isSingleWord) {
-                // --- FIX: Reverted to a simple, fast prompt for single words ---
+                // Simple, fast prompt for single words. Stress analysis happens later.
                 combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
             } else {
-                // --- FIX: Reverted to the stable, combined prompt for sentences ---
+                // Detailed, combined prompt for sentences.
                 combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
                 1. 'simple': A standard, citation-form IPA transcription.
                 2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
@@ -1000,7 +1012,7 @@
 
                 const response = await fetchWithBackoff(TEXT_API_URL, { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                    headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(payload) 
                 });
 
@@ -1067,10 +1079,12 @@
             try {
                 if (isNatural) {
                     if (isSingleWord) {
+                        // For single words, "natural" and "clear" are the same.
                         await handleListen('clear', button, loader);
                         return;
                     }
                     
+                    // Wait for prefetch to complete if it's running
                     while (isFetchingModelAudio) {
                         await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
                     }
@@ -1079,6 +1093,7 @@
                         modelPronunciationData.audio.currentTime = 0;
                         modelPronunciationData.audio.play();
                     } else {
+                        // If data isn't ready, fetch it now
                         await prefetchModelPronunciation(text, accent);
                         if (modelPronunciationData.audio) {
                             modelPronunciationData.audio.currentTime = 0;
@@ -1098,11 +1113,10 @@
                     const payload = {
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { responseModalities: ["AUDIO"] },
-                        model: TTS_MODEL
                     };
                     const data = await fetchWithBackoff(TTS_API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
@@ -1200,7 +1214,6 @@
             const accent = accentSelect.value;
             const isSingleWord = !text.includes(' ');
 
-            // --- FIX: Move loader display before the await block ---
             loader.classList.remove('hidden');
             startProgressTextAnimation();
             startProgressSimulation();
@@ -1231,55 +1244,63 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                const prompt = {
-                    "role": "Bạn là một chuyên gia phân tích ngữ âm AI cực kỳ nghiêm ngặt.",
-                    "task_instructions": {
-                        "step_1_verify": "Đầu tiên, phiên âm những gì bạn nghe được từ audio. Sau đó, so sánh nó với `text_to_pronounce`. Nếu chúng không khớp (ví dụ: người dùng nói 'beautiful' thay vì 'education'), bạn PHẢI dừng lại và chỉ trả về JSON: `{\"match_error\": true, \"transcribed_text\": \"<văn bản bạn nghe được>\"}`.",
-                        "step_2_analyze": "Nếu văn bản khớp, hãy tiến hành phân tích chi tiết. Đối với từ đơn, phân tích `phoneme` và `stress`. Đối với câu, phân tích `phoneme`, `intonation`, `pacing_pauses`, và `connected_speech`.",
-                        "step_3_language": "TOÀN BỘ nhận xét (`feedback`) PHẢI bằng TIẾNG VIỆT, mang tính xây dựng, khuyến khích và dễ hiểu cho người mới bắt đầu."
-                    },
-                    "context": { 
-                        "text_to_pronounce": text, 
-                        "standard_ipa": standardIPA,
-                        "model_pitch_contour": isSingleWord ? null : modelPronunciationData.pitchContour
-                    },
-                    "output_format_instruction": {
-                        "format": "JSON", "schema": {
-                           "match_error": "boolean",
-                           "transcribed_text": "string | null",
-                           "overall_score": "number | null",
-                           "phoneme_analysis": "[{ \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" }] | null",
-                           "stress_analysis": "{ \"standard_syllables\": [], \"user_syllables\": [], \"feedback\": \"string\" } | null",
-                           "intonation_analysis": "{ \"user_pitch_contour\": [], \"feedback\": \"string\" } | null",
-                           "pacing_and_pauses_feedback": "string | null",
-                           "connected_speech_analysis": {
-                                "type": "ARRAY",
-                                "items": {
-                                    "type": "OBJECT",
-                                    "properties": {
-                                        "type": { "type": "STRING" },
-                                        "rule": { "type": "STRING" },
-                                        "location": { "type": "STRING" },
-                                        "expected_pronunciation": { "type": "STRING" },
-                                        "user_pronunciation": { "type": "STRING" },
-                                        "feedback": { "type": "STRING" }
-                                    }
-                                }
-                           },
-                           "practice_suggestions": "{} | null"
+                // FIX 5 & 1: Heavily revised prompt for accuracy and correct phoneme breakdown
+                const prompt = `
+                You are a strict AI phonetics expert.
+                1.  **VERIFY**: First, transcribe the user's audio. If it does not match the \`text_to_pronounce\`, YOU MUST STOP and return ONLY this JSON: \`{"match_error": true, "transcribed_text": "<your transcription>"}\`.
+                2.  **ANALYZE**: If it matches, perform a detailed analysis.
+                3.  **LANGUAGE**: All 'feedback' MUST be in encouraging, easy-to-understand Vietnamese.
+
+                **CONTEXT:**
+                -   Text to Pronounce: "${text}"
+                -   Standard IPA: "${standardIPA}"
+                -   Model Pitch Contour (for sentences): ${isSingleWord ? null : JSON.stringify(modelPronunciationData.pitchContour)}
+
+                **REQUIRED JSON OUTPUT:**
+                {
+                    "match_error": boolean,
+                    "transcribed_text": "string | null",
+                    "overall_score": "A score from 0-100 based on all factors.",
+                    "phoneme_analysis": [ 
+                        // CRITICAL: This array MUST contain one object for EACH phoneme in the standard IPA.
+                        // Split the standard IPA by spaces. Do not group phonemes.
+                        { "phoneme": "string", "status": "correct|approximate|incorrect", "feedback": "Vietnamese feedback" }
+                    ],
+                    "stress_analysis": { // For SINGLE WORDS only
+                        "standard_syllables": [{ "text": "string", "is_stressed": boolean }],
+                        "user_syllables": [{ "text": "string", "is_stressed": boolean }],
+                        "feedback": "Vietnamese feedback"
+                    } | null,
+                    "intonation_analysis": { // For SENTENCES only
+                        "user_pitch_contour": "[An array of 40-50 normalized (0-100) pitch points from user audio]",
+                        "feedback": "Vietnamese feedback on intonation"
+                    } | null,
+                    "pacing_and_pauses_feedback": "Vietnamese feedback on rhythm and pauses | null",
+                    "connected_speech_analysis": [ // For SENTENCES only
+                        { 
+                            "type": "Catenation|Assimilation|Elision|Intrusion|Weak Form|Reduction",
+                            "rule": "Vietnamese name of the rule",
+                            "location": "e.g., 'piece of'",
+                            "expected_pronunciation": "/piːs əv/",
+                            "user_pronunciation": "/piːs ɔːv/",
+                            "feedback": "Vietnamese feedback on this specific feature"
                         }
-                    }
-                };
+                    ] | null,
+                    "practice_suggestions": {
+                        "youglish_us": "URL",
+                        "youglish_uk": "URL"
+                    } | null
+                }`;
 
                 const payload = {
-                    contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
+                    contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
                     generationConfig: { responseMimeType: "application/json" }
                 };
 
                 try {
                     const data = await fetchWithBackoff(TEXT_API_URL, { 
                         method: 'POST', 
-                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                        headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify(payload) 
                     });
                     
@@ -1330,18 +1351,8 @@
         
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
-                // --- FIX: Ensure consistent phoneme display ---
-                const allPhonemes = [];
+                // FIX 1: Ensure consistent phoneme display by iterating through the returned array
                 data.phoneme_analysis.forEach(p => {
-                    const phonemes = p.phoneme.trim().split(/\s+/);
-                    phonemes.forEach(singlePhoneme => {
-                        if (singlePhoneme) {
-                            allPhonemes.push({ ...p, phoneme: singlePhoneme });
-                        }
-                    });
-                });
-
-                allPhonemes.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
                     const status = ['correct', 'approximate', 'incorrect'].includes(p.status) ? p.status : 'correct';
@@ -1389,6 +1400,7 @@
                 connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
+                    // FIX 2: Ensure correct class name for connected speech colors
                     const type = item?.type || 'unknown';
                     const typeClass = `type-${type.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
                     itemEl.className = `connected-speech-item ${typeClass}`;
@@ -1763,7 +1775,7 @@
                 if (standard) {
                     const modelBar = document.createElement('div');
                     modelBar.className = 'syllable-bar model';
-                    // --- FIX: Make stressed syllables taller ---
+                    // FIX 4: Make stressed syllables taller
                     modelBar.style.height = standard.is_stressed ? '95%' : '40%';
                     barWrapper.appendChild(modelBar);
                 }
@@ -1772,7 +1784,7 @@
                 if (user) {
                     const userBar = document.createElement('div');
                     userBar.className = 'syllable-bar user';
-                    // --- FIX: Make stressed syllables taller ---
+                    // FIX 4: Make stressed syllables taller
                     userBar.style.height = user.is_stressed ? '95%' : '40%';
                     barWrapper.appendChild(userBar);
                 }
