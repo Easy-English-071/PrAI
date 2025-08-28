@@ -37,6 +37,11 @@
             --radius-sm: 0.75rem;
             --radius-md: 1rem;
             --radius-lg: 1.5rem;
+            /* NEW: Message colors for better readability */
+            --msg-color-info: #0369a1;
+            --msg-color-success: #166534;
+            --msg-color-warning: #92400e;
+            --msg-color-error: #991b1b;
         }
 
         [data-theme="dark"] {
@@ -57,6 +62,11 @@
             --highlight-correct: rgba(74, 222, 128, 0.15);
             --highlight-approximate: rgba(250, 204, 21, 0.15);
             --highlight-incorrect: rgba(248, 113, 113, 0.15);
+            /* NEW: Message colors for dark theme */
+            --msg-color-info: #7dd3fc;
+            --msg-color-success: #86efac;
+            --msg-color-warning: #fde047;
+            --msg-color-error: #fca5a5;
         }
 
         body {
@@ -380,17 +390,13 @@
             
             <section id="controls-section" class="hidden space-y-6">
                  <div class="card-layer glass-card space-y-4">
+                     <!-- Section for Simple IPA and Clear Voice -->
                      <div id="ipa-container" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                          <div class="min-w-0 flex-grow">
-                             <div class="flex items-center gap-2 mb-1">
-                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm</h3>
-                             </div>
-                             <div class="space-y-2">
-                                 <p id="simple-ipa-text" class="text-xl text-text-primary tracking-wider"></p>
-                             </div>
+                             <h3 class="font-semibold text-text-secondary text-md mb-1">Phiên âm (Rõ ràng)</h3>
+                             <p id="simple-ipa-text" class="text-xl text-text-primary tracking-wider"></p>
                          </div>
-                         <div class="flex-shrink-0 flex gap-3">
-                             <!-- Re-positioned Listen Clear button -->
+                         <div class="flex-shrink-0">
                              <div class="relative w-11 h-11" id="listen-clear-container">
                                  <button id="listen-clear-btn" class="btn-icon btn-secondary absolute inset-0">
                                      <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
@@ -399,28 +405,32 @@
                                      <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
                                  </div>
                              </div>
-                             <!-- Re-positioned Listen Natural button -->
-                             <div class="relative w-11 h-11" id="natural-voice-container">
-                                 <button id="listen-natural-btn" class="btn-icon btn-secondary absolute inset-0">
-                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                                 </button>
-                                 <div id="listen-natural-loader" class="btn-icon btn-secondary absolute inset-0 hidden items-center justify-center">
-                                     <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
-                                 </div>
-                             </div>
                          </div>
                      </div>
-                     <div id="detailed-ipa-container" class="space-y-2 hidden">
-                         <div class="flex items-center gap-2 mb-1">
-                             <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy</h3>
-                             <div id="thought-group-info" class="has-tooltip relative hidden">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                 <div id="thought-group-tooltip" class="tooltip absolute bottom-full left-1/2 mb-2 w-72 rounded-lg p-3 text-xs shadow-lg"></div>
+                     <!-- Section for Detailed IPA, Thought Groups, and Natural Voice -->
+                     <div id="detailed-ipa-container" class="space-y-4 hidden pt-4 border-t border-[color:var(--glass-border)]">
+                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                             <div class="min-w-0 flex-grow">
+                                 <div class="flex items-center gap-2 mb-1">
+                                     <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy (Tự nhiên)</h3>
+                                     <div id="thought-group-info" class="has-tooltip relative hidden">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                         <div id="thought-group-tooltip" class="tooltip"></div>
+                                     </div>
+                                 </div>
+                                 <p id="detailed-ipa-text" class="text-xl tracking-wider"></p>
+                                 <div id="thought-group-display" class="text-lg tracking-wide leading-relaxed font-medium mt-2"></div>
                              </div>
-                         </div>
-                         <div class="space-y-2">
-                             <p id="detailed-ipa-text" class="text-xl text-accent-primary tracking-wider"></p>
-                             <div id="thought-group-display" class="text-lg tracking-wide leading-relaxed font-medium"></div>
+                             <div class="flex-shrink-0">
+                                 <div class="relative w-11 h-11" id="natural-voice-container">
+                                     <button id="listen-natural-btn" class="btn-icon btn-secondary absolute inset-0">
+                                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                     </button>
+                                     <div id="listen-natural-loader" class="btn-icon btn-secondary absolute inset-0 hidden items-center justify-center">
+                                         <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
+                                     </div>
+                                 </div>
+                             </div>
                          </div>
                      </div>
                  </div>
@@ -458,19 +468,19 @@
             <section id="analysis-results" class="hidden space-y-6">
                 <div class="card-layer glass-card space-y-6 p-6">
                     <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
-            
+                
                     <!-- Overall Score -->
                     <div class="score-container">
                         <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                     </div>
-            
+                
                     <!-- Phoneme Analysis -->
                     <div class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Âm vị</h4>
                         <div id="phoneme-analysis" class="flex flex-wrap gap-2 justify-center"></div>
                         <p class="text-xs text-text-secondary mt-3 text-center">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                     </div>
-            
+                
                     <!-- Intonation / Syllable Analysis -->
                     <div id="prosody-analysis-container" class="analysis-box-detailed">
                         <h4 id="prosody-analysis-title" class="analysis-title"></h4>
@@ -487,7 +497,7 @@
                             <div id="syllable-analysis-feedback" class="text-sm text-text-secondary text-center"></div>
                         </div>
                     </div>
-            
+                
                     <!-- Connected Speech Analysis -->
                     <div id="connected-speech-container" class="analysis-box-detailed hidden">
                         <h4 class="analysis-title">Phân tích Nối âm & Cụm tư duy</h4>
@@ -577,7 +587,6 @@
         const thoughtGroupInfo = document.getElementById('thought-group-info');
         const thoughtGroupTooltip = document.getElementById('thought-group-tooltip');
         const detailedIpaContainer = document.getElementById('detailed-ipa-container');
-        const naturalVoiceContainer = document.getElementById('natural-voice-container');
         
         // NEW ANALYSIS SECTION ELEMENTS
         const prosodyAnalysisContainer = document.getElementById('prosody-analysis-container');
@@ -613,7 +622,6 @@
         let progressTextTimeoutIds = [];
         let currentIpaData = {};
         
-        // NEW: State to differentiate analysis modes
         let isSingleWordMode = false;
 
         // --- CACHING ---
@@ -621,7 +629,6 @@
             get(key) { try { const i = localStorage.getItem(key); return i ? JSON.parse(i) : null; } catch (e) { return null; } },
             set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error("Cache write error:", e); } }
         };
-        // MODIFIED: More robust caching for model audio
         let modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
         let clearPronunciationAudio = null;
 
@@ -646,16 +653,20 @@
         const TTS_API_URL = `/api/proxy`;
 
         function showMessage(message, type = 'info') {
-            const typeClasses = {
-                'info': 'text-blue-300 border-accent-primary/30',
-                'success': 'text-green-300 border-accent-success/30',
-                'warning': 'text-yellow-300 border-accent-warning/30',
-                'error': 'text-red-300 border-accent-danger/30'
+            const typeBorders = {
+                'info': 'border-accent-primary/30',
+                'success': 'border-accent-success/30',
+                'warning': 'border-accent-warning/30',
+                'error': 'border-accent-danger/30'
             };
-            messageBox.className = `fixed bottom-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeClasses[type]}`;
+            messageBox.className = `fixed bottom-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeBorders[type]}`;
+            messageBox.style.color = `var(--msg-color-${type})`;
             messageBox.textContent = message;
             messageBox.classList.remove('hidden');
-            setTimeout(() => messageBox.classList.add('hidden'), 5000);
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+                messageBox.style.color = ''; // Reset style after hiding
+            }, 5000);
         }
 
         function handleApiError(error) {
@@ -781,13 +792,11 @@
             // Toggle UI based on analysis mode
             if (isSingleWordMode) {
                 detailedIpaContainer.classList.add('hidden');
-                naturalVoiceContainer.classList.add('hidden');
                 syllableAnalysisContent.classList.remove('hidden');
                 intonationAnalysisContent.classList.add('hidden');
                 connectedSpeechContainer.classList.add('hidden');
             } else {
                 detailedIpaContainer.classList.remove('hidden');
-                naturalVoiceContainer.classList.remove('hidden');
                 syllableAnalysisContent.classList.add('hidden');
                 intonationAnalysisContent.classList.remove('hidden');
                 connectedSpeechContainer.classList.remove('hidden');
@@ -978,34 +987,31 @@
             const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
             const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
             
+            // Do not proceed if already loading
+            if (button.disabled) return;
+            
             setButtonLoading(button, loader, true);
 
             try {
                 if (type === 'natural' && !isSingleWordMode) {
+                    if (!modelPronunciationData.audio) {
+                        await prefetchModelPronunciation(text, accent);
+                    }
                     if (modelPronunciationData.audio) {
                         modelPronunciationData.audio.currentTime = 0;
-                        modelPronunciationData.audio.play();
+                        await modelPronunciationData.audio.play();
                     } else {
-                        await prefetchModelPronunciation(text, accent);
-                        if (modelPronunciationData.audio) {
-                             modelPronunciationData.audio.currentTime = 0;
-                             modelPronunciationData.audio.play();
-                        } else {
-                            throw new Error("Không thể tạo giọng đọc mẫu.");
-                        }
+                        throw new Error("Không thể tạo giọng đọc mẫu.");
                     }
                 } else {
-                    if (clearPronunciationAudio) {
-                        clearPronunciationAudio.currentTime = 0;
-                        clearPronunciationAudio.play();
-                    } else {
+                    if (!clearPronunciationAudio) {
                         await prefetchClearPronunciation(text, accent);
-                        if(clearPronunciationAudio) {
-                            clearPronunciationAudio.currentTime = 0;
-                            clearPronunciationAudio.play();
-                        } else {
-                            throw new Error("Không thể tạo giọng đọc mẫu.");
-                        }
+                    }
+                    if(clearPronunciationAudio) {
+                        clearPronunciationAudio.currentTime = 0;
+                        await clearPronunciationAudio.play();
+                    } else {
+                        throw new Error("Không thể tạo giọng đọc mẫu.");
                     }
                 }
             } catch (error) {
@@ -1188,8 +1194,7 @@
         }
         
         function displayResults(data) {
-            // Updated logic to display analysis even if word/sentence match is false
-            if (data.overall_score === null) {
+            if (data.overall_score === null || data.overall_score === undefined) {
                 showMessage("PrAI không nhận diện được giọng nói. Vui lòng thử lại và nói to, rõ hơn.", "error");
                 return;
             }
