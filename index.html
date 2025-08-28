@@ -316,15 +316,6 @@
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
         .connected-speech-item.type-weak-form, .connected-speech-item.type-reduction { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
         .connected-speech-item.type-elision-and-weak-forms { border-color: #c026d3; background-color: rgba(192, 38, 211, 0.1);}
-        
-        [data-theme="dark"] .connected-speech-item.type-catenation, 
-        [data-theme="dark"] .connected-speech-item.type-linking { background-color: rgba(59, 130, 246, 0.2); }
-        [data-theme="dark"] .connected-speech-item.type-assimilation { background-color: rgba(168, 85, 247, 0.2); }
-        [data-theme="dark"] .connected-speech-item.type-elision { background-color: rgba(239, 68, 68, 0.2); }
-        [data-theme="dark"] .connected-speech-item.type-intrusion { background-color: rgba(20, 184, 166, 0.2); }
-        [data-theme="dark"] .connected-speech-item.type-weak-form, 
-        [data-theme="dark"] .connected-speech-item.type-reduction { background-color: rgba(245, 158, 11, 0.2); }
-        [data-theme="dark"] .connected-speech-item.type-elision-and-weak-forms { background-color: rgba(192, 38, 211, 0.2); }
 
 
         .cs-title { font-weight: 600; color: var(--text-primary); }
@@ -340,6 +331,62 @@
             color: var(--msg-color-warning);
             margin-bottom: 1.5rem;
         }
+    
+        /* === Bee & Flowers Pixel Spinner === */
+        .bee-spinner{
+            position:relative; width:100%; max-width:720px; height:160px; margin:12px auto 10px;
+            border-radius:14px; border:1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+            overflow:hidden;
+        }
+        .bee-spinner.small{ height:120px; max-width:560px; }
+        .bee-spinner.hidden{ display:none; }
+        .bee-spinner .garden{
+            position:absolute; inset:0; display:grid; place-items:end center;
+            padding:18px 16px 16px; pointer-events:none;
+        }
+        .bee-spinner .flower-row{ display:flex; gap:14px; align-items:flex-end; }
+        .bee-spinner .flower{ width:64px; height:110px; position:relative; }
+        .bee-spinner .flower svg{ width:100%; height:100%; filter: drop-shadow(0 6px 10px rgba(0,0,0,.28)); }
+        .bee-spinner .flower .petal{ transition: opacity .2s ease; }
+        .bee-spinner .flower.done .petal{ opacity:.9 }
+        .bee-spinner .sparkle{
+          position:absolute; left:50%; top:30px; transform:translateX(-50%);
+          width:6px; height:6px; background:var(--accent-primary); border-radius:1px; opacity:0;
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+        }
+        .bee-spinner .flower.sip .sparkle{ animation: beeSparkle .7s ease-out forwards; }
+        @keyframes beeSparkle{
+          0%{ opacity:0; transform:translate(-50%,2px) scale(.6)}
+          30%{opacity:1}
+          100%{ opacity:0; transform:translate(-50%,-18px) scale(1.05) }
+        }
+        .bee-spinner .bee{
+          position:absolute; top:56px; left:40px; width:52px; height:38px; transform: translate3d(0,0,0);
+          filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+        }
+        .bee-spinner .bee .body{
+          position:absolute; left:8px; top:10px; width:36px; height:20px;
+          background: linear-gradient(90deg, var(--accent-warning) 40%, #1b1b1b 40%, #1b1b1b 54%, var(--accent-warning) 54%, var(--accent-warning) 68%, #1b1b1b 68%, #1b1b1b 82%, var(--accent-warning) 82%);
+          border:2px solid rgba(0,0,0,.6); border-radius:8px;
+        }
+        .bee-spinner .bee .eye{
+          position:absolute; right:8px; top:12px; width:6px; height:6px; background:#fff; border-radius:2px;
+          box-shadow: 0 0 0 2px rgba(255,255,255,.35);
+        }
+        .bee-spinner .bee .wing{
+          position:absolute; width:16px; height:14px; background:rgba(255,255,255,.8);
+          border:2px solid rgba(255,255,255,.55); border-radius:6px 6px 10px 10px;
+          top:2px; transform-origin: 50% 90%; animation: wingFlap .25s ease-in-out infinite; will-change: transform;
+        }
+        .bee-spinner .bee .wing.left{ left:6px; }
+        .bee-spinner .bee .wing.right{ left:22px; animation-delay:.12s }
+        @keyframes wingFlap{ 0%,100%{ transform: rotate(0deg) translateY(0) } 50%{ transform: rotate(10deg) translateY(-1px) } }
+        .bee-spinner .strip{ position:absolute; left:0; right:0; bottom:0; height:6px;
+          background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-top:1px solid var(--glass-border);
+        }
+        .bee-spinner .strip .fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-success)); transition: width .3s ease; }
+    
     </style>
 </head>
 <body class="antialiased">
@@ -404,6 +451,19 @@
                         </div>
                     </div>
                 </div>
+            
+            <div id="bee-spinner-ipa" class="bee-spinner small hidden">
+                <div class="garden">
+                    <div class="flower-row" id="flower-row-ipa"></div>
+                </div>
+                <div class="bee" id="bee-ipa">
+                    <div class="wing left"></div>
+                    <div class="wing right"></div>
+                    <div class="body"></div>
+                    <div class="eye"></div>
+                </div>
+                <div class="strip"><div class="fill" id="progress-fill-ipa"></div></div>
+            </div>
             </section>
             
             <section id="controls-section" class="hidden space-y-6">
@@ -474,7 +534,7 @@
                 </div>
             </section>
 
-            <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">
+            <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">\n                <div id="bee-spinner" class="bee-spinner hidden">\n                    <div class="garden">\n                        <div class="flower-row" id="flower-row"></div>\n                    </div>\n                    <div class="bee" id="bee">\n                        <div class="wing left"></div>\n                        <div class="wing right"></div>\n                        <div class="body"></div>\n                        <div class="eye"></div>\n                    </div>\n                    <div class="strip"><div class="fill" id="progress-fill"></div></div>\n                </div>
                 <div class="w-full max-w-xs h-2 rounded-full overflow-hidden bg-[color:var(--input-bg)]">
                     <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
                 </div>
@@ -644,6 +704,152 @@
         
         let isSingleWordMode = false;
 
+        /* Bee Spinner v1 */
+        function createBeeSpinnerController(hostId){
+            const host = document.getElementById(hostId);
+            if (!host) return { show(){}, hide(){}, setProgress(){} };
+            const isSmall = host.classList.contains('small');
+            const row = host.querySelector('.flower-row') || host.appendChild(document.createElement('div'));
+            const bee = host.querySelector('.bee') || host.appendChild(document.createElement('div'));
+            const progressFillEl = host.querySelector('.strip .fill') || host.appendChild(document.createElement('div'));
+
+            const state = {
+                mode: 'indeterminate',
+                running: false,
+                dir: 1,
+                index: 0,
+                raf: 0,
+                lastTime: 0,
+                pauseUntil: 0,
+                progress: 0, // 0..1
+                speed: 180, // px/s
+                stopHoverMs: 260,
+                numFlowers: isSmall ? 6 : 7
+            };
+
+            function mkFlower(){
+                const div = document.createElement('div');
+                div.className = 'flower';
+                div.innerHTML = `
+                  <svg viewBox="0 0 36 60" aria-hidden="true">
+                    <rect x="10" y="42" width="16" height="12" rx="2" fill="#a8643e" stroke="#5e3a21" stroke-width="2"/>
+                    <rect x="8" y="40" width="20" height="5" rx="1" fill="#c57b49" stroke="#5e3a21" stroke-width="2"/>
+                    <rect x="17" y="22" width="2" height="18" rx="1" fill="var(--accent-success)" />
+                    <rect x="12" y="28" width="6" height="3" rx="1" fill="var(--accent-success)" />
+                    <rect x="18" y="31" width="6" height="3" rx="1" fill="var(--accent-success)" />
+                    <rect class="petal" x="8"  y="6"  width="8" height="8" fill="var(--accent-primary)" />
+                    <rect class="petal" x="20" y="6"  width="8" height="8" fill="var(--accent-primary)" />
+                    <rect class="petal" x="8"  y="18" width="8" height="8" fill="var(--accent-primary)" />
+                    <rect class="petal" x="20" y="18" width="8" height="8" fill="var(--accent-primary)" />
+                    <rect x="14" y="12" width="8" height="8" fill="var(--accent-warning)" stroke="rgba(0,0,0,.3)" stroke-width="1"/>
+                  </svg>
+                  <div class="sparkle"></div>`;
+                return div;
+            }
+
+            function buildRow(){
+                row.innerHTML = '';
+                for (let i=0;i<state.numFlowers;i++) row.appendChild(mkFlower());
+            }
+
+            function getCenters(){
+                const outer = host.getBoundingClientRect();
+                return [...row.children].map(el => {
+                    const r = el.getBoundingClientRect();
+                    return (r.left + r.width/2) - outer.left;
+                });
+            }
+
+            function setBeeX(x){
+                const rect = host.getBoundingClientRect();
+                const minX = 16, maxX = rect.width - 68;
+                const clamped = Math.max(minX, Math.min(maxX, x));
+                bee.style.transform = `translate3d(${clamped}px,0,0)`;
+            }
+
+            function sip(el){
+                el.classList.add('sip');
+                setTimeout(() => el.classList.remove('sip'), 520);
+            }
+
+            function markDone(idx){
+                [...row.children].forEach((el,i)=>{
+                    if (i <= idx) el.classList.add('done'); else el.classList.remove('done');
+                });
+            }
+
+            function animate(ts){
+                if (!state.running) return;
+                if (!state.lastTime) state.lastTime = ts;
+                const dt = Math.min(64, ts - state.lastTime) / 1000;
+                state.lastTime = ts;
+
+                const centers = getCenters();
+                if (!centers.length){ state.raf = requestAnimationFrame(animate); return; }
+
+                if (state.mode === 'progress'){
+                    const targetIndex = Math.round(state.progress * (centers.length - 1));
+                    const targetX = centers[targetIndex] - 24;
+                    const curX = parseFloat(bee.style.transform.split('(')[1]) || 0;
+                    const nx = curX + (targetX - curX) * Math.min(1, 6*dt);
+                    setBeeX(nx);
+                    markDone(targetIndex);
+                    if (Math.abs(nx - targetX) < 2) sip(row.children[targetIndex]);
+                } else {
+                    const targetX = centers[state.index] - 24;
+                    const curX = parseFloat(bee.style.transform.split('(')[1]) || 0;
+                    const dx = (targetX - curX);
+                    const step = Math.sign(dx) * state.speed * dt;
+                    const nx = Math.abs(dx) < Math.abs(step) ? targetX : (curX + step);
+                    setBeeX(nx);
+
+                    if (performance.now() < state.pauseUntil){
+                        // sipping...
+                    } else if (Math.abs(nx - targetX) < 2){
+                        sip(row.children[state.index]);
+                        state.pauseUntil = performance.now() + state.stopHoverMs;
+                        const next = state.index + state.dir;
+                        if (next < 0 || next >= centers.length){
+                            state.dir *= -1;
+                            state.index += state.dir;
+                        } else {
+                            state.index = next;
+                        }
+                    }
+                }
+                state.raf = requestAnimationFrame(animate);
+            }
+
+            function show(newMode='indeterminate'){
+                state.mode = newMode;
+                state.running = true;
+                state.lastTime = 0;
+                if (!row.children.length) buildRow();
+                cancelAnimationFrame(state.raf);
+                host.classList.remove('hidden');
+                state.raf = requestAnimationFrame(animate);
+            }
+            function hide(){
+                state.running = false;
+                cancelAnimationFrame(state.raf);
+                host.classList.add('hidden');
+            }
+            function setProgress(p){
+                state.progress = Math.max(0, Math.min(1, Number(p)||0));
+                const fill = host.querySelector('.strip .fill');
+                if (fill) fill.style.width = (state.progress*100).toFixed(1) + '%';
+            }
+            return { show, hide, setProgress };
+        }
+
+        const _beeLoader = createBeeSpinnerController('bee-spinner');
+        const _beeIPA = createBeeSpinnerController('bee-spinner-ipa');
+        window.showBeeSpinner = (mode='indeterminate') => _beeLoader.show(mode);
+        window.setBeeProgress = (p) => _beeLoader.setProgress(p);
+        window.hideBeeSpinner = () => _beeLoader.hide();
+        window.showBeeSpinnerIPA = (mode='indeterminate') => _beeIPA.show(mode);
+        window.hideBeeSpinnerIPA = () => _beeIPA.hide();
+    
         // --- CACHING ---
         const ipaCache = {
             get(key) { try { const i = localStorage.getItem(key); return i ? JSON.parse(i) : null; } catch (e) { return null; } },
@@ -657,32 +863,14 @@
             "'Ough' có thể được phát âm theo 10 cách khác nhau.",
             "Âm câm (silent letters) là di tích lịch sử từ các ngôn ngữ khác.",
             "'Pronunciation' (phát âm) trớ trêu lại là từ bị phát âm sai nhiều nhất.",
+            "Tiếng Anh có tới 20 âm nguyên âm theo hệ thống IPA, nhiều hơn hầu hết các ngôn ngữ khác.",
             "'Strengths' là từ dài nhất chỉ có một nguyên âm.",
-            "'Rhythms' là từ dài nhất không có nguyên âm (a, e, i, o, u).",
-            "'Bookkeeper' là từ duy nhất có ba cặp chữ cái lặp lại liên tiếp.",
-            "Crutch Words (Từ đệm): Những từ như 'like', 'actually', 'basically', 'literally' thường được dùng làm từ đệm trong giao tiếp hàng ngày mà không thêm nhiều ý nghĩa.",
-            "Câu 'Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo.' là một câu đúng ngữ pháp, sử dụng ba nghĩa của từ 'buffalo' (trâu, thành phố Buffalo, và động từ 'doạ nạt').",
-            "Âm 'gh' khó đoán: 'gh' có thể được phát âm là /f/ như trong 'enough', /g/ như trong 'ghost', hoặc câm như trong 'though'.",
-            "Từ 'set' giữ kỷ lục: Từ 'set' có nhiều định nghĩa nhất trong tiếng Anh, với hơn 430 nghĩa khác nhau trong Từ điển Oxford.",
-            "'Queueing' là từ duy nhất có năm nguyên âm đi liền nhau.",
-            "'I am' là câu hoàn chỉnh ngắn nhất trong tiếng Anh.",
-            "Câu 'The quick brown fox jumps over the lazy dog' chứa tất cả 26 chữ cái trong bảng chữ cái.",
-            "Không có từ nào trong tiếng Anh vần với 'month', 'orange', 'silver' hay 'purple'.",
-            "'Uncopyrightable' là từ dài nhất không lặp lại bất kỳ chữ cái nào.",
-            "Từ dài nhất trong từ điển là 'pneumonoultramicroscopicsilicovolcanoconiosis' (một loại bệnh phổi).",
-            "Shakespeare đã sáng tạo ra hơn 1,700 từ cho tiếng Anh, ví dụ như 'eyeball', 'swagger', 'bedazzled'.",
-            "Từ 'lol' (laughing out loud) đã được thêm vào từ điển Oxford vào năm 2011.",
-            "'SWIMS' khi lộn ngược lại vẫn là 'SWIMS'.",
-            "'Stewardesses' là từ dài nhất có thể gõ chỉ bằng tay trái trên bàn phím QWERTY.",
-            "Từ 'dreamt' là từ duy nhất kết thúc bằng '-mt'.",
-            "Chữ cái được sử dụng nhiều nhất là 'e', và chữ cái bắt đầu nhiều từ nhất là 's'.",
         ];
 
         const practiceSentences = [
             "What are you doing?", "It's a piece of cake.", "I'll call you back later.",
             "How's it going?", "Can I have a bottle of water, please?", "It's a beautiful day, isn't it?",
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
-            "comfortable", "clothes", "Wednesday", "recipe", "stomach", "vehicle", "island", "dessert", "help", "vegetable", "library", "choir", "leave", "live", "seat", "sit", "sheep", "ship", "food", "foot", "bed", "bad", "think", "this", "mother", "weather", "economic", "recommend", "chocolate", "wife", "wine", "life", "like", "fine", "five", "file", "women", "pizza", "purpose", "colleague",
         ];
 
         const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
@@ -802,6 +990,7 @@
          }
 
         function startIpaLoadingAnimation() {
+            try{ showBeeSpinnerIPA('indeterminate'); }catch(e){}
             clearInterval(ipaLoadingInterval);
             const symbols = ['ə', 'ʃ', 't', 'k', 'æ', 'iː', 'θ', 'ð', 'ŋ'];
             let i = 0;
@@ -817,6 +1006,7 @@
         }
 
         function stopIpaLoadingAnimation() {
+            try{ hideBeeSpinnerIPA(); }catch(e){}
             clearInterval(ipaLoadingInterval);
         }
 
@@ -869,7 +1059,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Analyze the sentence "${text}". Provide a JSON object with 'pitch_contour' (an array of 40-50 normalized pitch points from 0.0 to 1.0, representing the melody of the sentence) and 'stressed_words' (an array of objects with 'word' and 'time_stamp_normalized' from 0.0 to 1.0 indicating when the stress occurs).` }] }],
+                            contents: [{ parts: [{ text: `Analyze the sentence "${text}". Provide a JSON object with 'pitch_contour' (an array of 40-50 normalized pitch points) and 'stressed_words' (an array of objects with 'word' and 'time_stamp_normalized' from 0.0 to 1.0).` }] }],
                             generationConfig: { responseMimeType: "application/json" }
                         })
                     })
@@ -909,17 +1099,11 @@
 
             if (cachedData) {
                 displayIpaData(cachedData);
-                setButtonLoading(listenNaturalBtn, listenNaturalLoader, true);
-                setButtonLoading(listenClearBtn, listenClearLoader, true);
-                const prefetchTask = isSingleWordMode 
-                    ? prefetchClearPronunciation(text, accent) 
-                    : prefetchModelPronunciation(text, accent);
-                prefetchTask.finally(() => {
-                    if (currentRequestID === fetchIpaRequestID) {
-                        setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
-                        setButtonLoading(listenClearBtn, listenClearLoader, false);
-                    }
-                });
+                if (isSingleWordMode) {
+                    prefetchClearPronunciation(text, accent);
+                } else {
+                    prefetchModelPronunciation(text, accent);
+                }
                 return true;
             }
             
@@ -959,17 +1143,11 @@
                 ipaCache.set(cacheKey, resultJson);
                 displayIpaData(resultJson);
                 
-                setButtonLoading(listenNaturalBtn, listenNaturalLoader, true);
-                setButtonLoading(listenClearBtn, listenClearLoader, true);
-                const prefetchTask = isSingleWordMode 
-                    ? prefetchClearPronunciation(text, accent) 
-                    : prefetchModelPronunciation(text, accent);
-                prefetchTask.finally(() => {
-                    if (currentRequestID === fetchIpaRequestID) {
-                        setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
-                        setButtonLoading(listenClearBtn, listenClearLoader, false);
-                    }
-                });
+                if (isSingleWordMode) {
+                    prefetchClearPronunciation(text, accent);
+                } else {
+                    prefetchModelPronunciation(text, accent);
+                }
                 
                 return true;
             } catch (error) {
@@ -1037,10 +1215,7 @@
             const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
             const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
             
-            if (button.disabled) {
-                showMessage('Giọng mẫu đang được tải, bạn vui lòng chờ một lát nhé.', 'info');
-                return;
-            }
+            if (button.disabled) return;
             
             setButtonLoading(button, loader, true);
 
@@ -1080,17 +1255,17 @@
 
         function startProgressSimulation() {
             let width = 0;
-            progressBarInner.style.width = '0%';
+            progressBarInner.style.width = '0%'; try{ showBeeSpinner('indeterminate'); setBeeProgress(0);}catch(e){}
             clearInterval(progressInterval);
             progressInterval = setInterval(() => {
                 width = Math.min(width + Math.random() * 2, 95);
-                progressBarInner.style.width = width + '%';
+                progressBarInner.style.width = width + '%'; try{ setBeeProgress(width/100);}catch(e){}
             }, 100);
         }
 
         function stopProgressSimulation() {
             clearInterval(progressInterval);
-            progressBarInner.style.width = '100%';
+            progressBarInner.style.width = '100%'; try{ setBeeProgress(1); setTimeout(()=>hideBeeSpinner(), 600);}catch(e){}
         }
 
         function startProgressTextAnimation() {
@@ -1154,11 +1329,11 @@
                 let prompt;
                 if (isSingleWordMode) {
                     prompt = {
-                        "role": "Bạn là chuyên gia ngữ âm AI thân thiện. Nhiệm vụ của bạn là phân tích một từ đơn mà người dùng phát âm.",
+                        "role": "Bạn là chuyên gia ngữ âm AI. Nhiệm vụ của bạn là phân tích một từ đơn.",
                         "task_instructions": {
-                            "step_1_analysis": "Phiên âm audio của người dùng và so sánh từng âm vị với âm vị chuẩn. Phân tích phải cực kỳ nghiêm ngặt và chính xác. Không cần xác thực từ, hãy cứ phân tích dựa trên những gì nghe được.",
+                            "step_1_analysis": "Phiên âm audio của người dùng và so sánh từng âm vị với âm vị chuẩn của từ. Phân tích phải cực kỳ nghiêm ngặt và chính xác. Không cần xác thực từ, hãy cứ phân tích dựa trên những gì nghe được.",
                             "step_2_scoring": "Chấm điểm khắt khe dựa trên độ chính xác của từng âm vị. Lỗi âm cuối hoặc nguyên âm chính là lỗi nghiêm trọng. Điểm 100 chỉ khi phát âm hoàn toàn chính xác.",
-                            "step_3_review": "Nếu phát âm không khớp, hãy nhẹ nhàng chỉ ra điểm khác biệt và khuyến khích bạn ấy thử lại. Luôn dùng 'bạn' khi giao tiếp."
+                            "step_3_review": "Nếu phát âm không khớp từ, hãy đưa ra nhận xét cụ thể về sự khác biệt giữa phiên âm chuẩn và phiên âm của người dùng."
                         },
                         "context": {
                             "text_to_pronounce": textInput.value.trim(),
@@ -1173,33 +1348,38 @@
                                 "transcribed_word": "string",
                                 "overall_score": "number",
                                 "user_ipa": "string",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" } ]",
-                                "syllable_analysis": "{ \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" }"
+                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
+                                "syllable_analysis": "{ \"feedback\": \"string\" }"
                             }
                         }
                     };
                 } else {
                     prompt = {
-                        "role": "Bạn là PrAI, một trợ lý AI thân thiện, thấu hiểu và luôn động viên người dùng. Nhiệm vụ của bạn là phân tích câu nói của người dùng một cách chi tiết, chính xác và đưa ra nhận xét mang tính xây dựng, giúp bạn ấy tiến bộ. Luôn xưng hô là 'bạn' trong mọi phản hồi.",
+                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI thấu hiểu người học tiếng Anh là người Việt. Hãy phân tích câu nói của người dùng một cách chi tiết và chính xác. Không cần xác thực câu, hãy cứ phân tích những gì nghe được.",
                         "context": {
-                            "user_profile": "Người Việt, có thể gặp khó khăn với âm cuối, nguyên âm và nhịp điệu. Hãy kiên nhẫn và khích lệ.",
+                            "learner_profile": "Người Việt, thường bỏ âm cuối, nhầm lẫn nguyên âm, và nói ngắt nghỉ.",
                             "text_to_pronounce": textInput.value.trim(),
                             "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
                             "standard_ipa": standardIPA,
                             "model_pitch_contour": modelPronunciationData.pitchContour,
                         },
+                        "leniency_rules": [{ 
+                            "phoneme": "ʔ (glottal stop)", 
+                            "condition": "Khi thay thế cho âm /t/ cuối không bật hơi.", 
+                            "adjustment": "Phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm."
+                        }],
                         "output_format_instruction": {
                             "format": "JSON",
                             "schema": {
                                 "sentence_match": "boolean",
                                 "overall_score": "number | null",
                                 "user_ipa": "string | null",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" } ]",
+                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
                                 "intonation_analysis": {
-                                    "feedback": "string (Nhận xét về ngữ điệu, tốc độ và nhịp điệu một cách thân thiện, gần gũi. Bắt đầu bằng một lời khen hoặc động viên, sau đó đưa ra góp ý cụ thể. Ví dụ: 'Ngữ điệu của bạn khá tốt! Để tự nhiên hơn, bạn hãy thử nhấn mạnh vào... và lướt nhẹ ở... nhé.')",
-                                    "user_pitch_contour": "[number] (Mảng gồm 40-50 điểm, giá trị từ 0.0 đến 1.0. Phải trả về mảng này.)"
+                                    "feedback": "string // Nhận xét về ngữ điệu, tốc độ và nhịp điệu. So sánh với mẫu.",
+                                    "user_pitch_contour": "[number]"
                                 },
-                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" }] | null",
+                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
                                 "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                             }
                         }
@@ -1270,8 +1450,8 @@
             // Display message if no match found for clarity
             if ((isSingleWordMode && data.word_match === false) || (!isSingleWordMode && data.sentence_match === false)) {
                 let mismatchMessage = isSingleWordMode 
-                    ? `Hmm, hình như bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn nhé.`
-                    : `Câu bạn nói có vẻ chưa khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
+                    ? `Bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn.`
+                    : `Câu bạn nói không khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
                 mismatchNotificationBar.textContent = mismatchMessage;
                 mismatchNotificationBar.classList.remove('hidden');
             }
@@ -1294,17 +1474,10 @@
                     );
                 } else {
                      intonationAnalysisContent.classList.add('hidden');
-                     // Add a message if the chart cannot be drawn
-                     if (data.intonation_analysis?.feedback) {
-                        intonationAnalysisFeedback.textContent += "\n(Không đủ dữ liệu để vẽ biểu đồ ngữ điệu.)";
-                     } else {
-                        intonationAnalysisFeedback.textContent = "Không đủ dữ liệu để phân tích và vẽ biểu đồ ngữ điệu của bạn.";
-                     }
                 }
                 
                 connectedSpeechAnalysis.innerHTML = '';
                 if (data.connected_speech_analysis?.length > 0) {
-                    connectedSpeechContainer.classList.remove('hidden');
                     data.connected_speech_analysis.forEach(item => {
                         const itemEl = document.createElement('div');
                         
@@ -1325,7 +1498,7 @@
                         connectedSpeechAnalysis.appendChild(itemEl);
                     });
                 } else {
-                    connectedSpeechContainer.classList.add('hidden');
+                    connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary text-sm italic">Không có nhận xét nổi bật về nối âm. Lời nói của bạn khá rõ ràng nhưng có thể chưa thể hiện sự liên kết tự nhiên.</p>';
                 }
             }
         
@@ -1572,7 +1745,85 @@
             window.requestAnimationFrame(step);
         }
         
+        function renderIntonationChart(svgElement, modelData, userData, stressedWords = []) {
+            svgElement.innerHTML = ''; 
+            if (!modelData?.length || !userData?.length) return;
         
+            const padding = { top: 30, right: 10, bottom: 20, left: 10 };
+            const width = svgElement.clientWidth;
+            const height = svgElement.clientHeight;
+            const innerWidth = width - padding.left - padding.right;
+            const innerHeight = height - padding.top - padding.bottom;
+        
+            const allData = [...modelData, ...userData];
+            const yMin = Math.min(...allData);
+            const yMax = Math.max(...allData) > yMin ? Math.max(...allData) : yMin + 1;
+            
+            const scaleX = (index, len) => padding.left + (index / (len - 1)) * innerWidth;
+            const scaleY = (val) => padding.top + innerHeight - ((val - yMin) / (yMax - yMin)) * innerHeight;
+        
+            const createPolyline = (points, color, dash) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                line.setAttribute('points', points);
+                line.setAttribute('fill', 'none');
+                line.setAttribute('stroke', `var(--${color})`);
+                line.setAttribute('stroke-width', dash ? '2.5' : '2');
+                if (dash) line.setAttribute('stroke-dasharray', '4 4');
+                return line;
+            };
+
+            const modelPoints = modelData.map((d, i) => `${scaleX(i, modelData.length)},${scaleY(d)}`).join(' ');
+            const userPoints = userData.map((d, i) => `${scaleX(i, userData.length)},${scaleY(d)}`).join(' ');
+            svgElement.appendChild(createPolyline(modelPoints, 'accent-primary'));
+            svgElement.appendChild(createPolyline(userPoints, 'accent-warning', true));
+
+            stressedWords.forEach(item => {
+                const modelIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
+                const searchRadius = 2;
+                let peakValue = -Infinity;
+                let peakIndex = modelIndex;
+                for (let i = -searchRadius; i <= searchRadius; i++) {
+                    const idx = Math.max(0, Math.min(modelData.length - 1, modelIndex + i));
+                    if (modelData[idx] > peakValue) {
+                        peakValue = modelData[idx];
+                        peakIndex = idx;
+                    }
+                }
+                
+                const x = scaleX(peakIndex, modelData.length);
+                const y = scaleY(peakValue) - 10;
+
+                const textBg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textBg.setAttribute('x', x);
+                textBg.setAttribute('y', y);
+                textBg.setAttribute('text-anchor', 'middle');
+                textBg.setAttribute('font-size', '13');
+                textBg.setAttribute('font-weight', '600');
+                textBg.setAttribute('stroke', 'var(--glass-bg)');
+                textBg.setAttribute('stroke-width', '4');
+                textBg.setAttribute('stroke-linejoin', 'round');
+                textBg.textContent = item.word;
+                svgElement.appendChild(textBg);
+
+                const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textEl.setAttribute('x', x);
+                textEl.setAttribute('y', y);
+                textEl.setAttribute('text-anchor', 'middle');
+                textEl.setAttribute('font-size', '13');
+                textEl.setAttribute('font-weight', '600');
+                textEl.setAttribute('fill', 'var(--text-primary)');
+                textEl.textContent = item.word;
+                svgElement.appendChild(textEl);
+            });
+            
+            const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            legend.innerHTML = `
+                <rect x="${innerWidth - 180}" y="${height - 15}" width="12" height="2" fill="var(--accent-primary)" />
+                <text x="${innerWidth - 165}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng mẫu</text>
+                <rect x="${innerWidth - 90}" y="${height - 15}" width="12" height="2" fill="var(--accent-warning)" stroke-dasharray="2 2" stroke="var(--accent-warning)" />
+                <text x="${innerWidth - 75}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>`;
+            svgElement.appendChild(legend);
+        }
 
         function initApp() {
             textInput.addEventListener('input', () => {
@@ -1631,179 +1882,6 @@
         }
 
         initApp();
-    
-
-/* === Intonation Chart v4 (Robust) =========================================
-   - Uses ResizeObserver for robust rendering in dynamic containers.
-   - Interpolates data to ensure smooth, comparable curves.
-   - Safe against null, NaN, or empty data arrays.
-   - Automatically redraws on resize or visibility changes.
-   API: renderIntonationChart(svg, modelData, userData, stressedWords?)
-=============================================================================*/
-(function () {
-  const roMap = new WeakMap();
-  const lastArgs = new WeakMap();
-
-  window.renderIntonationChart = function (svg, modelData, userData, stressedWords = []) {
-    if (!svg) return;
-    lastArgs.set(svg, { modelData, userData, stressedWords });
-
-    if (!roMap.get(svg)) {
-      const ro = new ResizeObserver(() => {
-        const args = lastArgs.get(svg);
-        if (args) requestAnimationFrame(() => draw(svg, args.modelData, args.userData, args.stressedWords));
-      });
-      ro.observe(svg);
-      roMap.set(svg, ro);
-
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          const args = lastArgs.get(svg);
-          if (args) requestAnimationFrame(() => draw(svg, args.modelData, args.userData, args.stressedWords));
-        }
-      }, { passive: true });
-    }
-
-    requestAnimationFrame(() => draw(svg, modelData, userData, stressedWords));
-  };
-
-  function sanitize(arr) {
-    if (!Array.isArray(arr)) return [];
-    return arr.map(v => Number(v)).filter(v => Number.isFinite(v));
-  }
-
-  function resample(arr, N) {
-    const src = sanitize(arr);
-    if (src.length === 0) return [];
-    if (src.length === 1) return Array(N).fill(src[0]);
-    if (N <= 1) return [src[0]];
-    
-    const out = [];
-    for (let i = 0; i < N; i++) {
-      const t = (i * (src.length - 1)) / (N - 1);
-      const i0 = Math.floor(t);
-      const i1 = Math.min(src.length - 1, i0 + 1);
-      const r = t - i0;
-      out.push(src[i0] * (1 - r) + src[i1] * r);
-    }
-    return out;
-  }
-
-  function getDims(svg) {
-    let w = svg.clientWidth || svg.getBoundingClientRect().width || parseFloat(svg.getAttribute('width')) || 0;
-    let h = svg.clientHeight || svg.getBoundingClientRect().height || parseFloat(svg.getAttribute('height')) || 0;
-    if (w < 10) w = 360; // Fallback width
-    if (h < 10) h = 180; // Fallback height
-    svg.setAttribute('width', w);
-    svg.setAttribute('height', h);
-    return { w, h };
-  }
-
-  function clamp01(x) { return Math.max(0, Math.min(1, Number(x) || 0)); }
-
-  function draw(svg, modelData, userData, stressedWords = []) {
-    const mRaw = sanitize(modelData);
-    const uRaw = sanitize(userData);
-    if (!mRaw.length || !uRaw.length) { svg.innerHTML = ''; return; }
-
-    const N = Math.max(32, Math.min(256, Math.max(mRaw.length, uRaw.length)));
-    const m = resample(mRaw, N);
-    const u = resample(uRaw, N);
-
-    const { w, h } = getDims(svg);
-    if (w <= 0 || h <= 0) return; // Don't draw if invisible
-
-    const padding = { top: 30, right: 10, bottom: 22, left: 10 };
-    const innerW = Math.max(1, w - padding.left - padding.right);
-    const innerH = Math.max(1, h - padding.top - padding.bottom);
-
-    const all = m.concat(u);
-    let yMin = Math.min(...all), yMax = Math.max(...all);
-    if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) { svg.innerHTML = ''; return; }
-    if (Math.abs(yMax - yMin) < 1e-6) { yMin -= 1; yMax += 1; }
-
-    const sx = (i) => padding.left + (N > 1 ? (i / (N - 1)) * innerW : innerW / 2);
-    const sy = (v) => padding.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
-
-    svg.innerHTML = ''; // Clear previous drawings
-
-    const makeLine = (pts, { dashed = false, cssVar = '--accent-primary', width = 2 }) => {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-      el.setAttribute('points', pts);
-      el.setAttribute('fill', 'none');
-      el.setAttribute('stroke', `var(${cssVar})`);
-      el.setAttribute('stroke-width', String(width));
-      el.setAttribute('stroke-linecap', 'round');
-      el.setAttribute('stroke-linejoin', 'round');
-      if (dashed) el.setAttribute('stroke-dasharray', '4 4');
-      return el;
-    };
-
-    const gridY = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    for (let k = 0; k <= 4; k++) {
-      const y = padding.top + (k / 4) * innerH;
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      g.setAttribute('x1', String(padding.left));
-      g.setAttribute('x2', String(padding.left + innerW));
-      g.setAttribute('y1', String(y));
-      g.setAttribute('y2', String(y));
-      g.setAttribute('stroke', 'var(--glass-border)');
-      g.setAttribute('stroke-width', '1');
-      g.setAttribute('opacity', '0.6');
-      gridY.appendChild(g);
-    }
-    svg.appendChild(gridY);
-
-    const mPts = m.map((v, i) => `${sx(i)},${sy(v)}`).join(' ');
-    const uPts = u.map((v, i) => `${sx(i)},${sy(v)}`).join(' ');
-
-    svg.appendChild(makeLine(mPts, { cssVar: '--accent-primary', width: 2 }));
-    svg.appendChild(makeLine(uPts, { cssVar: '--accent-warning', dashed: true, width: 2.5 }));
-
-    (stressedWords || []).forEach(item => {
-      const t = clamp01(item?.time_stamp_normalized);
-      const baseIdx = Math.round(t * (N - 1));
-      const radius = 2;
-      let peakIdx = baseIdx, peakVal = -Infinity;
-      for (let di = -radius; di <= radius; di++) {
-        const idx = Math.max(0, Math.min(N - 1, baseIdx + di));
-        if (m[idx] > peakVal) { peakVal = m[idx]; peakIdx = idx; }
-      }
-      const x = sx(peakIdx), y = sy(peakVal) - 10;
-
-      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      bg.setAttribute('x', x); bg.setAttribute('y', y);
-      bg.setAttribute('text-anchor', 'middle');
-      bg.setAttribute('font-size', '13');
-      bg.setAttribute('font-weight', '600');
-      bg.setAttribute('stroke', 'var(--glass-border)');
-      bg.setAttribute('stroke-width', '5');
-      bg.setAttribute('paint-order', 'stroke');
-      bg.setAttribute('fill', 'transparent');
-      bg.textContent = item?.word ?? '';
-      svg.appendChild(bg);
-
-      const fg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      fg.setAttribute('x', x); fg.setAttribute('y', y);
-      fg.setAttribute('text-anchor', 'middle');
-      fg.setAttribute('font-size', '13');
-      fg.setAttribute('font-weight', '600');
-      fg.setAttribute('fill', 'var(--text-primary)');
-      fg.textContent = item?.word ?? '';
-      svg.appendChild(fg);
-    });
-
-    const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    const yLegend = h - 12;
-    legend.innerHTML = `
-      <rect x="${padding.left}" y="${yLegend - 3}" width="12" height="2" fill="var(--accent-primary)"></rect>
-      <text x="${padding.left + 16}" y="${yLegend}" font-size="10" fill="var(--text-secondary)">Giọng mẫu</text>
-      <rect x="${padding.left + 110}" y="${yLegend - 3}" width="12" height="2" stroke="var(--accent-warning)" fill="none" stroke-dasharray="4 4"></rect>
-      <text x="${padding.left + 126}" y="${yLegend}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>`;
-    svg.appendChild(legend);
-  }
-})();
-
-</script>
+    </script>
 </body>
-</html
+</html>
