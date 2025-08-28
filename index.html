@@ -390,7 +390,8 @@
                              </div>
                          </div>
                          <div class="flex-shrink-0 flex gap-3">
-                             <div class="relative w-11 h-11">
+                             <!-- Re-positioned Listen Clear button -->
+                             <div class="relative w-11 h-11" id="listen-clear-container">
                                  <button id="listen-clear-btn" class="btn-icon btn-secondary absolute inset-0">
                                      <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
                                  </button>
@@ -398,6 +399,7 @@
                                      <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
                                  </div>
                              </div>
+                             <!-- Re-positioned Listen Natural button -->
                              <div class="relative w-11 h-11" id="natural-voice-container">
                                  <button id="listen-natural-btn" class="btn-icon btn-secondary absolute inset-0">
                                      <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
@@ -1100,9 +1102,9 @@
                     prompt = {
                         "role": "Bạn là chuyên gia ngữ âm AI. Nhiệm vụ của bạn là phân tích một từ đơn.",
                         "task_instructions": {
-                            "step_1_verification": "Đầu tiên, phiên âm audio của người dùng. Nếu từ được phát âm khác với 'text_to_pronounce', hãy trả về JSON với 'word_match': false và 'transcribed_word'. KHÔNG phân tích thêm.",
-                            "step_2_analysis": "Nếu từ khớp, thực hiện phân tích âm vị cực kỳ nghiêm ngặt và chính xác. So sánh từng âm vị của người dùng với âm vị chuẩn.",
-                            "step_3_scoring": "Chấm điểm khắt khe dựa trên độ chính xác của từng âm vị. Lỗi âm cuối hoặc nguyên âm chính là lỗi nghiêm trọng."
+                            "step_1_analysis": "Phiên âm audio của người dùng và so sánh từng âm vị với âm vị chuẩn của từ. Phân tích phải cực kỳ nghiêm ngặt và chính xác. Không cần xác thực từ, hãy cứ phân tích dựa trên những gì nghe được.",
+                            "step_2_scoring": "Chấm điểm khắt khe dựa trên độ chính xác của từng âm vị. Lỗi âm cuối hoặc nguyên âm chính là lỗi nghiêm trọng. Điểm 100 chỉ khi phát âm hoàn toàn chính xác.",
+                            "step_3_review": "Nếu phát âm không khớp từ, hãy đưa ra nhận xét cụ thể về sự khác biệt giữa phiên âm chuẩn và phiên âm của người dùng."
                         },
                         "context": {
                             "text_to_pronounce": textInput.value.trim(),
@@ -1114,17 +1116,17 @@
                             "format": "JSON",
                             "schema": {
                                 "word_match": "boolean",
-                                "transcribed_word": "string | null",
-                                "overall_score": "number | null",
-                                "user_ipa": "string | null",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ] | null",
-                                "syllable_analysis": "{ \"feedback\": \"string\" } | null"
+                                "transcribed_word": "string",
+                                "overall_score": "number",
+                                "user_ipa": "string",
+                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
+                                "syllable_analysis": "{ \"feedback\": \"string\" }"
                             }
                         }
                     };
                 } else {
                     prompt = {
-                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI thấu hiểu người học tiếng Anh là người Việt.",
+                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI thấu hiểu người học tiếng Anh là người Việt. Hãy phân tích câu nói của người dùng một cách chi tiết và chính xác. Không cần xác thực câu, hãy cứ phân tích những gì nghe được.",
                         "context": {
                             "learner_profile": "Người Việt, thường bỏ âm cuối, nhầm lẫn nguyên âm, và nói ngắt nghỉ.",
                             "text_to_pronounce": textInput.value.trim(),
@@ -1186,14 +1188,7 @@
         }
         
         function displayResults(data) {
-            if (data.word_match === false) {
-                showMessage(`Bạn dường như đã phát âm từ "${data.transcribed_word}" thay vì từ mẫu. Vui lòng thử lại.`, 'warning');
-                return;
-            }
-            if (data.sentence_match === false) {
-                showMessage("Câu bạn nói không khớp với câu mẫu. Vui lòng thử lại.", 'warning');
-                return;
-            }
+            // Updated logic to display analysis even if word/sentence match is false
             if (data.overall_score === null) {
                 showMessage("PrAI không nhận diện được giọng nói. Vui lòng thử lại và nói to, rõ hơn.", "error");
                 return;
@@ -1222,6 +1217,15 @@
                 }
                 phonemeAnalysis.appendChild(phonemeEl);
             });
+
+            // Display message if no match found for clarity
+            if (isSingleWordMode && data.word_match === false) {
+                let mismatchMessage = `Bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn.`;
+                showMessage(mismatchMessage, 'warning');
+            } else if (!isSingleWordMode && data.sentence_match === false) {
+                 let mismatchMessage = `Câu bạn nói không khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
+                 showMessage(mismatchMessage, 'warning');
+            }
         
             if (isSingleWordMode) {
                 prosodyAnalysisTitle.textContent = 'Phân tích Âm tiết & Trọng âm';
