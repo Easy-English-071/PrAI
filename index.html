@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V14 --- */
+        /* --- GLASSMORPHISM THEME V15 --- */
         :root {
             /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
@@ -159,8 +159,10 @@
         .phoneme {
             padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 1.125rem;
             position: relative; transition: all 0.2s ease-in-out; color: var(--text-secondary);
+            /* --- FIX: Ensure even 'correct' has a background color --- */
+            background-color: var(--highlight-correct);
         }
-        .phoneme.status-correct { background-color: var(--highlight-correct); color: var(--accent-success); }
+        .phoneme.status-correct { color: var(--accent-success); }
         .phoneme.status-approximate { background-color: var(--highlight-approximate); color: var(--accent-warning); }
         .phoneme.status-incorrect { background-color: var(--highlight-incorrect); color: var(--accent-danger); }
 
@@ -257,25 +259,7 @@
             margin-bottom: 1rem;
         }
 
-        .rhythm-score-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: -0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        #rhythm-score-value {
-            font-size: 1.875rem; /* text-3xl */
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        #rhythm-score-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
+        /* --- REMOVED Rhythm Score Container --- */
 
         #prosody-tooltip-icon {
             cursor: pointer;
@@ -506,16 +490,6 @@
                         <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
                     </div>
             
-                    <!-- Rhythm Score -->
-                    <div class="rhythm-score-container">
-                        <span id="rhythm-score-label">Điểm nhịp điệu:</span>
-                        <span id="rhythm-score-value"></span>
-                        <div id="prosody-tooltip" class="has-tooltip relative">
-                            <svg id="prosody-tooltip-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                            <div id="prosody-tooltip-text" class="tooltip w-72"></div>
-                        </div>
-                    </div>
-            
                     <!-- Phoneme Analysis -->
                     <div class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Âm vị</h4>
@@ -532,7 +506,7 @@
                             <div class="intonation-chart-container">
                                 <svg id="intonation-chart" width="100%" height="100%"></svg>
                             </div>
-                            <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
+                            <div id="intonation-analysis-feedback" class="text-sm text-text-secondary mt-3 text-center"></div>
                         </div>
                         <!-- Container for Stress Chart (for single words) -->
                          <div id="stress-analysis-wrapper" class="hidden">
@@ -543,7 +517,7 @@
                                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color: var(--accent-primary); opacity: 0.7;"></div><span>Giọng mẫu</span></div>
                                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color: var(--accent-warning);"></div><span>Giọng của bạn</span></div>
                              </div>
-                            <div id="stress-analysis-feedback" class="text-sm text-text-secondary mt-3"></div>
+                            <div id="stress-analysis-feedback" class="text-sm text-text-secondary mt-3 text-center"></div>
                         </div>
                     </div>
             
@@ -640,7 +614,9 @@
         const prosodyAnalysisContainer = document.getElementById('prosody-analysis-container');
         const prosodyAnalysisTitle = document.getElementById('prosody-analysis-title');
         const intonationAnalysisWrapper = document.getElementById('intonation-analysis-wrapper');
+        const intonationFeedback = document.getElementById('intonation-analysis-feedback');
         const stressAnalysisWrapper = document.getElementById('stress-analysis-wrapper');
+        const stressFeedback = document.getElementById('stress-analysis-feedback');
         const connectedSpeechContainer = document.getElementById('connected-speech-container');
         
         const historyBtn = document.getElementById('history-btn');
@@ -959,8 +935,6 @@
                 modelPronunciationData.pitchContour = resultJson.pitch_contour || [];
                 modelPronunciationData.stressedWords = resultJson.stressed_words || [];
         
-                console.log("Model pronunciation data prefetched and cached successfully.", modelPronunciationData);
-        
             } catch (error) {
                 console.error("Model pronunciation prefetch failed:", error);
                 modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
@@ -995,7 +969,6 @@
 
             if (cachedData) {
                 displayIpaData(cachedData);
-                // --- FIX: Start prefetching immediately for sentences ---
                 if (text.includes(' ')) {
                     prefetchModelPronunciation(text, accent);
                 }
@@ -1003,55 +976,55 @@
             }
             
             const isSingleWord = !text.includes(' ');
-            let combinedPrompt;
-
-            if (isSingleWord) {
-                combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
-            } else {
-                combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
-                1. 'simple': A standard, citation-form IPA transcription.
-                2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
-                3. 'thought_groups': An object with two keys:
-                   a. 'groups': An array of strings representing the most natural, semantically-driven thought groups, based on grammatical units.
-                   b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping, referencing principles like separating grammatical units (e.g., prepositional phrases, clauses).
-                Respond with ONLY the JSON object.`;
-            }
             
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
-            
             startIpaLoadingAnimation();
             
             try {
-                const payload = { 
-                    contents: [{ parts: [{ text: combinedPrompt }] }],
+                // --- FIX: Optimized IPA fetching ---
+                const ipaPrompt = `For the text "${text}" in ${accent}, provide a single JSON object with two keys: 'simple' (standard IPA) and 'detailed' (natural speech IPA). Respond with ONLY the JSON object.`;
+                const ipaPayload = { 
+                    contents: [{ parts: [{ text: ipaPrompt }] }],
                     generationConfig: { responseMimeType: "application/json" }
                 };
-
-                const response = await fetchWithBackoff(TEXT_API_URL, { 
+                const ipaResponse = await fetchWithBackoff(TEXT_API_URL, { 
                     method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Target-API': 'text'
-                    }, 
-                    body: JSON.stringify(payload) 
+                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                    body: JSON.stringify(ipaPayload) 
                 });
 
                 if (currentRequestID !== fetchIpaRequestID) return false;
 
-                const resultText = response.candidates[0].content.parts[0].text;
-                let resultJson = JSON.parse(resultText);
+                const ipaResultJson = JSON.parse(ipaResponse.candidates[0].content.parts[0].text);
+                let finalJson = { ...ipaResultJson };
 
-                if (isSingleWord) {
-                    resultJson.detailed = resultJson.simple;
-                }
-
-                ipaCache.set(cacheKey, resultJson);
-                displayIpaData(resultJson);
+                // Update UI immediately with IPA
+                displayIpaData(finalJson);
                 
-                // --- FIX: Start prefetching immediately for sentences ---
                 if (!isSingleWord) {
+                    // Start prefetching audio immediately
                     prefetchModelPronunciation(text, accent);
+
+                    // In the background, fetch thought groups
+                    const thoughtGroupPrompt = `For the phrase "${text}", provide a single JSON object with one key: 'thought_groups', which contains an object with two keys: 'groups' (an array of strings of the thought groups) and 'explanation' (a clear explanation in Vietnamese). Respond with ONLY the JSON object.`;
+                    const thoughtGroupPayload = {
+                        contents: [{ parts: [{ text: thoughtGroupPrompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    };
+                    fetchWithBackoff(TEXT_API_URL, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                        body: JSON.stringify(thoughtGroupPayload) 
+                    }).then(tgResponse => {
+                        const tgResultJson = JSON.parse(tgResponse.candidates[0].content.parts[0].text);
+                        finalJson.thought_groups = tgResultJson.thought_groups;
+                        currentThoughtGroups = finalJson.thought_groups.groups;
+                        displayThoughtGroups(finalJson.thought_groups.groups, finalJson.thought_groups.explanation);
+                        ipaCache.set(cacheKey, finalJson); // Cache the complete data
+                    }).catch(err => console.error("Failed to fetch thought groups in background:", err));
+                } else {
+                     ipaCache.set(cacheKey, finalJson);
                 }
                 
                 return true;
@@ -1174,12 +1147,12 @@
 
             progressInterval = setInterval(() => {
                 if (width < 95) {
-                    width += Math.random() * 1.5; // Slightly faster simulation
+                    width += Math.random() * 1.5; 
                 } else {
                     clearInterval(progressInterval);
                 }
                 progressBarInner.style.width = Math.min(width, 95) + '%';
-            }, 80); // Faster interval
+            }, 80); 
         }
 
         function stopProgressSimulation() {
@@ -1193,8 +1166,8 @@
             const steps = [
                 { text: "Okie, PrAI đã nhận được bản ghi âm của bạn...", duration: 1000 },
                 { text: "Đang phiên âm giọng nói của bạn...", duration: 2000 },
+                { text: "Xác thực và đối chiếu với văn bản gốc...", duration: 2500 },
                 { text: "So sánh từng âm một với giọng chuẩn...", duration: 2500 },
-                { text: "Kiểm tra ngữ điệu và nhịp điệu...", duration: 1500 },
                 { text: "Xong rồi! Cùng xem kết quả tuyệt vời nhé!", duration: 1000 }
             ];
             let cumulativeDelay = 0;
@@ -1234,7 +1207,6 @@
             const accent = accentSelect.value;
             const isSingleWord = !text.includes(' ');
 
-            // --- FIX: Add safeguard to wait for prefetching to complete ---
             if (!isSingleWord) {
                 while(isFetchingModelAudio) {
                     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1264,74 +1236,33 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                let prompt;
-                // --- FIX: Complete overhaul of the single-word analysis prompt ---
-                if (isSingleWord) {
-                    prompt = {
-                        "role": "Bạn là một chuyên gia phân tích ngữ âm AI, nhiệm vụ của bạn là so sánh giọng đọc của người dùng với phát âm chuẩn.",
-                        "task_instructions": {
-                            "step_1": "Phân tích tệp audio để xác định phiên âm IPA (`user_ipa`) và mẫu trọng âm (`user_stress_pattern`) của người dùng. Mẫu trọng âm là một mảng boolean, true cho âm tiết được nhấn, false cho âm tiết không được nhấn.",
-                            "step_2": "So sánh `user_ipa` với `standard_ipa` được cung cấp để tạo ra `phoneme_analysis`.",
-                            "step_3": "So sánh `user_stress_pattern` với `standard_stress_pattern` được cung cấp để tạo ra `stress_analysis`.",
-                            "step_4": "Tính điểm `overall_score` dựa trên độ chính xác của cả âm vị và trọng âm.",
-                            "step_5": "Cung cấp nhận xét trong trường `feedback`. Lưu ý quan trọng: Toàn bộ nội dung trong các trường `feedback` PHẢI được viết bằng tiếng Việt rõ ràng, đơn giản, phù hợp cho người mới bắt đầu."
-                        },
-                        "context": { 
-                            "text_to_pronounce": text, 
-                            "standard_ipa": standardIPA,
-                            "standard_stress_pattern": "Phải được suy ra từ standard_ipa. Ví dụ, /dɒk.jə.ˈmen.tər.i/ có mẫu là [false, false, true, false, false]"
-                        },
-                        "output_format_instruction": {
-                            "format": "JSON", "schema": {
-                                "speech_detected": "boolean",
-                                "user_ipa": "string | null",
-                                "overall_score": "number",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" } ]",
-                                "stress_analysis": {
-                                    "standard_syllables": "[{ \"text\": \"string\", \"is_stressed\": boolean }]",
-                                    "user_syllables": "[{ \"text\": \"string\", \"is_stressed\": boolean }]",
-                                    "feedback": "string"
-                                }
-                            }
+                // --- FIX: New, robust analysis prompt with verification step ---
+                const prompt = {
+                    "role": "Bạn là một chuyên gia phân tích ngữ âm AI cực kỳ nghiêm ngặt.",
+                    "task_instructions": {
+                        "step_1_verify": "Đầu tiên, phiên âm những gì bạn nghe được từ audio. Sau đó, so sánh nó với `text_to_pronounce`. Nếu chúng không khớp (ví dụ: người dùng nói 'beautiful' thay vì 'education'), bạn PHẢI dừng lại và chỉ trả về JSON: `{\"match_error\": true, \"transcribed_text\": \"<văn bản bạn nghe được>\"}`.",
+                        "step_2_analyze": "Nếu văn bản khớp, hãy tiến hành phân tích chi tiết. Đối với từ đơn, phân tích `phoneme` và `stress`. Đối với câu, phân tích `phoneme`, `intonation`, `pacing_pauses`, và `connected_speech`.",
+                        "step_3_language": "TOÀN BỘ nhận xét (`feedback`) PHẢI bằng TIẾNG VIỆT, mang tính xây dựng, khuyến khích và dễ hiểu cho người mới bắt đầu."
+                    },
+                    "context": { 
+                        "text_to_pronounce": text, 
+                        "standard_ipa": standardIPA,
+                        "model_pitch_contour": isSingleWord ? null : modelPronunciationData.pitchContour
+                    },
+                    "output_format_instruction": {
+                        "format": "JSON", "schema": {
+                           "match_error": "boolean",
+                           "transcribed_text": "string | null",
+                           "overall_score": "number | null",
+                           "phoneme_analysis": "[{ \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" }] | null",
+                           "stress_analysis": "{ \"standard_syllables\": [], \"user_syllables\": [], \"feedback\": \"string\" } | null",
+                           "intonation_analysis": "{ \"user_pitch_contour\": [], \"feedback\": \"string\" } | null",
+                           "pacing_and_pauses_feedback": "string | null",
+                           "connected_speech_analysis": "[] | null",
+                           "practice_suggestions": "{} | null"
                         }
-                    };
-                } else { // For sentences
-                    prompt = {
-                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu.",
-                        "task_instructions": {
-                            "step_1_transcription": "Tạo ra một bản phiên âm có độ chính xác cao từ audio của người dùng.",
-                            "step_2_analysis": "Dựa trên bản phiên âm đó, so sánh với phiên âm chuẩn và phân tích các yếu tố khác.",
-                            "step_3_scoring": "Tính điểm theo 'scoring_rules' dưới đây.",
-                            "step_4_language": "Lưu ý quan trọng: Toàn bộ nội dung trong các trường `feedback` PHẢI được viết bằng tiếng Việt rõ ràng, đơn giản."
-                        },
-                        "context": {
-                            "text_to_pronounce": text,
-                            "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
-                            "standard_ipa": standardIPA,
-                            "model_pitch_contour": modelPronunciationData.pitchContour,
-                        },
-                         "scoring_rules": {
-                            "base_score": 100,
-                            "deductions": [
-                                { "rule": "Với mỗi lỗi âm vị 'incorrect', trừ 8-10 điểm." },
-                                { "rule": "Với mỗi lỗi âm vị 'approximate', trừ 3-5 điểm." },
-                                { "rule": "Dựa trên phân tích nhịp điệu và ngữ điệu, trừ thêm từ 0 đến 15 điểm." }
-                            ],
-                            "final_score_calculation": "Final Score = base_score - total_deductions"
-                        },
-                        "output_format_instruction": {
-                            "format": "JSON", "schema": {
-                                "speech_detected": "boolean", "overall_score": "number | null", "user_ipa": "string | null",
-                                "phoneme_analysis": "[{ \"phoneme\": \"string\", \"status\": \"string (MUST be 'correct', 'approximate', or 'incorrect')\", \"feedback\": \"string\" }]",
-                                "rhythm_and_pacing_analysis": { "rhythm_score": "number", "feedback": "string" },
-                                "intonation_analysis": { "feedback": "string", "user_pitch_contour": "[number]" },
-                                "connected_speech_analysis": "[{ \"type\": \"string (MUST be 'Catenation', 'Assimilation', 'Elision', 'Intrusion', or 'Weak Form')\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
-                                "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
-                            }
-                        }
-                    };
-                }
-
+                    }
+                };
 
                 const payload = {
                     contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
@@ -1366,40 +1297,18 @@
         }
         
         function displayResults(data) {
-            if (!data.speech_detected) {
-                showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
+            // --- FIX: Handle mismatch error from AI ---
+            if (data.match_error) {
+                showMessage(`Lỗi: Bạn đã nói một từ/câu khác. Hệ thống nghe được: "${data.transcribed_text}"`, 'error');
                 analysisResults.classList.add('hidden');
                 return;
             }
-        
-            const isSingleWord = !textInput.value.trim().includes(' ');
-        
-            if (isSingleWord && data.user_ipa) {
-                const similarityThreshold = 0.4;
-                const standardSimple = standardIPA.replace(/ˈ|ˌ|/g, '');
-                const userSimple = data.user_ipa.replace(/ˈ|ˌ|/g, '');
-                
-                const commonChars = [...new Set(standardSimple)].filter(char => userSimple.includes(char)).length;
-                const similarity = commonChars / Math.max(standardSimple.length, userSimple.length || 1);
 
-                if (similarity < similarityThreshold) {
-                     showMessage(`Lỗi nghiêm trọng: Có vẻ bạn đã phát âm một từ hoàn toàn khác. Hệ thống ghi nhận "${data.user_ipa}" thay vì "${standardIPA}".`, 'error');
-                     data.overall_score = 0;
-                     if(data.phoneme_analysis) {
-                         data.phoneme_analysis.forEach(p => {
-                             p.status = 'incorrect';
-                             p.feedback = "Âm vị này thuộc về một từ khác."
-                         });
-                     }
-                     if(data.stress_analysis) {
-                        data.stress_analysis.feedback = "Trọng âm sai hoàn toàn do phát âm sai từ."
-                        if(data.stress_analysis.user_syllables) {
-                            data.stress_analysis.user_syllables.forEach(s => s.is_stressed = false);
-                        }
-                     }
-                }
+            if (!data.overall_score) {
+                showMessage("Không nhận diện được giọng nói. Vui lòng thử lại.", 'warning');
+                analysisResults.classList.add('hidden');
+                return;
             }
-
 
             saveToHistory(textInput.value.trim(), data.overall_score);
         
@@ -1407,27 +1316,19 @@
             analysisResults.classList.remove('hidden');
         
             const endScore = data.overall_score;
-            animateValue(document.getElementById('overall-score'), 0, endScore, 1000);
+            animateValue(overallScore, 0, endScore, 1000);
             scoreContainer.className = 'score-container';
             if (endScore > 85) scoreContainer.classList.add('score-high');
             else if (endScore > 70) scoreContainer.classList.add('score-medium');
             else scoreContainer.classList.add('score-low');
-        
-            const rhythmContainer = document.querySelector('.rhythm-score-container');
-            if (!isSingleWord && data.rhythm_and_pacing_analysis) {
-                animateValue(document.getElementById('rhythm-score-value'), 0, data.rhythm_and_pacing_analysis.rhythm_score, 1000);
-                document.getElementById('prosody-tooltip-text').textContent = data.rhythm_and_pacing_analysis.feedback;
-                rhythmContainer.style.display = 'flex';
-            } else {
-                rhythmContainer.style.display = 'none';
-            }
         
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
                 data.phoneme_analysis.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
-                    const status = p.status || 'correct'; 
+                    // --- FIX: More robust status check for phoneme colors ---
+                    const status = ['correct', 'approximate', 'incorrect'].includes(p.status) ? p.status : 'correct';
                     phonemeEl.className = `phoneme has-tooltip status-${status}`;
                     if (p.feedback) {
                         const tooltip = document.createElement('div');
@@ -1439,20 +1340,24 @@
                 });
             }
         
+            const isSingleWord = !textInput.value.trim().includes(' ');
+            
             if (isSingleWord) {
                 prosodyAnalysisContainer.classList.remove('hidden');
                 intonationAnalysisWrapper.classList.add('hidden');
                 stressAnalysisWrapper.classList.remove('hidden');
                 prosodyAnalysisTitle.textContent = "Phân tích Trọng âm";
                 renderStressChart(data.stress_analysis);
-                document.getElementById('stress-analysis-feedback').textContent = data.stress_analysis.feedback || "Không có nhận xét về trọng âm.";
+                stressFeedback.textContent = data.stress_analysis.feedback || "Không có nhận xét về trọng âm.";
             } else {
                 prosodyAnalysisContainer.classList.remove('hidden');
                 stressAnalysisWrapper.classList.add('hidden');
                 intonationAnalysisWrapper.classList.remove('hidden');
-                prosodyAnalysisTitle.textContent = "Phân tích Ngữ điệu";
+                prosodyAnalysisTitle.textContent = "Phân tích Ngữ điệu & Nhịp điệu";
                 if (data.intonation_analysis && modelPronunciationData.pitchContour) {
-                    document.getElementById('intonation-analysis-feedback').textContent = data.intonation_analysis.feedback;
+                    // --- FIX: Combine intonation and pacing feedback ---
+                    let combinedFeedback = (data.intonation_analysis.feedback || "") + "\n\n" + (data.pacing_and_pauses_feedback || "");
+                    intonationFeedback.textContent = combinedFeedback.trim();
                     renderIntonationChart(
                         document.getElementById('intonation-chart'),
                         modelPronunciationData.pitchContour,
@@ -1470,9 +1375,7 @@
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
                     const type = item.type || 'unknown';
-                    
                     const typeClass = `type-${type.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
-
                     itemEl.className = `connected-speech-item ${typeClass}`;
                     itemEl.innerHTML = `
                         <div class="flex justify-between items-start">
@@ -1822,7 +1725,6 @@
             svgElement.appendChild(legend);
         }
 
-        // --- FIX: Reworked stress chart to show comparison ---
         function renderStressChart(stressData) {
             const container = document.getElementById('stress-chart');
             container.innerHTML = '';
