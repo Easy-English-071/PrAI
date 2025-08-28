@@ -1528,85 +1528,7 @@
             window.requestAnimationFrame(step);
         }
         
-        function renderIntonationChart(svgElement, modelData, userData, stressedWords = []) {
-            svgElement.innerHTML = ''; 
-            if (!modelData?.length || !userData?.length) return;
         
-            const padding = { top: 30, right: 10, bottom: 20, left: 10 };
-            const width = svgElement.clientWidth;
-            const height = svgElement.clientHeight;
-            const innerWidth = width - padding.left - padding.right;
-            const innerHeight = height - padding.top - padding.bottom;
-        
-            const allData = [...modelData, ...userData];
-            const yMin = Math.min(...allData);
-            const yMax = Math.max(...allData) > yMin ? Math.max(...allData) : yMin + 1;
-            
-            const scaleX = (index, len) => padding.left + (index / (len - 1)) * innerWidth;
-            const scaleY = (val) => padding.top + innerHeight - ((val - yMin) / (yMax - yMin)) * innerHeight;
-        
-            const createPolyline = (points, color, dash) => {
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                line.setAttribute('points', points);
-                line.setAttribute('fill', 'none');
-                line.setAttribute('stroke', `var(--${color})`);
-                line.setAttribute('stroke-width', dash ? '2.5' : '2');
-                if (dash) line.setAttribute('stroke-dasharray', '4 4');
-                return line;
-            };
-
-            const modelPoints = modelData.map((d, i) => `${scaleX(i, modelData.length)},${scaleY(d)}`).join(' ');
-            const userPoints = userData.map((d, i) => `${scaleX(i, userData.length)},${scaleY(d)}`).join(' ');
-            svgElement.appendChild(createPolyline(modelPoints, 'accent-primary'));
-            svgElement.appendChild(createPolyline(userPoints, 'accent-warning', true));
-
-            stressedWords.forEach(item => {
-                const modelIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
-                const searchRadius = 2;
-                let peakValue = -Infinity;
-                let peakIndex = modelIndex;
-                for (let i = -searchRadius; i <= searchRadius; i++) {
-                    const idx = Math.max(0, Math.min(modelData.length - 1, modelIndex + i));
-                    if (modelData[idx] > peakValue) {
-                        peakValue = modelData[idx];
-                        peakIndex = idx;
-                    }
-                }
-                
-                const x = scaleX(peakIndex, modelData.length);
-                const y = scaleY(peakValue) - 10;
-
-                const textBg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                textBg.setAttribute('x', x);
-                textBg.setAttribute('y', y);
-                textBg.setAttribute('text-anchor', 'middle');
-                textBg.setAttribute('font-size', '13');
-                textBg.setAttribute('font-weight', '600');
-                textBg.setAttribute('stroke', 'var(--glass-bg)');
-                textBg.setAttribute('stroke-width', '4');
-                textBg.setAttribute('stroke-linejoin', 'round');
-                textBg.textContent = item.word;
-                svgElement.appendChild(textBg);
-
-                const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                textEl.setAttribute('x', x);
-                textEl.setAttribute('y', y);
-                textEl.setAttribute('text-anchor', 'middle');
-                textEl.setAttribute('font-size', '13');
-                textEl.setAttribute('font-weight', '600');
-                textEl.setAttribute('fill', 'var(--text-primary)');
-                textEl.textContent = item.word;
-                svgElement.appendChild(textEl);
-            });
-            
-            const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            legend.innerHTML = `
-                <rect x="${innerWidth - 180}" y="${height - 15}" width="12" height="2" fill="var(--accent-primary)" />
-                <text x="${innerWidth - 165}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng mẫu</text>
-                <rect x="${innerWidth - 90}" y="${height - 15}" width="12" height="2" fill="var(--accent-warning)" stroke-dasharray="2 2" stroke="var(--accent-warning)" />
-                <text x="${innerWidth - 75}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>`;
-            svgElement.appendChild(legend);
-        }
 
         function initApp() {
             textInput.addEventListener('input', () => {
@@ -1665,6 +1587,175 @@
         }
 
         initApp();
-    </script>
+    
+
+/* === Intonation Chart v3 (stable) =========================================
+   - ResizeObserver để render chuẩn khi container ẩn/hiện
+   - Nội suy tuyến tính để hai đường có cùng số điểm
+   - Chống NaN/null, y-scale an toàn
+   - Tự vẽ lại khi resize / visibility change
+   API: renderIntonationChart(svg, modelData, userData, stressedWords?)
+=============================================================================*/
+(function () {
+  const roMap = new WeakMap();
+  const lastArgs = new WeakMap();
+
+  window.renderIntonationChart = function (svg, modelData, userData, stressedWords = []) {
+    if (!svg) return;
+    lastArgs.set(svg, { modelData, userData, stressedWords });
+
+    if (!roMap.get(svg)) {
+      const ro = new ResizeObserver(() => {
+        const args = lastArgs.get(svg);
+        if (args) requestAnimationFrame(() => draw(svg, args.modelData, args.userData, args.stressedWords));
+      });
+      ro.observe(svg);
+      roMap.set(svg, ro);
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          const args = lastArgs.get(svg);
+          if (args) requestAnimationFrame(() => draw(svg, args.modelData, args.userData, args.stressedWords));
+        }
+      }, { passive: true });
+    }
+
+    draw(svg, modelData, userData, stressedWords);
+  };
+
+  function sanitize(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(v => Number(v)).filter(v => Number.isFinite(v));
+  }
+
+  function resample(arr, N) {
+    const src = sanitize(arr);
+    if (src.length === 0) return [];
+    if (src.length === 1) return Array(N).fill(src[0]);
+    const out = [];
+    for (let i = 0; i < N; i++) {
+      const t = (i * (src.length - 1)) / (N - 1);
+      const i0 = Math.floor(t);
+      const i1 = Math.min(src.length - 1, i0 + 1);
+      const r = t - i0;
+      out.push(src[i0] * (1 - r) + src[i1] * r);
+    }
+    return out;
+  }
+
+  function getDims(svg) {
+    let w = svg.clientWidth || svg.getBoundingClientRect().width || parseFloat(svg.getAttribute('width')) || 0;
+    let h = svg.clientHeight || svg.getBoundingClientRect().height || parseFloat(svg.getAttribute('height')) || 0;
+    if (w < 10) w = 360;
+    if (h < 10) h = 180;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    return { w, h };
+  }
+
+  function clamp01(x) { return Math.max(0, Math.min(1, Number(x) || 0)); }
+
+  function draw(svg, modelData, userData, stressedWords = []) {
+    const mRaw = sanitize(modelData);
+    const uRaw = sanitize(userData);
+    if (!mRaw.length || !uRaw.length) { svg.innerHTML = ''; return; }
+
+    const N = Math.max(32, Math.min(256, Math.max(mRaw.length, uRaw.length)));
+    const m = resample(mRaw, N);
+    const u = resample(uRaw, N);
+
+    const { w, h } = getDims(svg);
+    const padding = { top: 30, right: 10, bottom: 22, left: 10 };
+    const innerW = Math.max(1, w - padding.left - padding.right);
+    const innerH = Math.max(1, h - padding.top - padding.bottom);
+
+    const all = m.concat(u);
+    let yMin = Math.min(...all), yMax = Math.max(...all);
+    if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) { svg.innerHTML = ''; return; }
+    if (Math.abs(yMax - yMin) < 1e-6) { yMin -= 1; yMax += 1; }
+
+    const sx = (i) => padding.left + (N > 1 ? (i / (N - 1)) * innerW : innerW / 2);
+    const sy = (v) => padding.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+
+    svg.innerHTML = '';
+
+    const makeLine = (pts, { dashed = false, cssVar = '--accent-primary', width = 2 }) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      el.setAttribute('points', pts);
+      el.setAttribute('fill', 'none');
+      el.setAttribute('stroke', `var(${cssVar})`);
+      el.setAttribute('stroke-width', String(width));
+      el.setAttribute('stroke-linecap', 'round');
+      el.setAttribute('stroke-linejoin', 'round');
+      if (dashed) el.setAttribute('stroke-dasharray', '4 4');
+      return el;
+    };
+
+    const gridY = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    for (let k = 0; k <= 4; k++) {
+      const y = padding.top + (k / 4) * innerH;
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      g.setAttribute('x1', String(padding.left));
+      g.setAttribute('x2', String(padding.left + innerW));
+      g.setAttribute('y1', String(y));
+      g.setAttribute('y2', String(y));
+      g.setAttribute('stroke', 'var(--glass-border)');
+      g.setAttribute('stroke-width', '1');
+      g.setAttribute('opacity', '0.6');
+      gridY.appendChild(g);
+    }
+    svg.appendChild(gridY);
+
+    const mPts = m.map((v, i) => `${sx(i)},${sy(v)}`).join(' ');
+    const uPts = u.map((v, i) => `${sx(i)},${sy(v)}`).join(' ');
+
+    svg.appendChild(makeLine(mPts, { cssVar: '--accent-primary', width: 2 }));
+    svg.appendChild(makeLine(uPts, { cssVar: '--accent-warning', dashed: true, width: 2.5 }));
+
+    (stressedWords || []).forEach(item => {
+      const t = clamp01(item?.time_stamp_normalized);
+      const baseIdx = Math.round(t * (N - 1));
+      const radius = 2;
+      let peakIdx = baseIdx, peakVal = -Infinity;
+      for (let di = -radius; di <= radius; di++) {
+        const idx = Math.max(0, Math.min(N - 1, baseIdx + di));
+        if (m[idx] > peakVal) { peakVal = m[idx]; peakIdx = idx; }
+      }
+      const x = sx(peakIdx), y = sy(peakVal) - 10;
+
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      bg.setAttribute('x', x); bg.setAttribute('y', y);
+      bg.setAttribute('text-anchor', 'middle');
+      bg.setAttribute('font-size', '13');
+      bg.setAttribute('font-weight', '600');
+      bg.setAttribute('stroke', 'var(--glass-border)');
+      bg.setAttribute('stroke-width', '5');
+      bg.setAttribute('paint-order', 'stroke');
+      bg.setAttribute('fill', 'transparent');
+      bg.textContent = item?.word ?? '';
+      svg.appendChild(bg);
+
+      const fg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      fg.setAttribute('x', x); fg.setAttribute('y', y);
+      fg.setAttribute('text-anchor', 'middle');
+      fg.setAttribute('font-size', '13');
+      fg.setAttribute('font-weight', '600');
+      fg.setAttribute('fill', 'var(--text-primary)');
+      fg.textContent = item?.word ?? '';
+      svg.appendChild(fg);
+    });
+
+    const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const yLegend = h - 12;
+    legend.innerHTML = `
+      <rect x="${padding.left}" y="${yLegend - 3}" width="12" height="2" fill="var(--accent-primary)"></rect>
+      <text x="${padding.left + 16}" y="${yLegend}" font-size="10" fill="var(--text-secondary)">Giọng mẫu</text>
+      <rect x="${padding.left + 110}" y="${yLegend - 3}" width="12" height="2" stroke="var(--accent-warning)" fill="none" stroke-dasharray="4 4"></rect>
+      <text x="${padding.left + 126}" y="${yLegend}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>`;
+    svg.appendChild(legend);
+  }
+})();
+
+</script>
 </body>
 </html>
