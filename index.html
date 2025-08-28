@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
     <!-- FIXED FAVICON -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='55' font-family='Exo 2, sans-serif' font-size='40' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2523007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%252300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%2523g)'/%3E%3Ctext x='50' y='55' font-family='Exo 2, sans-serif' font-size='40' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V15 --- */
+        /* --- GLASSMORPHISM THEME V16 --- */
         :root {
-            /* Default: Light Theme */
             --bg-color: #f8fafc;
             --bg-blob-1: #0ea5e9;
             --bg-blob-2: #14b8a6;
@@ -801,13 +800,13 @@
         }
         
         async function prefetchModelPronunciation(text, accent) {
-            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) return;
+            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) return;
             modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] };
             isNaturalAudioFetching = true;
         
             try {
                 const textWithPauses = currentIpaData.thought_groups?.groups.join(" | ") || text;
-                const promptTTS = `Read the following text fluently in ${accent}. The pipe symbol "|" indicates a very brief, natural pause between thought groups, not a full stop. Maintain a natural conversational flow. Text: ${textWithPauses}`;
+                const promptTTS = `Read the following text fluently in ${accent}. The pipe symbol "|" indicates a very brief, natural pause between thought groups, not a full stop. Maintain a natural conversational flow. IMPORTANT: Read ONLY the text itself. Text: ${textWithPauses}`;
                 
                 const [ttsData, analysisData] = await Promise.all([
                     fetchWithBackoff(TTS_API_URL, {
@@ -823,7 +822,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Analyze the sentence "${text}". Provide a JSON object with 'pitch_contour' (an array of 40-50 normalized pitch points) and 'stressed_words' (an array of objects with 'word' and 'time_stamp_normalized' from 0.0 to 1.0).` }] }],
+                            contents: [{ parts: [{ text: `Analyze the sentence "${text}". Provide a JSON object with 'pitch_contour' (an array of 40-50 normalized pitch points) and 'stressed_words' (an array of objects with 'word' and 'time_stamp_normalized' from 0.0 to 1.0). IMPORTANT: The entire response must be in Vietnamese.` }] }],
                             generationConfig: { responseMimeType: "application/json" }
                         })
                     })
@@ -884,6 +883,7 @@
                 1. 'simple': A standard, citation-form IPA transcription.
                 2. 'detailed': A natural, connected speech transcription. Use the liaison symbol (‿) correctly ONLY where linking occurs within a thought group.
                 3. 'thought_groups': An object with 'groups' (an array of strings for natural thought groups) and 'explanation' (a clear Vietnamese explanation for the grouping).
+                IMPORTANT: The entire response must be in Vietnamese.
                 Respond with ONLY the JSON object.`;
             }
             
@@ -1024,7 +1024,7 @@
                 reader.onloadend = () => resolve(reader.result.split(',')[1]);
             });
 
-            const prompt = `Transcribe the speech in this audio to both plain text and its detailed IPA phonetic transcription. Respond in JSON with keys "transcribed_text" (string) and "user_ipa" (string). If no speech is detected, both should be null.`;
+            const prompt = `Transcribe the speech in this audio to its detailed IPA phonetic transcription. Respond in JSON with the key "user_ipa" (string). If no speech is detected, it should be null.`;
             const payload = {
                 contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
                 generationConfig: { responseMimeType: "application/json" }
@@ -1039,7 +1039,7 @@
                 return JSON.parse(data.candidates[0].content.parts[0].text);
             } catch (error) {
                 console.error("Transcription failed:", error);
-                return { transcribed_text: null, user_ipa: null };
+                return { user_ipa: null };
             }
         }
 
@@ -1049,7 +1049,7 @@
             if (isSingleWordMode) {
                 prompt = {
                     "role": "Bạn là chuyên gia ngữ âm AI. So sánh và chấm điểm.",
-                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Chấm điểm nghiêm ngặt. Phân tích từng âm vị và cấu trúc âm tiết.`,
+                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Chấm điểm nghiêm ngặt. Phân tích từng âm vị và cấu trúc âm tiết. IMPORTANT: All feedback and explanations MUST be in Vietnamese.`,
                     "context": {
                         "standard_ipa": standardIPA,
                         "user_ipa": userIpa,
@@ -1067,7 +1067,7 @@
             } else {
                 prompt = {
                     "role": "Bạn là PrAI, chuyên gia ngữ âm AI.",
-                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Phân tích chi tiết và chấm điểm.`,
+                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Phân tích chi tiết và chấm điểm. IMPORTANT: All feedback and explanations MUST be in Vietnamese.`,
                     "context": {
                         "standard_ipa": standardIPA,
                         "user_ipa": userIpa,
@@ -1304,7 +1304,7 @@
                     
                     const transcriptionResult = await transcribeUserAudio(audioBlob);
 
-                    if (!transcriptionResult.transcribed_text) {
+                    if (!transcriptionResult.user_ipa) {
                         stopProgressAnimation();
                         showErrorBanner("Không nhận diện được giọng nói rõ ràng. Vui lòng thử lại.");
                         return;
@@ -1572,7 +1572,7 @@
                     
                     startProgressAnimation();
                     const transcriptionResult = await transcribeUserAudio(file);
-                    if (!transcriptionResult.transcribed_text) {
+                    if (!transcriptionResult.user_ipa) {
                         stopProgressAnimation();
                         showErrorBanner("Không nhận diện được giọng nói rõ ràng trong file. Vui lòng thử lại.");
                         return;
