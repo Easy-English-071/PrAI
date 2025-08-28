@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V15 --- */
+        /* --- GLASSMORPHISM THEME V16 --- */
         :root {
             /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
@@ -159,7 +159,6 @@
         .phoneme {
             padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 1.125rem;
             position: relative; transition: all 0.2s ease-in-out; color: var(--text-secondary);
-            /* --- FIX: Ensure even 'correct' has a background color --- */
             background-color: var(--highlight-correct);
         }
         .phoneme.status-correct { color: var(--accent-success); }
@@ -259,8 +258,6 @@
             margin-bottom: 1rem;
         }
 
-        /* --- REMOVED Rhythm Score Container --- */
-
         #prosody-tooltip-icon {
             cursor: pointer;
         }
@@ -336,7 +333,6 @@
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
         .connected-speech-item.type-weak-form, .connected-speech-item.type-reduction { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
-        /* Fallback for unknown types */
         .connected-speech-item.type-unknown { border-color: var(--text-secondary); background-color: color-mix(in srgb, var(--text-secondary) 10%, transparent); }
 
 
@@ -976,55 +972,52 @@
             }
             
             const isSingleWord = !text.includes(' ');
+            let combinedPrompt;
+
+            if (isSingleWord) {
+                // --- FIX: Reverted to a simple, fast prompt for single words ---
+                combinedPrompt = `Provide a single JSON object for the word "${text}" in ${accent}. The JSON must have one key: 'simple', containing the standard IPA transcription. Do not include any other analysis.`;
+            } else {
+                // --- FIX: Reverted to the stable, combined prompt for sentences ---
+                combinedPrompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with the following keys:
+                1. 'simple': A standard, citation-form IPA transcription.
+                2. 'detailed': A natural, connected speech transcription reflecting the thought groups. IMPORTANT: Apply the liaison symbol (‿) **only where phonetically correct linking occurs** (e.g., a final consonant linking to an initial vowel) and strictly **within** each thought group. Do NOT place the symbol between every word. The boundary between thought groups acts as a hard stop for linking.
+                3. 'thought_groups': An object with two keys:
+                   a. 'groups': An array of strings representing the most natural, semantically-driven thought groups, based on grammatical units.
+                   b. 'explanation': Provide an insightful and clear explanation in Vietnamese for the suggested grouping, referencing principles like separating grammatical units (e.g., prepositional phrases, clauses).
+                Respond with ONLY the JSON object.`;
+            }
             
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
             startIpaLoadingAnimation();
             
             try {
-                // --- FIX: Optimized IPA fetching ---
-                const ipaPrompt = `For the text "${text}" in ${accent}, provide a single JSON object with two keys: 'simple' (standard IPA) and 'detailed' (natural speech IPA). Respond with ONLY the JSON object.`;
-                const ipaPayload = { 
-                    contents: [{ parts: [{ text: ipaPrompt }] }],
+                const payload = { 
+                    contents: [{ parts: [{ text: combinedPrompt }] }],
                     generationConfig: { responseMimeType: "application/json" }
                 };
-                const ipaResponse = await fetchWithBackoff(TEXT_API_URL, { 
+
+                const response = await fetchWithBackoff(TEXT_API_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
-                    body: JSON.stringify(ipaPayload) 
+                    body: JSON.stringify(payload) 
                 });
 
                 if (currentRequestID !== fetchIpaRequestID) return false;
 
-                const ipaResultJson = JSON.parse(ipaResponse.candidates[0].content.parts[0].text);
-                let finalJson = { ...ipaResultJson };
+                const resultText = response.candidates[0].content.parts[0].text;
+                let resultJson = JSON.parse(resultText);
 
-                // Update UI immediately with IPA
-                displayIpaData(finalJson);
+                if (isSingleWord) {
+                    resultJson.detailed = resultJson.simple;
+                }
+
+                ipaCache.set(cacheKey, resultJson);
+                displayIpaData(resultJson);
                 
                 if (!isSingleWord) {
-                    // Start prefetching audio immediately
                     prefetchModelPronunciation(text, accent);
-
-                    // In the background, fetch thought groups
-                    const thoughtGroupPrompt = `For the phrase "${text}", provide a single JSON object with one key: 'thought_groups', which contains an object with two keys: 'groups' (an array of strings of the thought groups) and 'explanation' (a clear explanation in Vietnamese). Respond with ONLY the JSON object.`;
-                    const thoughtGroupPayload = {
-                        contents: [{ parts: [{ text: thoughtGroupPrompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    };
-                    fetchWithBackoff(TEXT_API_URL, { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
-                        body: JSON.stringify(thoughtGroupPayload) 
-                    }).then(tgResponse => {
-                        const tgResultJson = JSON.parse(tgResponse.candidates[0].content.parts[0].text);
-                        finalJson.thought_groups = tgResultJson.thought_groups;
-                        currentThoughtGroups = finalJson.thought_groups.groups;
-                        displayThoughtGroups(finalJson.thought_groups.groups, finalJson.thought_groups.explanation);
-                        ipaCache.set(cacheKey, finalJson); // Cache the complete data
-                    }).catch(err => console.error("Failed to fetch thought groups in background:", err));
-                } else {
-                     ipaCache.set(cacheKey, finalJson);
                 }
                 
                 return true;
@@ -1236,7 +1229,6 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                // --- FIX: New, robust analysis prompt with verification step ---
                 const prompt = {
                     "role": "Bạn là một chuyên gia phân tích ngữ âm AI cực kỳ nghiêm ngặt.",
                     "task_instructions": {
@@ -1258,7 +1250,21 @@
                            "stress_analysis": "{ \"standard_syllables\": [], \"user_syllables\": [], \"feedback\": \"string\" } | null",
                            "intonation_analysis": "{ \"user_pitch_contour\": [], \"feedback\": \"string\" } | null",
                            "pacing_and_pauses_feedback": "string | null",
-                           "connected_speech_analysis": "[] | null",
+                           // --- FIX: Explicitly define the object schema for connected_speech_analysis ---
+                           "connected_speech_analysis": {
+                                "type": "ARRAY",
+                                "items": {
+                                    "type": "OBJECT",
+                                    "properties": {
+                                        "type": { "type": "STRING" },
+                                        "rule": { "type": "STRING" },
+                                        "location": { "type": "STRING" },
+                                        "expected_pronunciation": { "type": "STRING" },
+                                        "user_pronunciation": { "type": "STRING" },
+                                        "feedback": { "type": "STRING" }
+                                    }
+                                }
+                           },
                            "practice_suggestions": "{} | null"
                         }
                     }
@@ -1297,7 +1303,6 @@
         }
         
         function displayResults(data) {
-            // --- FIX: Handle mismatch error from AI ---
             if (data.match_error) {
                 showMessage(`Lỗi: Bạn đã nói một từ/câu khác. Hệ thống nghe được: "${data.transcribed_text}"`, 'error');
                 analysisResults.classList.add('hidden');
@@ -1327,7 +1332,6 @@
                 data.phoneme_analysis.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
-                    // --- FIX: More robust status check for phoneme colors ---
                     const status = ['correct', 'approximate', 'incorrect'].includes(p.status) ? p.status : 'correct';
                     phonemeEl.className = `phoneme has-tooltip status-${status}`;
                     if (p.feedback) {
@@ -1355,7 +1359,6 @@
                 intonationAnalysisWrapper.classList.remove('hidden');
                 prosodyAnalysisTitle.textContent = "Phân tích Ngữ điệu & Nhịp điệu";
                 if (data.intonation_analysis && modelPronunciationData.pitchContour) {
-                    // --- FIX: Combine intonation and pacing feedback ---
                     let combinedFeedback = (data.intonation_analysis.feedback || "") + "\n\n" + (data.pacing_and_pauses_feedback || "");
                     intonationFeedback.textContent = combinedFeedback.trim();
                     renderIntonationChart(
@@ -1374,19 +1377,20 @@
                 connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
-                    const type = item.type || 'unknown';
+                    // --- FIX: Add defensive checks to prevent "undefined" error ---
+                    const type = item?.type || 'unknown';
                     const typeClass = `type-${type.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
                     itemEl.className = `connected-speech-item ${typeClass}`;
                     itemEl.innerHTML = `
                         <div class="flex justify-between items-start">
-                            <div><p class="cs-title">${item.rule}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item.location}</span></p></div>
-                            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full opacity-70">${item.type}</span>
+                            <div><p class="cs-title">${item?.rule || 'N/A'}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item?.location || 'N/A'}</span></p></div>
+                            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full opacity-70">${type}</span>
                         </div>
                         <div class="cs-details mt-2">
-                            <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
-                            <p>Phát âm của bạn: <span class="ipa-text text-accent-warning">${item.user_pronunciation}</span></p>
+                            <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item?.expected_pronunciation || 'N/A'}</span></p>
+                            <p>Phát âm của bạn: <span class="ipa-text text-accent-warning">${item?.user_pronunciation || 'N/A'}</span></p>
                         </div>
-                        <p class="cs-feedback text-sm">${item.feedback}</p>`;
+                        <p class="cs-feedback text-sm">${item?.feedback || ''}</p>`;
                     connectedSpeechAnalysis.appendChild(itemEl);
                 });
             } else {
