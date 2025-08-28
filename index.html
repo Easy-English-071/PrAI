@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrAI - Luyện Phát Âm với AI</title>
-    <!-- NEW FAVICON -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%E3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='55' font-family='Exo 2, sans-serif' font-size='40' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
+    <!-- FIXED FAVICON -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23007CF0;'/%3E%3Cstop offset='100%25' style='stop-color:%2300DFD8;'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Ctext x='50' y='55' font-family='Exo 2, sans-serif' font-size='40' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3EPrAI%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V14 --- */
+        /* --- GLASSMORPHISM THEME V15 --- */
         :root {
             /* Default: Light Theme */
-            --bg-color: #f8fafc; /* slate-50 */
-            --bg-blob-1: #0ea5e9; /* sky-500 */
-            --bg-blob-2: #14b8a6; /* teal-500 */
-            --glass-bg: rgba(248, 250, 252, 0.6); /* slate-50 @ 60% */
+            --bg-color: #f8fafc;
+            --bg-blob-1: #0ea5e9;
+            --bg-blob-2: #14b8a6;
+            --glass-bg: rgba(248, 250, 252, 0.6);
             --glass-border: rgba(255, 255, 255, 0.7);
-            --text-primary: #0f172a; /* slate-900 */
-            --text-secondary: #475569; /* slate-600 */
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
             --accent-primary: #007CF0;
-            --accent-danger: #ef4444; /* red-500 */
-            --accent-success: #22c55e; /* green-500 */
-            --accent-warning: #f59e0b; /* amber-500 */
+            --accent-danger: #ef4444;
+            --accent-success: #22c55e;
+            --accent-warning: #f59e0b;
             --btn-primary-bg: #007CF0;
             --btn-primary-hover-bg: #0056b3;
             --btn-secondary-bg: rgba(241, 245, 249, 0.7);
@@ -41,13 +41,13 @@
         }
 
         [data-theme="dark"] {
-            --bg-color: #020617; /* slate-950 */
-            --bg-blob-1: #0369a1; /* cyan-700 */
-            --bg-blob-2: #0d9488; /* teal-600 */
-            --glass-bg: rgba(30, 41, 59, 0.5); /* slate-800 @ 50% */
+            --bg-color: #020617;
+            --bg-blob-1: #0369a1;
+            --bg-blob-2: #0d9488;
+            --glass-bg: rgba(30, 41, 59, 0.5);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #f1f5f9; /* slate-100 */
-            --text-secondary: #94a3b8; /* slate-400 */
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
             --btn-primary-bg: #007CF0;
             --btn-primary-hover-bg: #0095ff;
             --btn-secondary-bg: rgba(51, 65, 85, 0.5);
@@ -642,6 +642,7 @@
         let isSingleWordMode = false;
         let isNaturalAudioFetching = false;
         let playNaturalAudioWhenReady = false;
+        let progressTimeoutIds = [];
 
         // --- CACHING ---
         const ipaCache = {
@@ -676,7 +677,7 @@
                 'info': 'text-blue-300 border-accent-primary/30',
                 'success': 'text-green-300 border-accent-success/30',
                 'warning': 'text-yellow-300 border-accent-warning/30',
-                'error': 'text-red-300 border-accent-danger/30' // UPDATED to red
+                'error': 'text-red-300 border-accent-danger/30'
             };
             messageBox.className = `fixed bottom-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeClasses[type]}`;
             messageBox.textContent = message;
@@ -836,7 +837,6 @@
                 modelPronunciationData.pitchContour = analysisJson.pitch_contour || [];
                 modelPronunciationData.stressedWords = analysisJson.stressed_words || [];
         
-                console.log("Model pronunciation data prefetched successfully.");
                 if (playNaturalAudioWhenReady) {
                     modelPronunciationData.audio.currentTime = 0;
                     modelPronunciationData.audio.play();
@@ -1014,17 +1014,17 @@
             return new Audio(audioUrl);
         }
 
-        // --- REBUILT 2-STEP ANALYSIS PROCESS ---
+        // --- REBUILT ANALYSIS PROCESS ---
 
-        // STEP 1: Fast, preliminary check for speech and basic transcription
-        async function preliminaryAudioCheck(audioBlob) {
+        // STEP 1: Transcribe the user's audio to get the ground truth
+        async function transcribeUserAudio(audioBlob) {
             const base64Audio = await new Promise(resolve => {
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = () => resolve(reader.result.split(',')[1]);
             });
 
-            const prompt = `Is there clear human speech in this audio? If yes, transcribe it to text. Respond in JSON with keys "speech_detected" (boolean) and "transcribed_text" (string, or null if no speech).`;
+            const prompt = `Transcribe the speech in this audio to both plain text and its detailed IPA phonetic transcription. Respond in JSON with keys "transcribed_text" (string) and "user_ipa" (string). If no speech is detected, both should be null.`;
             const payload = {
                 contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
                 generationConfig: { responseMimeType: "application/json" }
@@ -1038,40 +1038,27 @@
                 });
                 return JSON.parse(data.candidates[0].content.parts[0].text);
             } catch (error) {
-                console.error("Preliminary check failed:", error);
-                return { speech_detected: false, transcribed_text: null }; // Assume failure
+                console.error("Transcription failed:", error);
+                return { transcribed_text: null, user_ipa: null };
             }
         }
 
-        // STEP 2: The main, detailed analysis, only called if Step 1 passes
-        async function analyzeAudio(audioBlob) {
-            analysisRequestID++;
-            const currentAnalysisID = analysisRequestID;
-            
-            loader.classList.remove('hidden');
-            document.getElementById('progress-text').textContent = "Đang phân tích chuyên sâu...";
-            
-            const base64Audio = await new Promise(resolve => {
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            });
-            
+        // STEP 2: Compare the transcription with the standard and get detailed analysis
+        async function getComparativeAnalysis(userIpa) {
             let prompt;
             if (isSingleWordMode) {
                 prompt = {
-                    "role": "Bạn là chuyên gia ngữ âm AI. Phân tích từ đơn này.",
-                    "task_instructions": "Thực hiện phân tích âm vị cực kỳ nghiêm ngặt và chính xác. So sánh từng âm vị của người dùng với âm vị chuẩn. Chấm điểm khắt khe.",
+                    "role": "Bạn là chuyên gia ngữ âm AI. So sánh và chấm điểm.",
+                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Chấm điểm nghiêm ngặt. Phân tích từng âm vị và cấu trúc âm tiết.`,
                     "context": {
-                        "text_to_pronounce": textInput.value.trim(),
                         "standard_ipa": standardIPA,
+                        "user_ipa": userIpa,
                         "standard_syllable_structure": currentIpaData.syllable_structure
                     },
                     "output_format_instruction": {
                         "format": "JSON",
                         "schema": {
                             "overall_score": "number",
-                            "user_ipa": "string",
                             "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
                             "syllable_analysis": "{ \"feedback\": \"string\" }"
                         }
@@ -1079,22 +1066,17 @@
                 };
             } else {
                 prompt = {
-                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI thấu hiểu người học tiếng Anh là người Việt.",
+                    "role": "Bạn là PrAI, chuyên gia ngữ âm AI.",
+                    "task_instructions": `So sánh phiên âm của người dùng ('${userIpa}') với phiên âm chuẩn ('${standardIPA}'). Phân tích chi tiết và chấm điểm.`,
                     "context": {
-                        "text_to_pronounce": textInput.value.trim(),
                         "standard_ipa": standardIPA,
+                        "user_ipa": userIpa,
                         "model_pitch_contour": modelPronunciationData.pitchContour,
                     },
-                    "leniency_rules": [{ 
-                        "phoneme": "ʔ (glottal stop)", 
-                        "condition": "Khi thay thế cho âm /t/ cuối không bật hơi.", 
-                        "adjustment": "Phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm."
-                    }],
                     "output_format_instruction": {
                         "format": "JSON",
                         "schema": {
                             "overall_score": "number",
-                            "user_ipa": "string",
                             "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
                             "intonation_analysis": {
                                 "feedback": "string",
@@ -1108,25 +1090,16 @@
             }
 
             const payload = {
-                contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
+                contents: [{ parts: [{ text: JSON.stringify(prompt) }] }],
                 generationConfig: { responseMimeType: "application/json" }
             };
 
-            try {
-                const data = await fetchWithBackoff(TEXT_API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
-                    body: JSON.stringify(payload) 
-                });
-                if (currentAnalysisID === analysisRequestID) {
-                    const resultJson = JSON.parse(data.candidates[0].content.parts[0].text);
-                    displayResults(resultJson);
-                }
-            } catch (error) {
-                if (currentAnalysisID === analysisRequestID) handleApiError(error);
-            } finally {
-                if (currentAnalysisID === analysisRequestID) loader.classList.add('hidden');
-            }
+            const data = await fetchWithBackoff(TEXT_API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
+                body: JSON.stringify(payload) 
+            });
+            return JSON.parse(data.candidates[0].content.parts[0].text);
         }
         
         function displayResults(data) {
@@ -1244,6 +1217,39 @@
             clearPronunciationAudio = null;
             currentIpaData = {};
         }
+        
+        // RE-IMPLEMENTED: Progress animation
+        function startProgressAnimation() {
+            progressTimeoutIds.forEach(clearTimeout);
+            progressTimeoutIds = [];
+            
+            const steps = [
+                { text: "Đang khởi động bộ não AI...", duration: 1500 },
+                { text: "Lắng nghe và phiên âm giọng nói của bạn...", duration: 3000 },
+                { text: "Đối chiếu âm vị của bạn với giọng mẫu...", duration: 3000 },
+                { text: "Phân tích ngữ điệu và nhịp điệu...", duration: 2000 },
+                { text: "Hoàn tất! Sắp có kết quả rồi...", duration: 1000 }
+            ];
+            let cumulativeDelay = 0;
+            
+            steps.forEach(step => {
+                const id = setTimeout(() => { progressText.textContent = step.text; }, cumulativeDelay);
+                progressTimeoutIds.push(id);
+                cumulativeDelay += step.duration;
+            });
+
+            loader.classList.remove('hidden');
+            funFactEl.textContent = `💡 ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
+            funFactEl.classList.remove('hidden');
+        }
+
+        function stopProgressAnimation() {
+            progressTimeoutIds.forEach(clearTimeout);
+            progressTimeoutIds = [];
+            loader.classList.add('hidden');
+            funFactEl.classList.add('hidden');
+        }
+
 
         async function handleRecord() {
             if (isRecording) {
@@ -1293,33 +1299,20 @@
                     lastRecordingBlob = audioBlob;
                     listenAgainBtn.disabled = false;
 
-                    // NEW 2-STEP PROCESS
-                    loader.classList.remove('hidden');
-                    document.getElementById('progress-text').textContent = "Đang kiểm tra âm thanh...";
+                    // NEW 2-STEP LOGIC
+                    startProgressAnimation();
                     
-                    const validation = await preliminaryAudioCheck(audioBlob);
+                    const transcriptionResult = await transcribeUserAudio(audioBlob);
 
-                    if (!validation.speech_detected) {
-                        loader.classList.add('hidden');
-                        showErrorBanner("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại.");
+                    if (!transcriptionResult.transcribed_text) {
+                        stopProgressAnimation();
+                        showErrorBanner("Không nhận diện được giọng nói rõ ràng. Vui lòng thử lại.");
                         return;
                     }
 
-                    const originalText = textInput.value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                    const transcribedText = (validation.transcribed_text || "").toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                    
-                    const similarity = isSingleWordMode 
-                        ? (originalText === transcribedText ? 1 : 0)
-                        : (originalText.split(' ').filter(word => transcribedText.includes(word)).length / originalText.split(' ').length);
-
-                    if (similarity < 0.7) {
-                        loader.classList.add('hidden');
-                        showErrorBanner(`Câu nói không khớp. Bạn đã nói "${validation.transcribed_text || 'điều gì đó'}", nhưng văn bản mẫu là "${textInput.value.trim()}".`);
-                        return;
-                    }
-                    
-                    // If validation passes, proceed to full analysis
-                    await analyzeAudio(audioBlob);
+                    const analysisResult = await getComparativeAnalysis(transcriptionResult.user_ipa);
+                    stopProgressAnimation();
+                    displayResults(analysisResult);
                 };
                 mediaRecorder.start();
                 startWaveform(stream);
@@ -1577,16 +1570,16 @@
                         return;
                     }
                     
-                    // NEW 2-STEP PROCESS for upload
-                    loader.classList.remove('hidden');
-                    document.getElementById('progress-text').textContent = "Đang kiểm tra âm thanh...";
-                    const validation = await preliminaryAudioCheck(file);
-                    if (!validation.speech_detected) {
-                        loader.classList.add('hidden');
-                        showErrorBanner("PrAI không nhận diện được giọng nói trong file. Vui lòng thử lại.");
+                    startProgressAnimation();
+                    const transcriptionResult = await transcribeUserAudio(file);
+                    if (!transcriptionResult.transcribed_text) {
+                        stopProgressAnimation();
+                        showErrorBanner("Không nhận diện được giọng nói rõ ràng trong file. Vui lòng thử lại.");
                         return;
                     }
-                    await analyzeAudio(file);
+                    const analysisResult = await getComparativeAnalysis(transcriptionResult.user_ipa);
+                    stopProgressAnimation();
+                    displayResults(analysisResult);
 
                 } else if (file) {
                     showMessage('Vui lòng chọn một tệp âm thanh hợp lệ.', 'warning');
