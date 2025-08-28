@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V10 --- */
+        /* --- GLASSMORPHISM THEME V11 --- */
         :root {
             /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
@@ -640,15 +640,15 @@
         let lastRecordingBlob = null;
         let soundDetected = false;
         let ipaLoadingInterval;
-        let lastTTSAudioClear = null;
-        let lastTTSTextClear = '';
-        let lastTTSAccentClear = '';
         let fetchIpaRequestID = 0;
         let analysisRequestID = 0;
         let progressInterval;
         let progressTextTimeoutIds = [];
         let currentThoughtGroups = [];
         
+        // FIX #2 & #3: Add a flag to prevent concurrent fetching of the model's voice.
+        let isFetchingModelAudio = false;
+
         let modelPronunciationData = {
             text: '',
             accent: '',
@@ -862,10 +862,12 @@
         }
         
         async function prefetchModelPronunciation(text, accent) {
-            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) {
+            // FIX #2 & #3: Check if data is already correct or if a fetch is in progress.
+            if ((modelPronunciationData.text === text && modelPronunciationData.accent === accent) || isFetchingModelAudio) {
                 return;
             }
         
+            isFetchingModelAudio = true;
             modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] };
         
             try {
@@ -945,6 +947,9 @@
             } catch (error) {
                 console.error("Model pronunciation prefetch failed:", error);
                 modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
+            } finally {
+                // FIX #2 & #3: Reset the flag when the operation is complete (success or fail).
+                isFetchingModelAudio = false;
             }
         }
         
@@ -1078,24 +1083,26 @@
             try {
                 if (isNatural) {
                     if (isSingleWord) {
-                        // This button is now hidden for single words, but this logic is a safeguard.
-                        // We will just play the "clear" version for single words if this is ever called.
                         await handleListen('clear', button, loader);
                         return;
+                    }
+                    
+                    // FIX #2: Wait for any ongoing fetch to complete.
+                    while (isFetchingModelAudio) {
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
+                    }
+
+                    // After waiting, check if data is available. If not, fetch it.
+                    if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) {
+                        modelPronunciationData.audio.currentTime = 0;
+                        modelPronunciationData.audio.play();
                     } else {
-                        // Use the cached model voice for sentences
-                        if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) {
+                        await prefetchModelPronunciation(text, accent);
+                        if (modelPronunciationData.audio) {
                             modelPronunciationData.audio.currentTime = 0;
                             modelPronunciationData.audio.play();
                         } else {
-                            // Fallback if prefetching failed or is in progress
-                            await prefetchModelPronunciation(text, accent);
-                            if (modelPronunciationData.audio) {
-                                modelPronunciationData.audio.currentTime = 0;
-                                modelPronunciationData.audio.play();
-                            } else {
-                                throw new Error("Không thể tạo giọng đọc mẫu.");
-                            }
+                            throw new Error("Không thể tạo giọng đọc mẫu.");
                         }
                     }
                 } else { // Clear voice logic
@@ -1202,21 +1209,28 @@
             lastRecordingBlob = audioBlob;
             listenAgainBtn.disabled = false;
 
-            const ipaReady = !!standardIPA;
-            if (!ipaReady) {
+            if (!standardIPA) {
                 showMessage('Không thể phân tích vì không lấy được phiên âm chuẩn.', 'error');
                 return;
             }
             
             const text = textInput.value.trim();
+            const accent = accentSelect.value;
             const isSingleWord = !text.includes(' ');
 
+            // FIX #3: More robust check for model data before showing the loader.
             if (!isSingleWord) {
-                if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accentSelect.value) {
-                    await prefetchModelPronunciation(text, accentSelect.value);
+                // If data is missing or for the wrong text, fetch it now.
+                if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accent || !modelPronunciationData.pitchContour || modelPronunciationData.pitchContour.length === 0) {
+                    console.log("Model data is missing or outdated. Refetching before analysis.");
+                    setButtonLoading(listenNaturalBtn, listenNaturalLoader, true); // Show loading on the listen button
+                    await prefetchModelPronunciation(text, accent);
+                    setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
                 }
+                
+                // Final check after attempting to fetch. If it still fails, then show an error and stop.
                  if (!modelPronunciationData.pitchContour || modelPronunciationData.pitchContour.length === 0) {
-                    showMessage('Chưa có dữ liệu ngữ điệu mẫu, vui lòng thử lại.', 'error');
+                    showMessage('Không thể lấy dữ liệu ngữ điệu mẫu để so sánh. Vui lòng thử lại sau.', 'error');
                     return;
                 }
             }
@@ -1240,7 +1254,6 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                // --- DYNAMIC PROMPT BASED ON INPUT TYPE ---
                 let prompt;
                 if (isSingleWord) {
                     prompt = {
@@ -1469,9 +1482,6 @@
             if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accent) {
                  modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
             }
-            lastTTSAudioClear = null;
-            lastTTSTextClear = '';
-            lastTTSAccentClear = '';
             currentThoughtGroups = [];
             displayThoughtGroups([], '');
         }
@@ -1732,10 +1742,32 @@
             svgElement.appendChild(modelLine);
             svgElement.appendChild(userLine);
 
+            // FIX #4: New algorithm to place stressed words on the peaks of the intonation line.
             stressedWords.forEach(item => {
-                const x = padding.left + (item.time_stamp_normalized * innerWidth);
-                const closestModelPointIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
-                const y = scaleY(modelData[closestModelPointIndex]) - 10;
+                const wordPositionIndex = item.time_stamp_normalized * (modelData.length - 1);
+                // Define a search radius to find the peak around the word's timestamp.
+                const searchRadius = Math.max(2, Math.floor(modelData.length / 10));
+                
+                const startIndex = Math.max(0, Math.floor(wordPositionIndex - searchRadius));
+                const endIndex = Math.min(modelData.length - 1, Math.ceil(wordPositionIndex + searchRadius));
+
+                let peakValue = -1;
+                let peakIndex = -1;
+
+                // Find the highest point (peak) within the search radius.
+                for (let i = startIndex; i <= endIndex; i++) {
+                    if (modelData[i] > peakValue) {
+                        peakValue = modelData[i];
+                        peakIndex = i;
+                    }
+                }
+
+                if (peakIndex === -1) {
+                    peakIndex = Math.round(wordPositionIndex); // Fallback to original position
+                }
+
+                const x = scaleX(peakIndex, modelData.length); // Position text at the peak's X coordinate
+                const y = scaleY(modelData[peakIndex]) - 12; // Position text above the peak's Y coordinate
 
                 const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 textEl.setAttribute('x', x);
