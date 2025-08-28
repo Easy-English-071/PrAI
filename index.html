@@ -300,205 +300,267 @@
             border-radius: var(--radius-sm);
             border-left: 4px solid;
             position: relative;
-            overflow: hidden;
+            margin-bottom: 0.75rem;
+            background-color: var(--input-bg);
+            transition: all 0.2s ease-in-out;
         }
-
-        .connected-speech-item.type-catenation { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
-        .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
-        .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
-        .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
-        .connected-speech-item.type-weak-form { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
-
+        
+        /* FIXED: Connected Speech Type Classes */
+        .connected-speech-item.type-linking { border-left-color: var(--accent-primary); }
+        .connected-speech-item.type-assimilation { border-left-color: var(--accent-success); }
+        .connected-speech-item.type-elision { border-left-color: var(--accent-warning); }
+        .connected-speech-item.type-intrusion { border-left-color: var(--accent-danger); }
+        .connected-speech-item.type-weak-forms { border-left-color: #8b5cf6; }
+        .connected-speech-item.type-contraction { border-left-color: #06b6d4; }
+        
         .cs-title { font-weight: 600; color: var(--text-primary); }
-        .cs-location { font-family: 'Noto Sans', sans-serif; background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
-        .cs-details { font-size: 0.875rem; color: var(--text-secondary); }
-        .cs-feedback { margin-top: 0.5rem; font-style: italic; }
+        .cs-details { color: var(--text-secondary); font-size: 0.875rem; }
+        .cs-location { font-weight: 500; color: var(--accent-primary); }
+        .cs-feedback { color: var(--text-secondary); margin-top: 0.5rem; }
     </style>
 </head>
-<body class="antialiased">
+<body>
     <div class="background-container">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
     </div>
 
-    <!-- History Modal -->
-    <div id="history-modal" class="modal-overlay">
-        <div class="modal-container glass-card p-6 space-y-4">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-text-primary text-xl">Lịch sử Luyện tập</h3>
-                <button id="close-history-btn" class="btn btn-secondary btn-icon !w-8 !h-8">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg">
+                    <span class="text-white font-logo text-2xl font-bold">PrAI</span>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-4xl font-bold text-text-primary">PrAI</h1>
+                    <p class="text-text-secondary">Luyện phát âm với AI</p>
+                </div>
+                <button id="theme-toggle" class="btn btn-icon btn-secondary ml-auto">
+                    <svg id="theme-icon-light" class="w-5 h-5 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg id="theme-icon-dark" class="w-5 h-5 icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
                 </button>
             </div>
-            <div id="history-list" class="space-y-2"></div>
-            <button id="clear-history-btn" class="btn btn-secondary w-full">Xóa tất cả lịch sử</button>
-        </div>
-    </div>
-
-    <div class="w-full max-w-3xl mx-auto p-4 relative z-10">
-        <header class="text-center mb-8 fade-in relative flex justify-between items-center">
-            <button id="history-btn" class="btn btn-secondary btn-icon" aria-label="Xem lịch sử">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            </button>
-            <div class="absolute left-1/2 -translate-x-1/2">
-                <h1 class="text-5xl md:text-6xl font-bold font-logo" style="color: var(--accent-primary);">PrAI</h1>
-                <p class="text-text-secondary text-sm md:text-base">Trợ lý luyện phát âm AI của bạn</p>
-            </div>
-            <button id="theme-toggle" class="btn btn-secondary btn-icon" aria-label="Toggle theme">
-                <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-            </button>
         </header>
 
-        <main class="main-card glass-card space-y-8">
-            <section class="input-section card-layer glass-card space-y-4">
-                <div>
-                    <label for="text-input" class="block text-lg font-semibold text-text-primary mb-3">Nhập văn bản cần luyện tập:</label>
-                    <textarea id="text-input" rows="3" maxlength="150" class="input-field" placeholder="Ví dụ: What are you doing?"></textarea>
-                    <div id="char-counter" class="text-right text-sm text-text-secondary mt-1">0 / 150</div>
-                    <div class="mt-4 flex flex-col sm:flex-row items-center gap-4">
-                        <div class="flex-grow w-full">
-                            <label for="accent-select" class="block text-sm font-medium text-text-secondary mb-1">Chọn giọng:</label>
-                            <select id="accent-select" class="input-field">
-                                <option value="British English" selected>Anh - Anh (BrE)</option>
-                                <option value="American English">Anh - Mỹ (AmE)</option>
-                            </select>
-                        </div>
-                        <div class="flex-shrink-0 flex gap-3 self-end">
-                            <button id="random-practice-btn" class="btn btn-secondary">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/></svg>
-                                <span class="text hidden sm:inline">Ngẫu nhiên</span>
-                            </button>
-                             <button id="transcribe-btn" class="btn btn-primary relative">
-                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                 <span class="text">Phiên âm</span>
-                                 <div class="btn-spinner hidden absolute inset-0 m-auto h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                             </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="controls-section" class="hidden space-y-6">
-                 <div class="card-layer glass-card space-y-4">
-                     <div id="simple-ipa-container" class="flex items-center justify-between">
-                         <div class="min-w-0">
-                             <h3 class="font-semibold text-text-secondary text-md">Phiên âm cơ bản</h3>
-                             <p id="simple-ipa-text" class="text-lg text-text-primary tracking-wider"></p>
-                         </div>
-                         <div class="relative w-11 h-11">
-                             <button id="listen-clear-btn" class="btn-icon btn-secondary absolute inset-0">
-                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
-                             </button>
-                             <div id="listen-clear-loader" class="btn-icon btn-secondary absolute inset-0 hidden items-center justify-center">
-                                 <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
-                             </div>
-                         </div>
-                     </div>
-                     <div id="detailed-ipa-container" class="flex items-center justify-between">
-                         <div class="min-w-0">
-                             <div class="flex items-center gap-2 mb-1">
-                                 <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy</h3>
-                                 <div id="thought-group-info" class="has-tooltip relative hidden">
-                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                     <div id="thought-group-tooltip" class="tooltip absolute bottom-full left-1/2 mb-2 w-72 rounded-lg p-3 text-xs shadow-lg"></div>
-                                 </div>
-                             </div>
-                             <div class="space-y-2">
-                                 <p id="detailed-ipa-text" class="text-xl text-accent-primary tracking-wider"></p>
-                                 <div id="thought-group-display" class="text-lg tracking-wide leading-relaxed font-medium"></div>
-                             </div>
-                         </div>
-                         <div class="relative w-11 h-11">
-                             <button id="listen-natural-btn" class="btn-icon btn-secondary absolute inset-0">
-                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                             </button>
-                             <div id="listen-natural-loader" class="btn-icon btn-secondary absolute inset-0 hidden items-center justify-center">
-                                 <div class="btn-spinner h-5 w-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-
-                <div class="flex flex-col items-center justify-center gap-4 pt-4">
-                    <div id="record-controls" class="flex items-center justify-center gap-6 w-full h-28">
-                        <button id="upload-btn" class="btn-icon btn-secondary">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        </button>
-                        <div class="flex flex-col items-center justify-center">
-                            <button id="record-btn" class="btn-record flex items-center justify-center">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-                                <span class="text hidden text-lg font-semibold">Dừng</span>
-                            </button>
-                        </div>
-                        <button id="listen-again-btn" disabled class="btn-icon btn-secondary">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                        </button>
-                    </div>
-                    <div id="waveform-container" class="hidden h-20 w-full card-layer-inset flex items-center justify-center p-2">
-                        <canvas id="waveform" class="w-full h-full"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">
-                <div class="w-full max-w-xs h-2 rounded-full overflow-hidden bg-[color:var(--input-bg)]">
-                    <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
-                </div>
-                <p id="progress-text" class="text-text-secondary mt-4">PrAI đang lắng nghe và phân tích...</p>
-                <p id="fun-fact" class="text-sm text-text-secondary/70 mt-6 italic hidden"></p>
-            </div>
-
-            <!-- UPDATED ANALYSIS RESULTS SECTION -->
-            <section id="analysis-results" class="hidden space-y-6">
-                <div class="card-layer glass-card space-y-6 p-6">
-                    <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
-            
-                    <!-- Overall Score -->
-                    <div class="score-container">
-                        <p><span id="overall-score"></span><span class="text-xl text-text-secondary">/100</span></p>
-                    </div>
-            
-                    <!-- Phoneme Analysis -->
-                    <div class="analysis-box-detailed">
-                        <h4 class="analysis-title">Phân tích Âm vị</h4>
-                        <div id="phoneme-analysis" class="flex flex-wrap gap-2 justify-center"></div>
-                        <p class="text-xs text-text-secondary mt-3 text-center">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
-                    </div>
-            
-                    <!-- Intonation / Syllable Analysis -->
-                    <div id="prosody-analysis-container" class="analysis-box-detailed">
-                        <!-- Title will be set dynamically -->
-                        <h4 id="prosody-analysis-title" class="analysis-title"></h4>
-                        <!-- Container for Sentence Intonation Chart -->
-                        <div id="intonation-analysis-content">
-                            <div class="intonation-chart-container">
-                                <svg id="intonation-chart" width="100%" height="100%"></svg>
+        <main class="glass-card main-card">
+            <div class="space-y-6">
+                <!-- Input Section -->
+                <div class="card-layer glass-card">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-semibold text-text-primary">Nhập văn bản</h2>
+                            <div class="flex gap-2">
+                                <button id="history-btn" class="btn btn-icon btn-secondary" title="Lịch sử">
+                                    <svg class="w-5 h-5 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                                <button id="random-practice-btn" class="btn btn-secondary">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span class="text">Câu ngẫu nhiên</span>
+                                </button>
                             </div>
-                            <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
                         </div>
-                        <!-- Container for Single Word Syllable Chart -->
-                        <div id="syllable-analysis-content">
+                        
+                        <div class="space-y-3">
+                            <textarea id="text-input" class="input-field" placeholder="Nhập từ hoặc câu tiếng Anh bạn muốn luyện phát âm..." maxlength="150"></textarea>
+                            <div class="flex justify-between items-center text-sm text-text-secondary">
+                                <span id="char-counter">0 / 150</span>
+                                <select id="accent-select" class="input-field w-auto">
+                                    <option value="American English">Giọng Mỹ</option>
+                                    <option value="British English">Giọng Anh</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button id="transcribe-btn" class="btn btn-primary w-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text">Phiên âm</span>
+                            <svg class="w-4 h-4 btn-spinner hidden" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- IPA Display Section -->
+                <div class="card-layer glass-card">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Phiên âm IPA</h3>
+                        
+                        <div class="card-layer-inset">
+                            <div class="text-center">
+                                <div class="text-2xl font-medium text-text-primary mb-2" id="simple-ipa-text">/ ... /</div>
+                                <div id="detailed-ipa-container" class="flex flex-col items-center space-y-2" style="display: none;">
+                                    <div class="text-lg" id="detailed-ipa-text">[ ... ]</div>
+                                    <div id="thought-group-display" class="text-sm">...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="thought-group-info" class="text-sm text-text-secondary text-center hidden">
+                            <div id="thought-group-tooltip"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Section -->
+                <div id="controls-section" class="card-layer glass-card hidden">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Nghe & Ghi âm</h3>
+                        
+                        <div class="flex flex-wrap gap-3 justify-center">
+                            <div class="relative">
+                                <button id="listen-natural-btn" class="btn btn-secondary">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M6.343 6.343L4.93 4.93A1 1 0 003.515 6.343L6.343 9.17 9.17 6.343a1 1 0 00-1.414-1.414L6.343 6.343z"></path>
+                                    </svg>
+                                    <span class="text">Nghe tự nhiên</span>
+                                </button>
+                                <div id="listen-natural-loader" class="absolute inset-0 btn btn-secondary hidden">
+                                    <svg class="w-4 h-4 btn-spinner" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <button id="listen-clear-btn" class="btn btn-secondary">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142"></path>
+                                    </svg>
+                                    <span class="text">Nghe rõ ràng</span>
+                                </button>
+                                <div id="listen-clear-loader" class="absolute inset-0 btn btn-secondary hidden">
+                                    <svg class="w-4 h-4 btn-spinner" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="record-controls" class="text-center space-y-4">
+                            <button id="record-btn" class="btn-record">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="8"></circle>
+                                </svg>
+                            </button>
+                            <div class="flex gap-2 justify-center">
+                                <button id="upload-btn" class="btn btn-secondary">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span class="text">Tải file</span>
+                                </button>
+                                <button id="listen-again-btn" class="btn btn-secondary" disabled>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span class="text">Nghe lại</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Section -->
+                <div id="loader" class="card-layer glass-card text-center hidden">
+                    <div class="space-y-4">
+                        <div class="w-16 h-16 mx-auto">
+                            <svg class="w-full h-full btn-spinner text-accent-primary" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p id="progress-text" class="text-lg font-medium text-text-primary mb-2">Đang xử lý...</p>
+                            <div class="w-full bg-input-bg rounded-full h-2 mb-4">
+                                <div id="progress-bar-inner" class="bg-accent-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p id="fun-fact" class="text-sm text-text-secondary italic hidden"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Results -->
+                <div id="analysis-results" class="space-y-6 hidden">
+                    <!-- Score Display -->
+                    <div class="card-layer glass-card text-center">
+                        <h3 class="text-xl font-semibold text-text-primary mb-4">Kết quả phân tích</h3>
+                        <div class="score-container">
+                            <div id="overall-score" class="text-6xl font-bold">0</div>
+                        </div>
+                        <p class="text-text-secondary">Điểm tổng thể</p>
+                    </div>
+
+                    <!-- Phoneme Analysis -->
+                    <div class="card-layer glass-card">
+                        <h4 class="text-lg font-semibold text-text-primary mb-4">Phân tích từng âm</h4>
+                        <div id="phoneme-analysis" class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+
+                    <!-- NEW: Prosody Analysis Section -->
+                    <div id="prosody-analysis-container" class="card-layer glass-card" style="display: none;">
+                        <h4 id="prosody-analysis-title" class="analysis-title">Phân tích Ngữ điệu</h4>
+                        
+                        <!-- Intonation Analysis (for sentences) -->
+                        <div id="intonation-analysis-content" style="display: none;">
+                            <div class="intonation-chart-container">
+                                <svg id="intonation-chart" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+                            </div>
+                            <p id="intonation-analysis-feedback" class="text-sm text-text-secondary"></p>
+                        </div>
+                        
+                        <!-- Syllable Analysis (for single words) -->
+                        <div id="syllable-analysis-content" style="display: none;">
                             <div id="syllable-chart-container" class="syllable-chart-container"></div>
-                            <div id="syllable-analysis-feedback" class="text-sm text-text-secondary text-center"></div>
+                            <p id="syllable-analysis-feedback" class="text-sm text-text-secondary"></p>
                         </div>
                     </div>
-            
+
                     <!-- Connected Speech Analysis -->
-                    <div id="connected-speech-container" class="analysis-box-detailed">
-                        <h4 class="analysis-title">Phân tích Nối âm & Cụm tư duy</h4>
-                        <div id="connected-speech-analysis" class="space-y-3"></div>
+                    <div id="connected-speech-container" class="card-layer glass-card" style="display: none;">
+                        <h4 class="text-lg font-semibold text-text-primary mb-4">Phân tích nối âm</h4>
+                        <div id="connected-speech-analysis"></div>
                     </div>
-            
+
+                    <!-- Practice Suggestions -->
+                    <div id="practice-suggestions" class="card-layer glass-card hidden">
+                        <h4 class="text-lg font-semibold text-text-primary mb-4">Gợi ý luyện tập</h4>
+                        <div id="suggestion-links" class="flex gap-3"></div>
+                    </div>
                 </div>
-            
-                <!-- Practice Suggestions Section -->
-                <div id="practice-suggestions" class="hidden card-layer glass-card">
-                     <h3 class="font-bold text-text-primary text-xl mb-4">Xem ví dụ thực tế</h3>
-                     <div id="suggestion-links" class="flex flex-col sm:flex-row gap-3 mt-2"></div>
-                </div>
-            </section>
+            </div>
         </main>
+
+        <!-- History Modal -->
+        <div id="history-modal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-text-primary">Lịch sử luyện tập</h3>
+                        <button id="close-history-btn" class="btn btn-icon btn-secondary">
+                            <svg class="w-5 h-5 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                    <button id="clear-history-btn" class="btn btn-secondary w-full mt-4">Xóa tất cả lịch sử</button>
+                </div>
+            </div>
+        </div>
 
         <div id="message-box" class="fixed bottom-5 right-5 hidden p-4 rounded-xl text-sm z-50 shadow-lg glass-card"></div>
         <audio id="replay-audio" class="hidden"></audio>
@@ -612,15 +674,15 @@
         // NEW: State to differentiate analysis modes
         let isSingleWordMode = false;
 
-        // --- CACHING ---
+        // --- ENHANCED CACHING SYSTEM ---
         const ipaCache = {
             get(key) { try { const i = localStorage.getItem(key); return i ? JSON.parse(i) : null; } catch (e) { return null; } },
             set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error("Cache write error:", e); } }
         };
-        // MODIFIED: More robust caching for model audio
-        let modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
-        let clearPronunciationAudio = null;
-
+        
+        // FIXED: Robust model pronunciation data caching
+        let modelPronunciationCache = new Map();
+        let clearPronunciationCache = new Map();
 
         const funFacts = [
             "'Ough' có thể được phát âm theo 10 cách khác nhau.",
@@ -783,10 +845,21 @@
             controlsSection.classList.remove('hidden');
         }
         
-        // MODIFIED: Prefetch all necessary model data for sentences
+        // FIXED: Detect single word mode more accurately
+        function detectAnalysisMode(text) {
+            const trimmed = text.trim();
+            const wordCount = trimmed.split(/\s+/).length;
+            const hasMultipleWords = wordCount > 1;
+            const hasPunctuation = /[.!?,:;]/.test(trimmed);
+            return !hasMultipleWords && !hasPunctuation;
+        }
+        
+        // FIXED: Enhanced prefetching with proper caching
         async function prefetchModelPronunciation(text, accent) {
-            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) return;
-            modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] }; // Reset
+            const cacheKey = `${text}_${accent}`;
+            if (modelPronunciationCache.has(cacheKey)) {
+                return modelPronunciationCache.get(cacheKey);
+            }
         
             try {
                 const textWithPauses = currentIpaData.thought_groups?.groups.join(" | ") || text;
@@ -813,200 +886,153 @@
                         })
                     })
                 ]);
-        
-                // Process TTS Audio
-                const audioPart = ttsData?.candidates?.[0]?.content?.parts?.[0];
-                if (!audioPart?.inlineData) throw new Error("TTS audio data not received.");
-                modelPronunciationData.audio = await createAudioFromBase64(audioPart.inlineData.data, audioPart.inlineData.mimeType);
-        
-                // Process Analysis Data
-                const analysisJson = JSON.parse(analysisData.candidates[0].content.parts[0].text);
-                modelPronunciationData.pitchContour = analysisJson.pitch_contour || [];
-                modelPronunciationData.stressedWords = analysisJson.stressed_words || [];
-        
-                console.log("Model pronunciation data prefetched successfully.");
-        
+
+                const audioData = ttsData.candidates[0].content.parts[0].inlineData;
+                const audio = await createAudioFromBase64(audioData.data, audioData.mimeType);
+                const prosodyData = JSON.parse(analysisData.candidates[0].content.parts[0].text);
+                
+                const result = {
+                    audio: audio,
+                    pitchContour: prosodyData.pitch_contour || [],
+                    stressedWords: prosodyData.stressed_words || []
+                };
+                
+                modelPronunciationCache.set(cacheKey, result);
+                return result;
             } catch (error) {
-                console.error("Model pronunciation prefetch failed:", error);
-                // Clear cache on failure to allow retry
-                modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
+                console.error("Prefetch error:", error);
+                return { audio: null, pitchContour: [], stressedWords: [] };
+            }
+        }
+
+        // FIXED: Enhanced clear pronunciation caching
+        async function prefetchClearPronunciation(text, accent) {
+            const cacheKey = `clear_${text}_${accent}`;
+            if (clearPronunciationCache.has(cacheKey)) {
+                return clearPronunciationCache.get(cacheKey);
+            }
+
+            try {
+                const promptTTS = `Read the following text very clearly and slowly in ${accent}, emphasizing each phoneme distinctly. Text: ${text}`;
+                const ttsData = await fetchWithBackoff(TTS_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptTTS }] }],
+                        generationConfig: { responseModalities: ["AUDIO"] },
+                        model: TTS_MODEL
+                    })
+                });
+
+                const audioData = ttsData.candidates[0].content.parts[0].inlineData;
+                const audio = await createAudioFromBase64(audioData.data, audioData.mimeType);
+                
+                clearPronunciationCache.set(cacheKey, audio);
+                return audio;
+            } catch (error) {
+                console.error("Clear pronunciation fetch error:", error);
+                return null;
             }
         }
 
         async function fetchAndDisplayIPA() {
+            const text = textInput.value.trim();
+            if (!text) return;
+
             fetchIpaRequestID++;
             const currentRequestID = fetchIpaRequestID;
 
-            const text = textInput.value.trim();
-            if (!text) {
-                resetAll();
-                return false;
-            }
-            
-            // NEW: Determine and set analysis mode
-            isSingleWordMode = !text.includes(' ');
-            
-            const accent = accentSelect.value;
-            const cacheKey = `ipa_${text}_${accent}`;
-            const cachedData = ipaCache.get(cacheKey);
+            // FIXED: Detect analysis mode early
+            isSingleWordMode = detectAnalysisMode(text);
 
-            if (cachedData) {
-                displayIpaData(cachedData);
-                if (isSingleWordMode) {
-                    prefetchClearPronunciation(text, accent);
-                } else {
-                    prefetchModelPronunciation(text, accent);
+            const cacheKey = `ipa_${text}_${accentSelect.value}`;
+            const cached = ipaCache.get(cacheKey);
+            if (cached) {
+                displayIpaData(cached);
+                // FIXED: Prefetch model data for sentences immediately after IPA display
+                if (!isSingleWordMode) {
+                    prefetchModelPronunciation(text, accentSelect.value);
                 }
-                return true;
+                return;
             }
-            
-            // MODIFIED: Simplified prompt for single words
-            let prompt;
-            if (isSingleWordMode) {
-                prompt = `Provide a JSON object for the word "${text}" in ${accent}. The JSON must contain:
-                1. 'simple': The standard IPA transcription.
-                2. 'syllable_structure': An object with 'syllables' (an array of strings representing each syllable) and 'stressed_syllable_index' (the 0-based index of the stressed syllable).
-                Respond with ONLY the JSON object.`;
-            } else {
-                prompt = `For the phrase "${text}" in ${accent}, provide a single JSON object with:
-                1. 'simple': A standard, citation-form IPA transcription.
-                2. 'detailed': A natural, connected speech transcription. Use the liaison symbol (‿) correctly ONLY where linking occurs within a thought group.
-                3. 'thought_groups': An object with 'groups' (an array of strings for natural thought groups) and 'explanation' (a clear Vietnamese explanation for the grouping).
-                Respond with ONLY the JSON object.`;
-            }
-            
-            setButtonLoading(transcribeBtn, null, true);
-            controlsSection.classList.add('hidden'); // Hide controls until data is ready
-            startIpaLoadingAnimation();
-            
-            try {
-                const payload = { 
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                };
 
-                const response = await fetchWithBackoff(TEXT_API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' }, 
-                    body: JSON.stringify(payload) 
+            setButtonLoading(transcribeBtn, null, true);
+            startIpaLoadingAnimation();
+
+            try {
+                const prompt = isSingleWordMode 
+                    ? `Provide IPA transcription for the single word "${text}" in ${accentSelect.value}. Return JSON with: simple (broad transcription), detailed (narrow transcription), syllable_structure (object with syllables array and stressed_syllable_index).`
+                    : `Provide IPA transcription for "${text}" in ${accentSelect.value}. Return JSON with: simple (broad), detailed (narrow), thought_groups (object with groups array and explanation string).`;
+
+                const data = await fetchWithBackoff(TEXT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'text' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
                 });
 
-                if (currentRequestID !== fetchIpaRequestID) return false;
+                if (currentRequestID !== fetchIpaRequestID) return;
 
-                let resultJson = JSON.parse(response.candidates[0].content.parts[0].text);
-
-                if (isSingleWordMode) {
-                    resultJson.detailed = resultJson.simple; // For consistency
-                }
-
-                ipaCache.set(cacheKey, resultJson);
-                displayIpaData(resultJson);
+                const ipaData = JSON.parse(data.candidates[0].content.parts[0].text);
+                ipaCache.set(cacheKey, ipaData);
+                displayIpaData(ipaData);
                 
-                // NEW: Auto-fetch audio based on mode
-                if (isSingleWordMode) {
-                    prefetchClearPronunciation(text, accent);
-                } else {
-                    prefetchModelPronunciation(text, accent);
+                // FIXED: Prefetch model data for sentences
+                if (!isSingleWordMode) {
+                    prefetchModelPronunciation(text, accentSelect.value);
                 }
-                
-                return true;
             } catch (error) {
-                if (currentRequestID === fetchIpaRequestID) {
-                    handleApiError(error);
-                    resetAll();
-                }
-                return false;
+                if (currentRequestID === fetchIpaRequestID) handleApiError(error);
             } finally {
                 if (currentRequestID === fetchIpaRequestID) {
-                    stopIpaLoadingAnimation();
                     setButtonLoading(transcribeBtn, null, false);
+                    stopIpaLoadingAnimation();
                 }
             }
         }
 
         function displayThoughtGroups(groups, explanation) {
-            thoughtGroupDisplay.innerHTML = '';
-            thoughtGroupTooltip.textContent = explanation || '';
+            if (!groups?.length) return;
             
-            if (groups && groups.length > 0 && explanation) {
-                thoughtGroupInfo.style.display = 'block';
-                groups.forEach((group, index) => {
-                    const groupSpan = document.createElement('span');
-                    groupSpan.textContent = group;
-                    groupSpan.className = `thought-group thought-group-${index % 4}`;
-                    thoughtGroupDisplay.appendChild(groupSpan);
-                });
-            } else {
-                thoughtGroupInfo.style.display = 'none';
+            thoughtGroupDisplay.innerHTML = groups.map((group, i) => 
+                `<span class="thought-group thought-group-${i % 4}">${group}</span>`
+            ).join(' ');
+            
+            if (explanation) {
+                thoughtGroupTooltip.textContent = explanation;
+                thoughtGroupInfo.classList.remove('hidden');
             }
         }
 
-        // NEW: Separate function to prefetch the 'clear' voice for single words
-        async function prefetchClearPronunciation(text, accent) {
-            clearPronunciationAudio = null; // Reset
-            try {
-                const prompt = `Say very clearly in ${accent}: ${text}`;
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseModalities: ["AUDIO"] },
-                    model: TTS_MODEL
-                };
-                const data = await fetchWithBackoff(TTS_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
-                    body: JSON.stringify(payload)
-                });
-                const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
-                if (audioPart?.inlineData) {
-                    clearPronunciationAudio = await createAudioFromBase64(audioPart.inlineData.data, audioPart.inlineData.mimeType);
-                    console.log("Clear pronunciation audio prefetched.");
-                } else {
-                    throw new Error("Invalid audio data for clear voice.");
-                }
-            } catch (error) {
-                console.error("Failed to prefetch clear pronunciation:", error);
-            }
-        }
-
-        // MODIFIED: handleListen now uses the prefetched audio data
         async function handleListen(type) {
             const text = textInput.value.trim();
-            const accent = accentSelect.value;
             if (!text) return;
 
             const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
             const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
-            
+
             setButtonLoading(button, loader, true);
 
             try {
-                if (type === 'natural') { // Natural voice for sentences
-                    if (modelPronunciationData.audio) {
-                        modelPronunciationData.audio.currentTime = 0;
-                        modelPronunciationData.audio.play();
+                if (type === 'natural' && !isSingleWordMode) {
+                    // FIXED: Use cached model pronunciation for natural listening
+                    const modelData = await prefetchModelPronunciation(text, accentSelect.value);
+                    if (modelData.audio) {
+                        modelData.audio.currentTime = 0;
+                        modelData.audio.play();
                     } else {
-                        // Fallback if prefetching failed
-                        await prefetchModelPronunciation(text, accent);
-                        if (modelPronunciationData.audio) {
-                             modelPronunciationData.audio.currentTime = 0;
-                             modelPronunciationData.audio.play();
-                        } else {
-                            throw new Error("Không thể tạo giọng đọc mẫu.");
-                        }
+                        throw new Error("Không thể tạo giọng đọc tự nhiên.");
                     }
-                } else { // Clear voice for single words
-                    if (clearPronunciationAudio) {
-                        clearPronunciationAudio.currentTime = 0;
-                        clearPronunciationAudio.play();
+                } else {
+                    // FIXED: Use cached clear pronunciation
+                    const clearAudio = await prefetchClearPronunciation(text, accentSelect.value);
+                    if (clearAudio) {
+                        clearAudio.currentTime = 0;
+                        clearAudio.play();
                     } else {
-                        // Fallback if prefetching failed
-                        await prefetchClearPronunciation(text, accent);
-                        if(clearPronunciationAudio) {
-                            clearPronunciationAudio.currentTime = 0;
-                            clearPronunciationAudio.play();
-                        } else {
-                            throw new Error("Không thể tạo giọng đọc mẫu.");
-                        }
+                        throw new Error("Không thể tạo giọng đọc rõ ràng.");
                     }
                 }
             } catch (error) {
@@ -1061,7 +1087,6 @@
             progressTextTimeoutIds = [];
         }
 
-
         async function analyzeAudio(audioBlob) {
             analysisRequestID++;
             const currentAnalysisID = analysisRequestID;
@@ -1075,13 +1100,12 @@
                 return;
             }
             
+            // FIXED: Ensure model data is available for sentences
             if (!isSingleWordMode) {
-                if (modelPronunciationData.text !== textInput.value.trim() || !modelPronunciationData.pitchContour?.length) {
-                    await prefetchModelPronunciation(textInput.value.trim(), accentSelect.value);
-                    if (!modelPronunciationData.pitchContour?.length) {
-                       showMessage('Chưa có dữ liệu ngữ điệu mẫu, vui lòng thử lại.', 'error');
-                       return;
-                    }
+                const modelData = await prefetchModelPronunciation(textInput.value.trim(), accentSelect.value);
+                if (!modelData.pitchContour?.length) {
+                   showMessage('Chưa có dữ liệu ngữ điệu mẫu, vui lòng thử lại.', 'error');
+                   return;
                 }
             }
 
@@ -1098,7 +1122,7 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                // --- MODIFIED: DYNAMIC GEMINI PROMPT ---
+                // FIXED: SPECIALIZED PROMPTS FOR DIFFERENT MODES
                 let prompt;
                 if (isSingleWordMode) {
                     prompt = {
@@ -1127,6 +1151,7 @@
                         }
                     };
                 } else { // Sentence mode
+                    const modelData = modelPronunciationCache.get(`${textInput.value.trim()}_${accentSelect.value}`);
                     prompt = {
                         "role": "Bạn là PrAI, một chuyên gia ngữ âm AI thấu hiểu người học tiếng Anh là người Việt.",
                         "context": {
@@ -1134,7 +1159,7 @@
                             "text_to_pronounce": textInput.value.trim(),
                             "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
                             "standard_ipa": standardIPA,
-                            "model_pitch_contour": modelPronunciationData.pitchContour,
+                            "model_pitch_contour": modelData?.pitchContour || [],
                         },
                         "leniency_rules": [{ 
                             "phoneme": "ʔ (glottal stop)", 
@@ -1189,7 +1214,7 @@
             };
         }
         
-        // MODIFIED: displayResults handles both modes
+        // FIXED: displayResults handles both modes properly
         function displayResults(data) {
             // Check for mismatch first
             if (data.word_match === false) {
@@ -1246,19 +1271,21 @@
                 syllableAnalysisContent.style.display = 'none';
                 prosodyAnalysisTitle.textContent = 'Phân tích Ngữ điệu';
                 intonationAnalysisFeedback.textContent = data.intonation_analysis?.feedback || '';
+                
+                const modelData = modelPronunciationCache.get(`${textInput.value.trim()}_${accentSelect.value}`);
                 renderIntonationChart(
                     intonationChart,
-                    modelPronunciationData.pitchContour,
-                    data.intonation_analysis?.user_pitch_contour,
-                    modelPronunciationData.stressedWords
+                    modelData?.pitchContour || [],
+                    data.intonation_analysis?.user_pitch_contour || [],
+                    modelData?.stressedWords || []
                 );
                 
-                // Connected Speech
+                // FIXED: Connected Speech with proper type classes
                 connectedSpeechAnalysis.innerHTML = '';
                 if (data.connected_speech_analysis?.length > 0) {
                     data.connected_speech_analysis.forEach(item => {
                         const itemEl = document.createElement('div');
-                        const typeClass = `type-${item.type.toLowerCase().replace(/\s/g, '-')}`;
+                        const typeClass = `type-${item.type.toLowerCase().replace(/\s+/g, '-')}`;
                         itemEl.className = `connected-speech-item ${typeClass}`;
                         itemEl.innerHTML = `
                             <div class="flex justify-between items-start">
@@ -1308,79 +1335,64 @@
         }
 
         function resetAll() {
-            standardIPA = '';
-            controlsSection.classList.add('hidden');
             resetAnalysisOnly();
-            
-            const text = textInput.value.trim();
-            const accent = accentSelect.value;
-            if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accent) {
-                 modelPronunciationData = { text: '', accent: '', audio: null, pitchContour: [], stressedWords: [] };
-            }
-            clearPronunciationAudio = null;
+            controlsSection.classList.add('hidden');
+            simpleIpaText.textContent = '/ ... /';
+            detailedIpaText.textContent = '[ ... ]';
+            thoughtGroupDisplay.textContent = '...';
+            thoughtGroupInfo.classList.add('hidden');
+            standardIPA = '';
             currentIpaData = {};
-            displayThoughtGroups([], '');
+            listenAgainBtn.disabled = true;
         }
 
         async function handleRecord() {
-            if (isRecording) {
-                mediaRecorder.stop();
-                return;
-            }
-            
-            analysisRequestID++;
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    soundDetected = false;
 
-            if (!textInput.value.trim()) {
-                showMessage('Vui lòng nhập từ để ghi âm và phân tích.', 'warning');
-                return;
-            }
-            
-            resetAnalysisOnly(); 
-            listenAgainBtn.disabled = true;
-            lastRecordingBlob = null;
-            
-            try {
-                if (!standardIPA) {
-                    const ipaReady = await fetchAndDisplayIPA();
-                    if (!ipaReady) {
-                        showMessage('Chưa có phiên âm chuẩn, không thể bắt đầu ghi âm.', 'warning');
-                        return;
-                    }
+                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                    mediaRecorder.onstop = () => {
+                        stream.getTracks().forEach(track => track.stop());
+                        if (soundDetected) {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            resetAnalysisOnly();
+                            analyzeAudio(audioBlob);
+                        } else {
+                            showMessage('Không phát hiện âm thanh. Vui lòng thử lại.', 'warning');
+                        }
+                    };
+
+                    audioContext = new AudioContext();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    analyser = audioContext.createAnalyser();
+                    source.connect(analyser);
+                    analyser.fftSize = 256;
+
+                    const checkSound = () => {
+                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(dataArray);
+                        const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                        if (average > 10) soundDetected = true;
+                        if (isRecording) requestAnimationFrame(checkSound);
+                    };
+                    checkSound();
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.classList.add('is-recording');
+                    recordBtn.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>';
+                } catch (error) {
+                    showMessage('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.', 'error');
                 }
-
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                isRecording = true;
-                soundDetected = false;
-                audioChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-                mediaRecorder.onstop = () => {
-                    isRecording = false;
-                    stopWaveform();
-                    stream.getTracks().forEach(track => track.stop());
-                    
-                    const recordBtnText = recordBtn.querySelector('.text');
-                    recordBtnText.textContent = '';
-                    recordBtnText.classList.add('hidden');
-                    recordBtn.querySelector('.icon').classList.remove('hidden');
-                    recordBtn.classList.remove('is-recording');
-
-                    if (soundDetected) {
-                        analyzeAudio(new Blob(audioChunks, { type: 'audio/webm' }));
-                    } else {
-                        showMessage("PrAI không phát hiện thấy âm thanh. Vui lòng thử ghi âm lại nhé.", "error");
-                    }
-                };
-                mediaRecorder.start();
-                startWaveform(stream);
-                const recordBtnText = recordBtn.querySelector('.text');
-                recordBtnText.textContent = 'Dừng';
-                recordBtnText.classList.remove('hidden');
-                recordBtn.querySelector('.icon').classList.add('hidden');
-                recordBtn.classList.add('is-recording');
-            } catch (error) {
-                console.error("Error accessing microphone:", error);
-                showMessage('Không thể truy cập micro. Vui lòng cấp quyền và thử lại.', 'error');
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.classList.remove('is-recording');
+                recordBtn.innerHTML = '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle></svg>';
             }
         }
 
@@ -1392,112 +1404,71 @@
             }
         }
 
-        function startWaveform(stream) {
-            uploadBtn.style.display = 'none';
-            listenAgainBtn.style.display = 'none';
-            waveformContainer.classList.remove('hidden');
-            
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            const source = audioContext.createMediaStreamSource(stream);
-            source.connect(analyser);
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            const computedStyle = getComputedStyle(document.documentElement);
-            const accentPrimaryColor = computedStyle.getPropertyValue('--accent-primary').trim();
-            const accentSuccessColor = computedStyle.getPropertyValue('--accent-success').trim();
-
-            const canvas = waveformEl;
-            const canvasCtx = canvas.getContext('2d');
-
-            function draw() {
-                waveformAnimationId = requestAnimationFrame(draw);
-                analyser.getByteFrequencyData(dataArray);
-
-                const averageVolume = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-                if (averageVolume > 15) soundDetected = true;
-                
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const barWidth = (canvas.width / bufferLength) * 1.5;
-                let x = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = dataArray[i] / 2.5;
-                    const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                    gradient.addColorStop(0, accentPrimaryColor);
-                    gradient.addColorStop(1, accentSuccessColor);
-                    canvasCtx.fillStyle = gradient;
-                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 1;
-                }
-            }
-            draw();
-        }
-
-        function stopWaveform() {
-            if (waveformAnimationId) cancelAnimationFrame(waveformAnimationId);
-            if (audioContext && audioContext.state !== 'closed') audioContext.close();
-            uploadBtn.style.display = 'inline-flex';
-            listenAgainBtn.style.display = 'inline-flex';
-            waveformContainer.classList.add('hidden');
-        }
-
-        function getHistory() { return JSON.parse(localStorage.getItem('prai-history') || '[]'); }
-
+        // History functions
         function saveToHistory(text, score) {
-            if (!text) return;
-            let history = getHistory();
-            const newEntry = { text, score, date: new Date().toISOString() };
-            history = history.filter(item => item.text !== text);
-            history.unshift(newEntry);
-            if (history.length > 20) history = history.slice(0, 20);
-            localStorage.setItem('prai-history', JSON.stringify(history));
-            loadHistory();
+            try {
+                const history = JSON.parse(localStorage.getItem('prai-history') || '[]');
+                const existingIndex = history.findIndex(item => item.text === text);
+                const newItem = { text, score, date: new Date().toISOString() };
+                
+                if (existingIndex >= 0) {
+                    history[existingIndex] = newItem;
+                } else {
+                    history.unshift(newItem);
+                }
+                
+                localStorage.setItem('prai-history', JSON.stringify(history.slice(0, 50)));
+            } catch (e) {
+                console.error('History save error:', e);
+            }
         }
 
         function loadHistory() {
-            const history = getHistory();
-            historyList.innerHTML = '';
-            if (history.length === 0) {
-                historyList.innerHTML = `<p class="text-text-secondary text-center italic">Chưa có lịch sử luyện tập.</p>`;
-                clearHistoryBtn.classList.add('hidden');
-                return;
+            try {
+                const history = JSON.parse(localStorage.getItem('prai-history') || '[]');
+                historyList.innerHTML = history.length ? history.map(item => `
+                    <div class="history-item p-3 rounded-lg border border-glass-border" data-text="${item.text}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1 mr-3">
+                                <p class="history-item-text font-medium">${item.text}</p>
+                                <p class="text-sm text-text-secondary">Điểm: ${item.score} • ${new Date(item.date).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-secondary text-xs" data-action="select">Chọn</button>
+                                <button class="btn btn-secondary text-xs" data-action="delete">Xóa</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('') : '<p class="text-text-secondary text-center py-4">Chưa có lịch sử luyện tập</p>';
+            } catch (e) {
+                console.error('History load error:', e);
+                historyList.innerHTML = '<p class="text-text-secondary text-center py-4">Lỗi tải lịch sử</p>';
             }
-            clearHistoryBtn.classList.remove('hidden');
-            history.forEach(item => {
-                const scoreColor = item.score > 85 ? 'bg-green-500/20 text-green-600 dark:text-green-400' : item.score > 70 ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' : 'bg-red-500/20 text-red-600 dark:text-red-400';
-                const itemEl = document.createElement('div');
-                itemEl.className = 'history-item flex justify-between items-center p-2 rounded-md';
-                itemEl.innerHTML = `
-                    <div class="flex-grow truncate pr-4" data-action="select"><p class="truncate history-item-text">${item.text}</p></div>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${scoreColor}">${item.score}</div>
-                        <button class="btn btn-secondary btn-icon !w-8 !h-8 text-accent-danger/70 hover:!bg-accent-danger/20" data-action="delete"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                    </div>`;
-                itemEl.dataset.text = item.text;
-                historyList.appendChild(itemEl);
-            });
-        }
-        
-        function deleteHistoryItem(text) {
-            let history = getHistory().filter(item => item.text !== text);
-            localStorage.setItem('prai-history', JSON.stringify(history));
-            loadHistory();
         }
 
         function clearHistory() {
             localStorage.removeItem('prai-history');
             loadHistory();
+            showMessage('Đã xóa tất cả lịch sử', 'success');
         }
-        
+
+        function deleteHistoryItem(text) {
+            try {
+                const history = JSON.parse(localStorage.getItem('prai-history') || '[]');
+                const filtered = history.filter(item => item.text !== text);
+                localStorage.setItem('prai-history', JSON.stringify(filtered));
+                loadHistory();
+                showMessage('Đã xóa mục khỏi lịch sử', 'success');
+            } catch (e) {
+                console.error('History delete error:', e);
+            }
+        }
+
         function handleHistoryClick(event) {
-            const target = event.target.closest('[data-action]');
-            if (!target) return;
+            const target = event.target;
             const action = target.dataset.action;
+            if (!action) return;
+            
             const text = target.closest('.history-item').dataset.text;
             if (action === 'select') {
                 textInput.value = text;
@@ -1521,7 +1492,7 @@
             window.requestAnimationFrame(step);
         }
         
-        // MODIFIED: renderIntonationChart positions stressed words dynamically
+        // FIXED: renderIntonationChart positions stressed words dynamically
         function renderIntonationChart(svgElement, modelData, userData, stressedWords = []) {
             svgElement.innerHTML = ''; 
             if (!modelData?.length || !userData?.length) return;
@@ -1554,7 +1525,7 @@
             svgElement.appendChild(createPolyline(modelPoints, 'accent-primary'));
             svgElement.appendChild(createPolyline(userPoints, 'accent-warning', true));
 
-            // NEW: Dynamically position stressed words above pitch peaks
+            // FIXED: Dynamically position stressed words above pitch peaks
             stressedWords.forEach(item => {
                 const modelIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
                 const searchRadius = 2;
@@ -1648,3 +1619,4 @@
     </script>
 </body>
 </html>
+
