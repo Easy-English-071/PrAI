@@ -37,7 +37,6 @@
             --radius-sm: 0.75rem;
             --radius-md: 1rem;
             --radius-lg: 1.5rem;
-            /* NEW: Message colors for better readability */
             --msg-color-info: #0369a1;
             --msg-color-success: #166534;
             --msg-color-warning: #92400e;
@@ -62,7 +61,6 @@
             --highlight-correct: rgba(74, 222, 128, 0.15);
             --highlight-approximate: rgba(250, 204, 21, 0.15);
             --highlight-incorrect: rgba(248, 113, 113, 0.15);
-            /* NEW: Message colors for dark theme */
             --msg-color-info: #7dd3fc;
             --msg-color-success: #86efac;
             --msg-color-warning: #fde047;
@@ -312,16 +310,27 @@
             overflow: hidden;
         }
 
-        .connected-speech-item.type-catenation { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+        .connected-speech-item.type-catenation, .connected-speech-item.type-linking { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
         .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
-        .connected-speech-item.type-weak-form { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+        .connected-speech-item.type-weak-form, .connected-speech-item.type-reduction { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+        .connected-speech-item.type-elision-and-weak-forms { border-color: #c026d3; background-color: rgba(192, 38, 211, 0.1);}
+
 
         .cs-title { font-weight: 600; color: var(--text-primary); }
         .cs-location { font-family: 'Noto Sans', sans-serif; background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
         .cs-details { font-size: 0.875rem; color: var(--text-secondary); }
         .cs-feedback { margin-top: 0.5rem; font-style: italic; }
+
+        #mismatch-notification-bar {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border-left: 5px solid var(--accent-warning);
+            background-color: var(--highlight-approximate);
+            color: var(--msg-color-warning);
+            margin-bottom: 1.5rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -467,6 +476,7 @@
             <!-- UPDATED ANALYSIS RESULTS SECTION -->
             <section id="analysis-results" class="hidden space-y-6">
                 <div class="card-layer glass-card space-y-6 p-6">
+                    <div id="mismatch-notification-bar" class="hidden"></div>
                     <h3 class="font-bold text-text-primary text-2xl text-center">Kết quả Phân tích</h3>
                 
                     <!-- Overall Score -->
@@ -513,7 +523,7 @@
             </section>
         </main>
 
-        <div id="message-box" class="fixed bottom-5 right-5 hidden p-4 rounded-xl text-sm z-50 shadow-lg glass-card"></div>
+        <div id="message-box" class="fixed top-5 right-5 hidden p-4 rounded-xl text-sm z-50 shadow-lg glass-card"></div>
         <audio id="replay-audio" class="hidden"></audio>
         <input type="file" id="audio-upload-input" class="hidden" accept="audio/*">
 
@@ -587,6 +597,7 @@
         const thoughtGroupInfo = document.getElementById('thought-group-info');
         const thoughtGroupTooltip = document.getElementById('thought-group-tooltip');
         const detailedIpaContainer = document.getElementById('detailed-ipa-container');
+        const mismatchNotificationBar = document.getElementById('mismatch-notification-bar');
         
         // NEW ANALYSIS SECTION ELEMENTS
         const prosodyAnalysisContainer = document.getElementById('prosody-analysis-container');
@@ -659,7 +670,7 @@
                 'warning': 'border-accent-warning/30',
                 'error': 'border-accent-danger/30'
             };
-            messageBox.className = `fixed bottom-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeBorders[type]}`;
+            messageBox.className = `fixed top-5 right-5 p-4 rounded-xl text-sm z-50 shadow-lg glass-card fade-in ${typeBorders[type]}`;
             messageBox.style.color = `var(--msg-color-${type})`;
             messageBox.textContent = message;
             messageBox.classList.remove('hidden');
@@ -810,12 +821,12 @@
         }
         
         async function prefetchModelPronunciation(text, accent) {
-            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent) return;
+            if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) return;
             modelPronunciationData = { text, accent, audio: null, pitchContour: [], stressedWords: [] }; // Reset
         
             try {
                 const textWithPauses = currentIpaData.thought_groups?.groups.join(" | ") || text;
-                const promptTTS = `Read ONLY the following text in ${accent}. The pipe symbol "|" indicates a slight, natural hesitation. Text: ${textWithPauses}`;
+                const promptTTS = `As a native ${accent} speaker, read the following text naturally, as you would in a conversation. The pipe symbol "|" indicates a very brief pause, like a comma. Maintain a smooth and connected flow. Text: ${textWithPauses}`;
                 
                 const [ttsData, analysisData] = await Promise.all([
                     fetchWithBackoff(TTS_API_URL, {
@@ -954,7 +965,7 @@
         }
 
         async function prefetchClearPronunciation(text, accent) {
-            clearPronunciationAudio = null;
+            if (clearPronunciationAudio) return;
             try {
                 const prompt = `Say very clearly in ${accent}: ${text}`;
                 const payload = {
@@ -987,31 +998,26 @@
             const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
             const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
             
-            // Do not proceed if already loading
             if (button.disabled) return;
             
             setButtonLoading(button, loader, true);
 
             try {
                 if (type === 'natural' && !isSingleWordMode) {
-                    if (!modelPronunciationData.audio) {
-                        await prefetchModelPronunciation(text, accent);
-                    }
+                    await prefetchModelPronunciation(text, accent);
                     if (modelPronunciationData.audio) {
                         modelPronunciationData.audio.currentTime = 0;
                         await modelPronunciationData.audio.play();
                     } else {
-                        throw new Error("Không thể tạo giọng đọc mẫu.");
+                        showMessage("Không thể tạo giọng đọc mẫu, vui lòng thử lại.", 'error');
                     }
                 } else {
-                    if (!clearPronunciationAudio) {
-                        await prefetchClearPronunciation(text, accent);
-                    }
+                    await prefetchClearPronunciation(text, accent);
                     if(clearPronunciationAudio) {
                         clearPronunciationAudio.currentTime = 0;
                         await clearPronunciationAudio.play();
                     } else {
-                        throw new Error("Không thể tạo giọng đọc mẫu.");
+                        showMessage("Không thể tạo giọng đọc mẫu, vui lòng thử lại.", 'error');
                     }
                 }
             } catch (error) {
@@ -1194,6 +1200,7 @@
         }
         
         function displayResults(data) {
+            mismatchNotificationBar.classList.add('hidden'); // Reset notification bar
             if (data.overall_score === null || data.overall_score === undefined) {
                 showMessage("PrAI không nhận diện được giọng nói. Vui lòng thử lại và nói to, rõ hơn.", "error");
                 return;
@@ -1224,12 +1231,12 @@
             });
 
             // Display message if no match found for clarity
-            if (isSingleWordMode && data.word_match === false) {
-                let mismatchMessage = `Bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn.`;
-                showMessage(mismatchMessage, 'warning');
-            } else if (!isSingleWordMode && data.sentence_match === false) {
-                 let mismatchMessage = `Câu bạn nói không khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
-                 showMessage(mismatchMessage, 'warning');
+            if ((isSingleWordMode && data.word_match === false) || (!isSingleWordMode && data.sentence_match === false)) {
+                let mismatchMessage = isSingleWordMode 
+                    ? `Bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn.`
+                    : `Câu bạn nói không khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
+                mismatchNotificationBar.textContent = mismatchMessage;
+                mismatchNotificationBar.classList.remove('hidden');
             }
         
             if (isSingleWordMode) {
@@ -1239,23 +1246,32 @@
             } else {
                 prosodyAnalysisTitle.textContent = 'Phân tích Ngữ điệu';
                 intonationAnalysisFeedback.textContent = data.intonation_analysis?.feedback || '';
-                renderIntonationChart(
-                    intonationChart,
-                    modelPronunciationData.pitchContour,
-                    data.intonation_analysis?.user_pitch_contour,
-                    modelPronunciationData.stressedWords
-                );
+                
+                if (modelPronunciationData.pitchContour?.length > 0 && data.intonation_analysis?.user_pitch_contour?.length > 0) {
+                    intonationAnalysisContent.classList.remove('hidden');
+                    renderIntonationChart(
+                        intonationChart,
+                        modelPronunciationData.pitchContour,
+                        data.intonation_analysis.user_pitch_contour,
+                        modelPronunciationData.stressedWords
+                    );
+                } else {
+                     intonationAnalysisContent.classList.add('hidden');
+                }
                 
                 connectedSpeechAnalysis.innerHTML = '';
                 if (data.connected_speech_analysis?.length > 0) {
                     data.connected_speech_analysis.forEach(item => {
                         const itemEl = document.createElement('div');
-                        const typeClass = `type-${item.type.toLowerCase().replace(/\s/g, '-')}`;
+                        
+                        const typeStr = item.type.toLowerCase();
+                        let typeClass = `type-${typeStr.replace(/\s*&\s*|\s+/g, '-')}`;
+
                         itemEl.className = `connected-speech-item ${typeClass}`;
                         itemEl.innerHTML = `
                             <div class="flex justify-between items-start">
                                 <div><p class="cs-title">${item.rule}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item.location}</span></p></div>
-                                <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full ${typeClass} opacity-70">${item.type}</span>
+                                <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full opacity-70">${item.type}</span>
                             </div>
                             <div class="cs-details mt-2">
                                 <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
@@ -1295,6 +1311,7 @@
         function resetAnalysisOnly() {
             analysisResults.classList.add('hidden');
             practiceSuggestions.classList.add('hidden');
+            mismatchNotificationBar.classList.add('hidden');
         }
 
         function resetAll() {
@@ -1547,19 +1564,35 @@
                 const modelIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
                 const searchRadius = 2;
                 let peakValue = -Infinity;
+                let peakIndex = modelIndex;
                 for (let i = -searchRadius; i <= searchRadius; i++) {
                     const idx = Math.max(0, Math.min(modelData.length - 1, modelIndex + i));
-                    if (modelData[idx] > peakValue) peakValue = modelData[idx];
+                    if (modelData[idx] > peakValue) {
+                        peakValue = modelData[idx];
+                        peakIndex = idx;
+                    }
                 }
                 
-                const x = padding.left + (item.time_stamp_normalized * innerWidth);
-                const y = scaleY(peakValue) - 8;
+                const x = scaleX(peakIndex, modelData.length);
+                const y = scaleY(peakValue) - 10;
+
+                const textBg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textBg.setAttribute('x', x);
+                textBg.setAttribute('y', y);
+                textBg.setAttribute('text-anchor', 'middle');
+                textBg.setAttribute('font-size', '13');
+                textBg.setAttribute('font-weight', '600');
+                textBg.setAttribute('stroke', 'var(--glass-bg)');
+                textBg.setAttribute('stroke-width', '4');
+                textBg.setAttribute('stroke-linejoin', 'round');
+                textBg.textContent = item.word;
+                svgElement.appendChild(textBg);
 
                 const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 textEl.setAttribute('x', x);
                 textEl.setAttribute('y', y);
                 textEl.setAttribute('text-anchor', 'middle');
-                textEl.setAttribute('font-size', '12');
+                textEl.setAttribute('font-size', '13');
                 textEl.setAttribute('font-weight', '600');
                 textEl.setAttribute('fill', 'var(--text-primary)');
                 textEl.textContent = item.word;
