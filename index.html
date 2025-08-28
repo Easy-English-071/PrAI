@@ -1200,21 +1200,23 @@
             const accent = accentSelect.value;
             const isSingleWord = !text.includes(' ');
 
+            // --- FIX: Move loader display before the await block ---
+            loader.classList.remove('hidden');
+            startProgressTextAnimation();
+            startProgressSimulation();
+            funFactEl.textContent = `💡 ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
+            funFactEl.classList.remove('hidden');
+
             if (!isSingleWord) {
                 while(isFetchingModelAudio) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
                 if (!modelPronunciationData.pitchContour || modelPronunciationData.pitchContour.length === 0) {
                     showMessage('Không thể lấy dữ liệu ngữ điệu mẫu để so sánh. Vui lòng thử lại sau.', 'error');
+                    loader.classList.add('hidden'); // Hide loader on early exit
                     return;
                 }
             }
-
-            loader.classList.remove('hidden');
-            startProgressTextAnimation();
-            startProgressSimulation();
-            funFactEl.textContent = `💡 ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
-            funFactEl.classList.remove('hidden');
             
             const reader = new FileReader();
             reader.readAsDataURL(lastRecordingBlob);
@@ -1250,7 +1252,6 @@
                            "stress_analysis": "{ \"standard_syllables\": [], \"user_syllables\": [], \"feedback\": \"string\" } | null",
                            "intonation_analysis": "{ \"user_pitch_contour\": [], \"feedback\": \"string\" } | null",
                            "pacing_and_pauses_feedback": "string | null",
-                           // --- FIX: Explicitly define the object schema for connected_speech_analysis ---
                            "connected_speech_analysis": {
                                 "type": "ARRAY",
                                 "items": {
@@ -1329,7 +1330,18 @@
         
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
+                // --- FIX: Ensure consistent phoneme display ---
+                const allPhonemes = [];
                 data.phoneme_analysis.forEach(p => {
+                    const phonemes = p.phoneme.trim().split(/\s+/);
+                    phonemes.forEach(singlePhoneme => {
+                        if (singlePhoneme) {
+                            allPhonemes.push({ ...p, phoneme: singlePhoneme });
+                        }
+                    });
+                });
+
+                allPhonemes.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
                     const status = ['correct', 'approximate', 'incorrect'].includes(p.status) ? p.status : 'correct';
@@ -1377,7 +1389,6 @@
                 connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
-                    // --- FIX: Add defensive checks to prevent "undefined" error ---
                     const type = item?.type || 'unknown';
                     const typeClass = `type-${type.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
                     itemEl.className = `connected-speech-item ${typeClass}`;
@@ -1752,7 +1763,8 @@
                 if (standard) {
                     const modelBar = document.createElement('div');
                     modelBar.className = 'syllable-bar model';
-                    modelBar.style.height = standard.is_stressed ? '90%' : '40%';
+                    // --- FIX: Make stressed syllables taller ---
+                    modelBar.style.height = standard.is_stressed ? '95%' : '50%';
                     barWrapper.appendChild(modelBar);
                 }
 
@@ -1760,7 +1772,8 @@
                 if (user) {
                     const userBar = document.createElement('div');
                     userBar.className = 'syllable-bar user';
-                    userBar.style.height = user.is_stressed ? '90%' : '40%';
+                    // --- FIX: Make stressed syllables taller ---
+                    userBar.style.height = user.is_stressed ? '95%' : '50%';
                     barWrapper.appendChild(userBar);
                 }
                 
