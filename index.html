@@ -1764,7 +1764,7 @@
                     const modelBar = document.createElement('div');
                     modelBar.className = 'syllable-bar model';
                     // --- FIX: Make stressed syllables taller ---
-                    modelBar.style.height = standard.is_stressed ? '95%' : '50%';
+                    modelBar.style.height = standard.is_stressed ? '95%' : '40%';
                     barWrapper.appendChild(modelBar);
                 }
 
@@ -1773,7 +1773,7 @@
                     const userBar = document.createElement('div');
                     userBar.className = 'syllable-bar user';
                     // --- FIX: Make stressed syllables taller ---
-                    userBar.style.height = user.is_stressed ? '95%' : '50%';
+                    userBar.style.height = user.is_stressed ? '95%' : '40%';
                     barWrapper.appendChild(userBar);
                 }
                 
