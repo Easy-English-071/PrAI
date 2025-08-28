@@ -281,15 +281,51 @@
             cursor: pointer;
         }
 
-        .intonation-chart-container {
+        .intonation-chart-container, .stress-chart-container {
             width: 100%;
-            height: 180px; /* Increased height for stressed words */
+            height: 180px;
             background-color: var(--input-bg);
             border-radius: var(--radius-sm);
             padding: 0.5rem;
             border: 1px solid var(--glass-border);
             margin-bottom: 1rem;
         }
+        
+        .stress-chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 1.5rem 1rem 1rem 1rem;
+        }
+
+        .syllable-bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .syllable-bar {
+            width: 30px;
+            background-color: var(--accent-primary);
+            opacity: 0.6;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease-out;
+        }
+        
+        .syllable-bar.stressed {
+            background-color: var(--accent-warning);
+            opacity: 1;
+        }
+
+        .syllable-label {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
 
         .connected-speech-item {
             padding: 1rem;
@@ -377,7 +413,7 @@
             
             <section id="controls-section" class="hidden space-y-6">
                  <div class="card-layer glass-card space-y-4">
-                     <div class="flex items-center justify-between">
+                     <div id="simple-transcription-container" class="flex items-center justify-between">
                          <div class="min-w-0">
                              <h3 class="font-semibold text-text-secondary text-md">Phiên âm cơ bản</h3>
                              <p id="simple-ipa-text" class="text-lg text-text-primary tracking-wider"></p>
@@ -391,7 +427,7 @@
                              </div>
                          </div>
                      </div>
-                     <div class="flex items-center justify-between">
+                     <div id="detailed-transcription-container" class="flex items-center justify-between">
                          <div class="min-w-0">
                              <div class="flex items-center gap-2 mb-1">
                                  <h3 class="font-semibold text-text-secondary text-md">Phiên âm & Cụm tư duy</h3>
@@ -472,17 +508,28 @@
                         <p class="text-xs text-text-secondary mt-3">Chạm hoặc di chuột qua các âm vị để xem hướng dẫn.</p>
                     </div>
             
-                    <!-- Intonation Analysis -->
-                    <div class="analysis-box-detailed">
-                        <h4 class="analysis-title">Phân tích Ngữ điệu</h4>
-                        <div class="intonation-chart-container">
-                            <svg id="intonation-chart" width="100%" height="100%"></svg>
+                    <!-- Intonation / Stress Analysis -->
+                    <div id="prosody-analysis-container" class="analysis-box-detailed">
+                        <!-- Title will be set dynamically -->
+                        <h4 id="prosody-analysis-title" class="analysis-title"></h4>
+                        <!-- Container for Intonation Chart (for sentences) -->
+                        <div id="intonation-analysis-wrapper" class="hidden">
+                            <div class="intonation-chart-container">
+                                <svg id="intonation-chart" width="100%" height="100%"></svg>
+                            </div>
+                            <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
                         </div>
-                        <div id="intonation-analysis-feedback" class="text-sm text-text-secondary"></div>
+                        <!-- Container for Stress Chart (for single words) -->
+                         <div id="stress-analysis-wrapper" class="hidden">
+                            <div class="stress-chart-container" id="stress-chart">
+                                <!-- Stress bars will be generated here -->
+                            </div>
+                            <div id="stress-analysis-feedback" class="text-sm text-text-secondary"></div>
+                        </div>
                     </div>
             
                     <!-- Connected Speech Analysis -->
-                    <div class="analysis-box-detailed">
+                    <div id="connected-speech-container" class="analysis-box-detailed">
                         <h4 class="analysis-title">Phân tích Nối âm & Cụm tư duy</h4>
                         <div id="connected-speech-analysis" class="space-y-3"></div>
                     </div>
@@ -570,6 +617,12 @@
         const thoughtGroupDisplay = document.getElementById('thought-group-display');
         const thoughtGroupInfo = document.getElementById('thought-group-info');
         const thoughtGroupTooltip = document.getElementById('thought-group-tooltip');
+        const detailedTranscriptionContainer = document.getElementById('detailed-transcription-container');
+        const prosodyAnalysisContainer = document.getElementById('prosody-analysis-container');
+        const prosodyAnalysisTitle = document.getElementById('prosody-analysis-title');
+        const intonationAnalysisWrapper = document.getElementById('intonation-analysis-wrapper');
+        const stressAnalysisWrapper = document.getElementById('stress-analysis-wrapper');
+        const connectedSpeechContainer = document.getElementById('connected-speech-container');
         
         const historyBtn = document.getElementById('history-btn');
         const historyModal = document.getElementById('history-modal');
@@ -596,7 +649,6 @@
         let progressTextTimeoutIds = [];
         let currentThoughtGroups = [];
         
-        // --- NEW: Model Pronunciation Data Cache ---
         let modelPronunciationData = {
             text: '',
             accent: '',
@@ -605,7 +657,6 @@
             stressedWords: []
         };
         
-        // --- NEW: Simple cache for single word audio ---
         const singleWordAudioCache = new Map();
 
 
@@ -792,16 +843,22 @@
             standardIPA = data.detailed;
             simpleIpaText.textContent = data.simple;
             detailedIpaText.textContent = data.detailed;
+            
+            const isSingleWord = !textInput.value.trim().includes(' ');
 
-            if (data.thought_groups && textInput.value.trim().includes(' ')) {
-                currentThoughtGroups = data.thought_groups.groups;
-                displayThoughtGroups(data.thought_groups.groups, data.thought_groups.explanation);
+            if (isSingleWord) {
+                detailedTranscriptionContainer.classList.add('hidden');
             } else {
-                currentThoughtGroups = [textInput.value.trim()];
-                displayThoughtGroups([], '');
+                detailedTranscriptionContainer.classList.remove('hidden');
+                if (data.thought_groups) {
+                    currentThoughtGroups = data.thought_groups.groups;
+                    displayThoughtGroups(data.thought_groups.groups, data.thought_groups.explanation);
+                } else {
+                    currentThoughtGroups = [];
+                    displayThoughtGroups([], '');
+                }
             }
             controlsSection.classList.remove('hidden');
-            thoughtGroupInfo.style.display = textInput.value.trim().includes(' ') ? 'block' : 'none';
         }
         
         async function prefetchModelPronunciation(text, accent) {
@@ -940,8 +997,6 @@
             
             setButtonLoading(transcribeBtn, null, true);
             controlsSection.classList.remove('hidden');
-            thoughtGroupDisplay.style.display = isSingleWord ? 'none' : 'block';
-            thoughtGroupInfo.style.display = isSingleWord ? 'none' : 'block';
             
             startIpaLoadingAnimation();
             
@@ -1023,31 +1078,10 @@
             try {
                 if (isNatural) {
                     if (isSingleWord) {
-                        const cacheKey = `${text}_${accent}`;
-                        if (singleWordAudioCache.has(cacheKey)) {
-                            singleWordAudioCache.get(cacheKey).play();
-                            return;
-                        }
-                        // Fetch directly for single words
-                        const prompt = `Read ONLY the following text in ${accent}. Pronounce it naturally and fluently. Text: ${text}`;
-                        const payload = {
-                             contents: [{ parts: [{ text: prompt }] }],
-                             generationConfig: { responseModalities: ["AUDIO"] },
-                             model: TTS_MODEL
-                        };
-                        const data = await fetchWithBackoff(TTS_API_URL, {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json', 'X-Target-API': 'tts' },
-                             body: JSON.stringify(payload)
-                        });
-                        const audioPart = data?.candidates?.[0]?.content?.parts?.[0];
-                        if (audioPart && audioPart.inlineData) {
-                             const audio = await createAudioFromBase64(audioPart.inlineData.data, audioPart.inlineData.mimeType);
-                             audio.play();
-                             singleWordAudioCache.set(cacheKey, audio);
-                        } else {
-                             throw new Error("Không nhận được dữ liệu âm thanh hợp lệ.");
-                        }
+                        // This button is now hidden for single words, but this logic is a safeguard.
+                        // We will just play the "clear" version for single words if this is ever called.
+                        await handleListen('clear', button, loader);
+                        return;
                     } else {
                         // Use the cached model voice for sentences
                         if (modelPronunciationData.text === text && modelPronunciationData.accent === accent && modelPronunciationData.audio) {
@@ -1064,12 +1098,14 @@
                             }
                         }
                     }
-                } else { // Clear voice logic remains the same
-                    if (lastTTSTextClear === text && lastTTSAccentClear === accent && lastTTSAudioClear) {
-                        lastTTSAudioClear.play();
+                } else { // Clear voice logic
+                    const cacheKey = `clear_${text}_${accent}`;
+                    if (singleWordAudioCache.has(cacheKey)) {
+                        singleWordAudioCache.get(cacheKey).play();
                         return;
                     }
-                    const prompt = `Say very clearly, with only a slight pause between each word, in ${accent}: ${text}`;
+
+                    const prompt = `Say very clearly, in ${accent}: ${text}`;
                     const payload = {
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { responseModalities: ["AUDIO"] },
@@ -1084,7 +1120,7 @@
                     if (audioPart && audioPart.inlineData) {
                         const audio = await createAudioFromBase64(audioPart.inlineData.data, audioPart.inlineData.mimeType);
                         audio.play();
-                        [lastTTSAudioClear, lastTTSTextClear, lastTTSAccentClear] = [audio, text, accent];
+                        singleWordAudioCache.set(cacheKey, audio);
                     } else {
                         throw new Error("Không nhận được dữ liệu âm thanh hợp lệ.");
                     }
@@ -1172,19 +1208,18 @@
                 return;
             }
             
-            if (!textInput.value.trim().includes(' ')) {
-                // Simplified analysis for single words
-            } else {
-                // Ensure model data is ready before analyzing sentences
-                if (modelPronunciationData.text !== textInput.value.trim() || modelPronunciationData.accent !== accentSelect.value) {
-                    await prefetchModelPronunciation(textInput.value.trim(), accentSelect.value);
+            const text = textInput.value.trim();
+            const isSingleWord = !text.includes(' ');
+
+            if (!isSingleWord) {
+                if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accentSelect.value) {
+                    await prefetchModelPronunciation(text, accentSelect.value);
                 }
                  if (!modelPronunciationData.pitchContour || modelPronunciationData.pitchContour.length === 0) {
                     showMessage('Chưa có dữ liệu ngữ điệu mẫu, vui lòng thử lại.', 'error');
                     return;
                 }
             }
-
 
             loader.classList.remove('hidden');
             startProgressTextAnimation();
@@ -1205,61 +1240,73 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                // --- UPDATED GEMINI PROMPT ---
-                const prompt = {
-                    "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu. Nhiệm vụ của bạn là đưa ra phản hồi chính xác, mang tính xây dựng cao cho người học tiếng Anh là người Việt.",
-                    "task_instructions": {
-                        "step_1_transcription": "Nhiệm vụ đầu tiên và quan trọng nhất: Tạo ra một bản phiên âm có độ chính xác cao (narrow phonetic transcription) từ audio của người dùng. Phải đặc biệt chú ý đến các khác biệt tinh tế như âm hữu thanh/vô thanh (vd: /s/ vs /z/). Đây là nền tảng cho mọi phân tích sau đó.",
-                        "step_2_analysis": "Dựa trên bản phiên âm từ Bước 1, tiến hành so sánh với phiên âm chuẩn và phân tích các yếu tố khác.",
-                        "step_3_scoring": "Tính điểm dựa trên hệ thống trọng số lỗi và áp dụng các quy tắc khoan dung."
-                    },
-                    "context": {
-                        "learner_profile": "Người học là người Việt, thường gặp các vấn đề sau: bỏ âm cuối, nhầm lẫn các cặp nguyên âm, không phân biệt âm vô thanh/hữu thanh, và nói ngắt nghỉ từng từ.",
-                        "text_to_pronounce": textInput.value.trim(),
-                        "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
-                        "standard_ipa": standardIPA,
-                        "model_pitch_contour": modelPronunciationData.pitchContour,
-                    },
-                     "scoring_system": {
-                        "base_score": 100,
-                        "error_weights": [
-                            { "type": "Lỗi nghiêm trọng", "deduction": "Trừ 10-15 điểm/lỗi", "examples": ["Bỏ âm cuối", "Sai hoàn toàn một nguyên âm chính", "Sai trọng âm từ"] },
-                            { "type": "Lỗi trung bình", "deduction": "Trừ 5-8 điểm/lỗi", "examples": ["Thay thế phụ âm khó (vd: /θ/ -> /s/)", "Nguyên âm hơi lệch"] },
-                            { "type": "Lỗi nhỏ", "deduction": "Trừ 1-3 điểm/lỗi", "examples": ["Độ dài nguyên âm chưa hoàn hảo", "Âm cuối bật hơi yếu"] }
-                        ],
-                        "leniency_rules": {
-                            "context": "Với người học Việt Nam, hãy khoan dung với các lỗi không ảnh hưởng lớn đến giao tiếp.",
-                            "rules": [{ 
-                                "phoneme": "ʔ (glottal stop)", 
-                                "condition": "Khi thay thế cho âm /t/ cuối không bật hơi.", 
-                                "adjustment": "Nếu người dùng phát âm /t/ đầy đủ hoặc bỏ qua, chỉ phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm."
-                            }]
+                // --- DYNAMIC PROMPT BASED ON INPUT TYPE ---
+                let prompt;
+                if (isSingleWord) {
+                    prompt = {
+                        "role": "Bạn là chuyên gia ngữ âm AI, phân tích trọng âm của một từ đơn.",
+                        "task_instructions": {
+                            "step_1_transcription": "Phiên âm chính xác audio của người dùng.",
+                            "step_2_analysis": "So sánh phiên âm đó với phiên âm chuẩn để phân tích âm vị và xác định xem người dùng có nhấn trọng âm đúng âm tiết hay không.",
                         },
-                        "communicative_effectiveness_boost": {
-                            "condition": "Sau khi trừ điểm, nếu điểm số thấp nhưng câu nói vẫn có thể hiểu được trong giao tiếp thực tế.",
-                            "action": "Áp dụng 'Điểm thưởng Giao tiếp' để đảm bảo điểm số cuối cùng không dưới 40. Nếu áp dụng, phải giải thích trong phần nhận xét chung."
+                        "context": { "text_to_pronounce": text, "standard_ipa": standardIPA },
+                        "scoring_system": { "info": "Chấm điểm dựa trên độ chính xác của âm vị và trọng âm." },
+                        "output_format_instruction": {
+                            "format": "JSON", "schema": {
+                                "speech_detected": "boolean",
+                                "overall_score": "number",
+                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" } ]",
+                                "stress_analysis": {
+                                    "syllables": "[{ \"text\": \"string\", \"is_stressed\": \"boolean\" }]",
+                                    "user_stressed_correctly": "boolean",
+                                    "feedback": "string"
+                                }
+                            }
                         }
-                    },
-                    "output_format_instruction": {
-                        "format": "JSON",
-                        "schema": {
-                            "speech_detected": "boolean",
-                            "overall_score": "number | null",
-                            "user_ipa": "string | null",
-                            "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string | null\" } ] | null",
-                            "rhythm_and_pacing_analysis": {
-                                "rhythm_score": "number (0-100)",
-                                "feedback": "string"
+                    };
+                } else { // For sentences
+                    prompt = {
+                        "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu.",
+                        "task_instructions": {
+                            "step_1_transcription": "Nhiệm vụ đầu tiên và quan trọng nhất: Tạo ra một bản phiên âm có độ chính xác cao (narrow phonetic transcription) từ audio của người dùng. Phải đặc biệt chú ý đến các khác biệt tinh tế như âm hữu thanh/vô thanh (vd: /s/ vs /z/). Đây là nền tảng cho mọi phân tích sau đó.",
+                            "step_2_analysis": "Dựa trên bản phiên âm từ Bước 1, tiến hành so sánh với phiên âm chuẩn và phân tích các yếu tố khác.",
+                            "step_3_scoring": "Tính điểm dựa trên hệ thống trọng số lỗi và áp dụng các quy tắc khoan dung."
+                        },
+                        "context": {
+                            "learner_profile": "Người học là người Việt.",
+                            "text_to_pronounce": text,
+                            "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
+                            "standard_ipa": standardIPA,
+                            "model_pitch_contour": modelPronunciationData.pitchContour,
+                        },
+                         "scoring_system": {
+                            "base_score": 100,
+                            "error_weights": [
+                                { "type": "Lỗi nghiêm trọng", "deduction": "Trừ 10-15 điểm/lỗi" },
+                                { "type": "Lỗi trung bình", "deduction": "Trừ 5-8 điểm/lỗi" },
+                                { "type": "Lỗi nhỏ", "deduction": "Trừ 1-3 điểm/lỗi" }
+                            ],
+                            "leniency_rules": {
+                                "rules": [{ "phoneme": "ʔ", "adjustment": "Nếu người dùng phát âm /t/ đầy đủ hoặc bỏ qua, chỉ phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm." }]
                             },
-                            "intonation_analysis": {
-                                "feedback": "string // Phải giải thích rõ người dùng đã lên giọng ở những từ nào và bỏ lỡ những từ nào so với mẫu.",
-                                "user_pitch_contour": "[number]"
-                            },
-                            "connected_speech_analysis": "[{ \"type\": \"string ('Catenation', 'Assimilation', 'Elision', 'Intrusion', 'Weak Form')\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
-                            "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
+                            "communicative_effectiveness_boost": {
+                                "condition": "Sau khi trừ điểm, nếu điểm số thấp nhưng câu nói vẫn có thể hiểu được.",
+                                "action": "Áp dụng 'Điểm thưởng Giao tiếp' để đảm bảo điểm số cuối cùng không dưới 40."
+                            }
+                        },
+                        "output_format_instruction": {
+                            "format": "JSON", "schema": {
+                                "speech_detected": "boolean", "overall_score": "number | null", "user_ipa": "string | null",
+                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" } ]",
+                                "rhythm_and_pacing_analysis": { "rhythm_score": "number", "feedback": "string" },
+                                "intonation_analysis": { "feedback": "string", "user_pitch_contour": "[number]" },
+                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
+                                "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
+                            }
                         }
-                    }
-                };
+                    };
+                }
+
 
                 const payload = {
                     contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
@@ -1293,7 +1340,6 @@
             };
         }
         
-        // --- NEW displayResults FUNCTION ---
         function displayResults(data) {
             if (!data.speech_detected || data.overall_score === null) {
                 showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
@@ -1306,6 +1352,8 @@
             const scoreContainer = document.querySelector('.score-container');
             analysisResults.classList.remove('hidden');
         
+            const isSingleWord = !textInput.value.trim().includes(' ');
+        
             // --- Animate Score ---
             const endScore = data.overall_score;
             animateValue(document.getElementById('overall-score'), 0, endScore, 1000);
@@ -1314,15 +1362,14 @@
             else if (endScore > 70) scoreContainer.classList.add('score-medium');
             else scoreContainer.classList.add('score-low');
         
-            // --- Rhythm & Pacing ---
-            const rhythmScoreValue = document.getElementById('rhythm-score-value');
-            const prosodyTooltipText = document.getElementById('prosody-tooltip-text');
-            if (data.rhythm_and_pacing_analysis) {
-                animateValue(rhythmScoreValue, 0, data.rhythm_and_pacing_analysis.rhythm_score, 1000);
-                prosodyTooltipText.textContent = data.rhythm_and_pacing_analysis.feedback;
-                document.querySelector('.rhythm-score-container').style.display = 'flex';
+            // --- Rhythm & Pacing (Only for sentences) ---
+            const rhythmContainer = document.querySelector('.rhythm-score-container');
+            if (!isSingleWord && data.rhythm_and_pacing_analysis) {
+                animateValue(document.getElementById('rhythm-score-value'), 0, data.rhythm_and_pacing_analysis.rhythm_score, 1000);
+                document.getElementById('prosody-tooltip-text').textContent = data.rhythm_and_pacing_analysis.feedback;
+                rhythmContainer.style.display = 'flex';
             } else {
-                document.querySelector('.rhythm-score-container').style.display = 'none';
+                rhythmContainer.style.display = 'none';
             }
         
             // --- Phoneme Analysis ---
@@ -1342,64 +1389,64 @@
                 });
             }
         
-            // --- Intonation Analysis ---
-            const intonationFeedbackEl = document.getElementById('intonation-analysis-feedback');
-            const intonationChartEl = document.getElementById('intonation-chart');
-            if (data.intonation_analysis && modelPronunciationData.pitchContour) {
-                intonationFeedbackEl.textContent = data.intonation_analysis.feedback;
-                renderIntonationChart(
-                    intonationChartEl,
-                    modelPronunciationData.pitchContour,
-                    data.intonation_analysis.user_pitch_contour,
-                    modelPronunciationData.stressedWords
-                );
+            // --- Context-aware Prosody Analysis ---
+            if (isSingleWord) {
+                prosodyAnalysisContainer.classList.remove('hidden');
+                intonationAnalysisWrapper.classList.add('hidden');
+                stressAnalysisWrapper.classList.remove('hidden');
+                prosodyAnalysisTitle.textContent = "Phân tích Trọng âm";
+                renderStressChart(data.stress_analysis);
+                document.getElementById('stress-analysis-feedback').textContent = data.stress_analysis.feedback;
+            } else {
+                prosodyAnalysisContainer.classList.remove('hidden');
+                stressAnalysisWrapper.classList.add('hidden');
+                intonationAnalysisWrapper.classList.remove('hidden');
+                prosodyAnalysisTitle.textContent = "Phân tích Ngữ điệu";
+                if (data.intonation_analysis && modelPronunciationData.pitchContour) {
+                    document.getElementById('intonation-analysis-feedback').textContent = data.intonation_analysis.feedback;
+                    renderIntonationChart(
+                        document.getElementById('intonation-chart'),
+                        modelPronunciationData.pitchContour,
+                        data.intonation_analysis.user_pitch_contour,
+                        modelPronunciationData.stressedWords
+                    );
+                }
             }
             
-            // --- Connected Speech Analysis ---
-            const connectedSpeechContainer = document.getElementById('connected-speech-analysis');
-            connectedSpeechContainer.innerHTML = '';
-            if (data.connected_speech_analysis && data.connected_speech_analysis.length > 0) {
+            // --- Context-aware Connected Speech Analysis ---
+            if (isSingleWord) {
+                connectedSpeechContainer.classList.remove('hidden');
+                connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary text-sm italic">Phân tích Nối âm & Cụm tư duy chỉ áp dụng cho câu.</p>';
+            } else if (data.connected_speech_analysis && data.connected_speech_analysis.length > 0) {
+                connectedSpeechContainer.classList.remove('hidden');
+                connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
                     const typeClass = `type-${item.type.split(' ')[0].toLowerCase().replace(/\s/g, '-')}`;
                     itemEl.className = `connected-speech-item ${typeClass}`;
-                    
                     itemEl.innerHTML = `
                         <div class="flex justify-between items-start">
-                            <div>
-                                <p class="cs-title">${item.rule}</p>
-                                <p class="cs-details mt-1">
-                                    Vị trí: <span class="cs-location">${item.location}</span>
-                                </p>
-                            </div>
+                            <div><p class="cs-title">${item.rule}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item.location}</span></p></div>
                             <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full ${typeClass} opacity-70">${item.type}</span>
                         </div>
                         <div class="cs-details mt-2">
                             <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
                             <p>Phát âm của bạn: <span class="ipa-text text-accent-warning">${item.user_pronunciation}</span></p>
                         </div>
-                        <p class="cs-feedback text-sm">${item.feedback}</p>
-                    `;
-                    connectedSpeechContainer.appendChild(itemEl);
+                        <p class="cs-feedback text-sm">${item.feedback}</p>`;
+                    connectedSpeechAnalysis.appendChild(itemEl);
                 });
             } else {
-                connectedSpeechContainer.innerHTML = '<p class="text-text-secondary text-sm italic">Không có nhận xét nổi bật về nối âm trong câu này. Lời nói của bạn khá rõ ràng nhưng có thể chưa thể hiện được sự liên kết tự nhiên.</p>';
+                connectedSpeechContainer.classList.remove('hidden');
+                connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary text-sm italic">Không có nhận xét nổi bật về nối âm trong câu này.</p>';
             }
         
             // --- Practice Suggestions ---
             if (data.practice_suggestions) {
                 suggestionLinks.innerHTML = '';
                 const { youglish_us, youglish_uk } = data.practice_suggestions;
-                const usLink = document.createElement('a');
-                usLink.href = youglish_us;
-                usLink.target = '_blank';
-                usLink.className = 'btn btn-primary flex-1';
-                usLink.textContent = 'Giọng Mỹ (YouGlish)';
-                const ukLink = document.createElement('a');
-                ukLink.href = youglish_uk;
-                ukLink.target = '_blank';
-                ukLink.className = 'btn btn-primary flex-1';
-                ukLink.textContent = 'Giọng Anh (YouGlish)';
+                const usLink = document.createElement('a'); usLink.href = youglish_us; usLink.target = '_blank'; usLink.className = 'btn btn-primary flex-1'; usLink.textContent = 'Giọng Mỹ (YouGlish)';
+                const ukLink = document.createElement('a'); ukLink.href = youglish_uk; ukLink.target = '_blank'; ukLink.className = 'btn btn-primary flex-1'; ukLink.textContent = 'Giọng Anh (YouGlish)';
                 suggestionLinks.appendChild(usLink);
                 suggestionLinks.appendChild(ukLink);
                 practiceSuggestions.classList.remove('hidden');
@@ -1417,7 +1464,6 @@
             standardIPA = '';
             controlsSection.classList.add('hidden');
             resetAnalysisOnly();
-            // Reset model cache only if text or accent changes
             const text = textInput.value.trim();
             const accent = accentSelect.value;
             if (modelPronunciationData.text !== text || modelPronunciationData.accent !== accent) {
@@ -1654,7 +1700,7 @@
             svgElement.innerHTML = ''; 
             if (!modelData || !userData || modelData.length === 0 || userData.length === 0) return;
         
-            const padding = { top: 30, right: 10, bottom: 20, left: 10 }; // Increased top padding
+            const padding = { top: 30, right: 10, bottom: 20, left: 10 };
             const width = svgElement.clientWidth;
             const height = svgElement.clientHeight;
             const innerWidth = width - padding.left - padding.right;
@@ -1686,27 +1732,14 @@
             svgElement.appendChild(modelLine);
             svgElement.appendChild(userLine);
 
-            // --- NEW: Render Stressed Words ---
             stressedWords.forEach(item => {
                 const x = padding.left + (item.time_stamp_normalized * innerWidth);
-                
-                // Find the peak of the model's pitch contour around the word's timestamp
                 const closestModelPointIndex = Math.round(item.time_stamp_normalized * (modelData.length - 1));
-                const searchRadius = 3;
-                let peakY = 0;
-                for (let i = -searchRadius; i <= searchRadius; i++) {
-                    const index = Math.max(0, Math.min(modelData.length - 1, closestModelPointIndex + i));
-                    if (scaleY(modelData[index]) > peakY) {
-                         peakY = scaleY(modelData[index]);
-                    }
-                }
-                // Position the word above the peak
-                const y = scaleY(yMax) - 10;
-
+                const y = scaleY(modelData[closestModelPointIndex]) - 10;
 
                 const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 textEl.setAttribute('x', x);
-                textEl.setAttribute('y', y);
+                textEl.setAttribute('y', y < 15 ? 15 : y); // Prevent text from going off-screen
                 textEl.setAttribute('text-anchor', 'middle');
                 textEl.setAttribute('font-size', '12');
                 textEl.setAttribute('font-weight', '600');
@@ -1715,7 +1748,6 @@
                 svgElement.appendChild(textEl);
             });
             
-            // Add Legend
             const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             legend.innerHTML = `
                 <rect x="${innerWidth - 180}" y="${height - 15}" width="12" height="2" fill="var(--accent-primary)" />
@@ -1724,6 +1756,34 @@
                 <text x="${innerWidth - 75}" y="${height - 12}" font-size="10" fill="var(--text-secondary)">Giọng của bạn</text>
             `;
             svgElement.appendChild(legend);
+        }
+
+        function renderStressChart(stressData) {
+            const container = document.getElementById('stress-chart');
+            container.innerHTML = '';
+            if (!stressData || !stressData.syllables) return;
+
+            stressData.syllables.forEach(syllable => {
+                const group = document.createElement('div');
+                group.className = 'syllable-bar-group';
+
+                const bar = document.createElement('div');
+                bar.className = 'syllable-bar';
+                if (syllable.is_stressed) {
+                    bar.classList.add('stressed');
+                    bar.style.height = '90%';
+                } else {
+                    bar.style.height = '40%';
+                }
+
+                const label = document.createElement('div');
+                label.className = 'syllable-label';
+                label.textContent = syllable.text;
+
+                group.appendChild(bar);
+                group.appendChild(label);
+                container.appendChild(group);
+            });
         }
 
         function initApp() {
