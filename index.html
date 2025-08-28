@@ -316,6 +316,15 @@
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
         .connected-speech-item.type-weak-form, .connected-speech-item.type-reduction { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
         .connected-speech-item.type-elision-and-weak-forms { border-color: #c026d3; background-color: rgba(192, 38, 211, 0.1);}
+        
+        [data-theme="dark"] .connected-speech-item.type-catenation, 
+        [data-theme="dark"] .connected-speech-item.type-linking { background-color: rgba(59, 130, 246, 0.2); }
+        [data-theme="dark"] .connected-speech-item.type-assimilation { background-color: rgba(168, 85, 247, 0.2); }
+        [data-theme="dark"] .connected-speech-item.type-elision { background-color: rgba(239, 68, 68, 0.2); }
+        [data-theme="dark"] .connected-speech-item.type-intrusion { background-color: rgba(20, 184, 166, 0.2); }
+        [data-theme="dark"] .connected-speech-item.type-weak-form, 
+        [data-theme="dark"] .connected-speech-item.type-reduction { background-color: rgba(245, 158, 11, 0.2); }
+        [data-theme="dark"] .connected-speech-item.type-elision-and-weak-forms { background-color: rgba(192, 38, 211, 0.2); }
 
 
         .cs-title { font-weight: 600; color: var(--text-primary); }
@@ -882,11 +891,17 @@
 
             if (cachedData) {
                 displayIpaData(cachedData);
-                if (isSingleWordMode) {
-                    prefetchClearPronunciation(text, accent);
-                } else {
-                    prefetchModelPronunciation(text, accent);
-                }
+                setButtonLoading(listenNaturalBtn, listenNaturalLoader, true);
+                setButtonLoading(listenClearBtn, listenClearLoader, true);
+                const prefetchTask = isSingleWordMode 
+                    ? prefetchClearPronunciation(text, accent) 
+                    : prefetchModelPronunciation(text, accent);
+                prefetchTask.finally(() => {
+                    if (currentRequestID === fetchIpaRequestID) {
+                        setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
+                        setButtonLoading(listenClearBtn, listenClearLoader, false);
+                    }
+                });
                 return true;
             }
             
@@ -926,11 +941,17 @@
                 ipaCache.set(cacheKey, resultJson);
                 displayIpaData(resultJson);
                 
-                if (isSingleWordMode) {
-                    prefetchClearPronunciation(text, accent);
-                } else {
-                    prefetchModelPronunciation(text, accent);
-                }
+                setButtonLoading(listenNaturalBtn, listenNaturalLoader, true);
+                setButtonLoading(listenClearBtn, listenClearLoader, true);
+                const prefetchTask = isSingleWordMode 
+                    ? prefetchClearPronunciation(text, accent) 
+                    : prefetchModelPronunciation(text, accent);
+                prefetchTask.finally(() => {
+                    if (currentRequestID === fetchIpaRequestID) {
+                        setButtonLoading(listenNaturalBtn, listenNaturalLoader, false);
+                        setButtonLoading(listenClearBtn, listenClearLoader, false);
+                    }
+                });
                 
                 return true;
             } catch (error) {
@@ -998,7 +1019,10 @@
             const button = type === 'natural' ? listenNaturalBtn : listenClearBtn;
             const loader = type === 'natural' ? listenNaturalLoader : listenClearLoader;
             
-            if (button.disabled) return;
+            if (button.disabled) {
+                showMessage('Giọng mẫu đang được tải, bạn vui lòng chờ một lát nhé.', 'info');
+                return;
+            }
             
             setButtonLoading(button, loader, true);
 
@@ -1764,4 +1788,4 @@
 
 </script>
 </body>
-</html>
+</html
