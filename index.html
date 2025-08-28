@@ -686,22 +686,10 @@
             "I'm looking forward to it.", "Could you please repeat that?", "Where is the nearest station?",
         ];
 
-        // --- IMPORTANT: This is a placeholder for the actual API call logic.
-        // In a real application, you would replace this with a call to your backend proxy.
-        async function callGeminiApi(targetApi, payload) {
-            // This is a mock function. In a real scenario, you'd have a backend to proxy requests.
-            // For this example, we'll simulate the API call.
-            console.log(`Simulating API call to ${targetApi} with payload:`, payload);
-            // This is where you would add your actual `fetch` call to your backend endpoint.
-            // e.g., const response = await fetch('/api/proxy', { method: 'POST', ... });
-            // Since we don't have a backend here, this function will not return real data.
-            // The logic below that calls this function will need to be adapted for a real backend.
-            throw new Error("API calls are not implemented in this frontend-only example. A backend proxy is required.");
-        }
-        
-        // NOTE: The following API URLs are placeholders.
-        const TEXT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=YOUR_API_KEY";
-        const TTS_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=YOUR_API_KEY";
+        // --- API Configuration ---
+        const apiKey = ""; // The API key will be automatically provided by the environment.
+        const TEXT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
 
         function showMessage(message, type = 'info') {
