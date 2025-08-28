@@ -332,61 +332,117 @@
             margin-bottom: 1.5rem;
         }
     
-        /* === Bee & Flowers Pixel Spinner === */
-        .bee-spinner{
-            position:relative; width:100%; max-width:720px; height:160px; margin:12px auto 10px;
-            border-radius:14px; border:1px solid var(--glass-border);
-            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-            overflow:hidden;
+        /* === NEW Bee & Flowers Spinner === */
+        .bee-spinner {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Adjusted max-width */
+            height: 120px; /* Adjusted height */
+            margin: 12px auto 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            background: var(--input-bg); /* Harmonized background */
+            overflow: hidden;
         }
-        .bee-spinner.small{ height:120px; max-width:560px; }
-        .bee-spinner.hidden{ display:none; }
-        .bee-spinner .garden{
-            position:absolute; inset:0; display:grid; place-items:end center;
-            padding:18px 16px 16px; pointer-events:none;
+        .bee-spinner.small {
+            height: 100px; /* Adjusted small height */
+            max-width: 480px;
         }
-        .bee-spinner .flower-row{ display:flex; gap:14px; align-items:flex-end; }
-        .bee-spinner .flower{ width:64px; height:110px; position:relative; }
-        .bee-spinner .flower svg{ width:100%; height:100%; filter: drop-shadow(0 6px 10px rgba(0,0,0,.28)); }
-        .bee-spinner .flower .petal{ transition: opacity .2s ease; }
-        .bee-spinner .flower.done .petal{ opacity:.9 }
-        .bee-spinner .sparkle{
-          position:absolute; left:50%; top:30px; transform:translateX(-50%);
-          width:6px; height:6px; background:var(--accent-primary); border-radius:1px; opacity:0;
-          box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+        .bee-spinner.hidden { display: none; }
+        .bee-spinner .garden {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: end center;
+            padding: 12px 16px 10px; /* Adjusted padding */
+            pointer-events: none;
         }
-        .bee-spinner .flower.sip .sparkle{ animation: beeSparkle .7s ease-out forwards; }
-        @keyframes beeSparkle{
-          0%{ opacity:0; transform:translate(-50%,2px) scale(.6)}
-          30%{opacity:1}
-          100%{ opacity:0; transform:translate(-50%,-18px) scale(1.05) }
+        .bee-spinner .flower-row {
+            display: flex;
+            gap: 12px; /* Adjusted gap */
+            align-items: flex-end;
         }
-        .bee-spinner .bee{
-          position:absolute; top:56px; left:40px; width:52px; height:38px; transform: translate3d(0,0,0);
-          filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+        .bee-spinner .flower {
+            width: 40px; /* Smaller flowers */
+            height: 60px;
+            position: relative;
+            opacity: 0.5;
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .bee-spinner .bee .body{
-          position:absolute; left:8px; top:10px; width:36px; height:20px;
-          background: linear-gradient(90deg, var(--accent-warning) 40%, #1b1b1b 40%, #1b1b1b 54%, var(--accent-warning) 54%, var(--accent-warning) 68%, #1b1b1b 68%, #1b1b1b 82%, var(--accent-warning) 82%);
-          border:2px solid rgba(0,0,0,.6); border-radius:8px;
+        .bee-spinner .flower.visited {
+            opacity: 1;
+            transform: scale(1.05);
         }
-        .bee-spinner .bee .eye{
-          position:absolute; right:8px; top:12px; width:6px; height:6px; background:#fff; border-radius:2px;
-          box-shadow: 0 0 0 2px rgba(255,255,255,.35);
+        .bee-spinner .flower svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,.2));
         }
-        .bee-spinner .bee .wing{
-          position:absolute; width:16px; height:14px; background:rgba(255,255,255,.8);
-          border:2px solid rgba(255,255,255,.55); border-radius:6px 6px 10px 10px;
-          top:2px; transform-origin: 50% 90%; animation: wingFlap .25s ease-in-out infinite; will-change: transform;
+        .bee-spinner .sparkle {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            width: 5px; height: 5px;
+            background: var(--accent-warning);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 8px 2px color-mix(in srgb, var(--accent-warning) 70%, transparent);
         }
-        .bee-spinner .bee .wing.left{ left:6px; }
-        .bee-spinner .bee .wing.right{ left:22px; animation-delay:.12s }
-        @keyframes wingFlap{ 0%,100%{ transform: rotate(0deg) translateY(0) } 50%{ transform: rotate(10deg) translateY(-1px) } }
-        .bee-spinner .strip{ position:absolute; left:0; right:0; bottom:0; height:6px;
-          background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-top:1px solid var(--glass-border);
+        .bee-spinner .flower.sip .sparkle {
+            animation: beeSparkle 0.7s ease-out forwards;
         }
-        .bee-spinner .strip .fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-success)); transition: width .3s ease; }
-    
+        @keyframes beeSparkle {
+            0% { opacity: 0; transform: translate(-50%, 5px) scale(0.5); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -15px) scale(1); }
+        }
+        .bee-spinner .bee {
+            position: absolute;
+            top: 0; /* Will be set by JS */
+            left: 0; /* Will be set by JS */
+            width: 32px; /* Smaller bee */
+            height: 28px;
+            transform: translate3d(0,0,0);
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,.3));
+            will-change: transform;
+            transition: transform 0.1s linear; /* Smooths out JS updates */
+        }
+        .bee-spinner .bee-body {
+            width: 100%; height: 100%;
+            animation: beeBob 0.3s ease-in-out infinite alternate;
+        }
+        @keyframes beeBob {
+            to { transform: translateY(2px); }
+        }
+        .bee-spinner .bee svg {
+            width: 100%; height: 100%;
+            display: block;
+        }
+        .bee-spinner .bee .wing {
+            transform-origin: 50% 90%;
+            animation: wingFlap 0.1s linear infinite;
+        }
+        .bee-spinner .bee .wing.right {
+            animation-delay: 0.05s;
+        }
+        @keyframes wingFlap {
+            0%, 100% { transform: scaleY(1) rotate(0deg); }
+            50% { transform: scaleY(0.8) rotate(15deg); }
+        }
+        .bee-spinner .strip {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 4px;
+            background: color-mix(in srgb, var(--glass-border) 50%, transparent);
+        }
+        .bee-spinner .strip .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+            transition: width 0.3s ease-out;
+            border-radius: 0 2px 2px 0;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -452,18 +508,25 @@
                     </div>
                 </div>
             
-            <div id="bee-spinner-ipa" class="bee-spinner small hidden">
-                <div class="garden">
-                    <div class="flower-row" id="flower-row-ipa"></div>
+                <div id="bee-spinner-ipa" class="bee-spinner small hidden">
+                    <div class="garden">
+                        <div class="flower-row" id="flower-row-ipa"></div>
+                    </div>
+                    <div class="bee" id="bee-ipa">
+                        <div class="bee-body">
+                            <svg viewBox="0 0 32 28">
+                                <g class="wing left"><path d="M 8,10 C 2,2 10,0 14,6 Z" fill="rgba(255,255,255,0.8)" stroke="rgba(0,0,0,0.2)" stroke-width="1"></path></g>
+                                <g class="wing right"><path d="M 24,10 C 30,2 22,0 18,6 Z" fill="rgba(255,255,255,0.8)" stroke="rgba(0,0,0,0.2)" stroke-width="1"></path></g>
+                                <g>
+                                    <path d="M 6,14 C 4,18 6,24 10,26 L 22,26 C 26,24 28,18 26,14 L 24,12 C 22,8 10,8 8,12 Z" fill="#f59e0b" stroke="#444" stroke-width="1.5"></path>
+                                    <path d="M 11,26 L 11,10 M 16,26 L 16,9 M 21,26 L 21,10" stroke="#333" stroke-width="2.5"></path>
+                                    <circle cx="23" cy="13" r="1.5" fill="white"></circle>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="strip"><div class="fill" id="progress-fill-ipa"></div></div>
                 </div>
-                <div class="bee" id="bee-ipa">
-                    <div class="wing left"></div>
-                    <div class="wing right"></div>
-                    <div class="body"></div>
-                    <div class="eye"></div>
-                </div>
-                <div class="strip"><div class="fill" id="progress-fill-ipa"></div></div>
-            </div>
             </section>
             
             <section id="controls-section" class="hidden space-y-6">
@@ -534,9 +597,25 @@
                 </div>
             </section>
 
-            <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">\n                <div id="bee-spinner" class="bee-spinner hidden">\n                    <div class="garden">\n                        <div class="flower-row" id="flower-row"></div>\n                    </div>\n                    <div class="bee" id="bee">\n                        <div class="wing left"></div>\n                        <div class="wing right"></div>\n                        <div class="body"></div>\n                        <div class="eye"></div>\n                    </div>\n                    <div class="strip"><div class="fill" id="progress-fill"></div></div>\n                </div>
-                <div class="w-full max-w-xs h-2 rounded-full overflow-hidden bg-[color:var(--input-bg)]">
-                    <div id="progress-bar-inner" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-500"></div>
+            <div id="loader" class="text-center hidden py-4 flex flex-col items-center justify-center">
+                <div id="bee-spinner" class="bee-spinner hidden">
+                    <div class="garden">
+                        <div class="flower-row" id="flower-row"></div>
+                    </div>
+                    <div class="bee" id="bee">
+                        <div class="bee-body">
+                            <svg viewBox="0 0 32 28">
+                                <g class="wing left"><path d="M 8,10 C 2,2 10,0 14,6 Z" fill="rgba(255,255,255,0.8)" stroke="rgba(0,0,0,0.2)" stroke-width="1"></path></g>
+                                <g class="wing right"><path d="M 24,10 C 30,2 22,0 18,6 Z" fill="rgba(255,255,255,0.8)" stroke="rgba(0,0,0,0.2)" stroke-width="1"></path></g>
+                                <g>
+                                    <path d="M 6,14 C 4,18 6,24 10,26 L 22,26 C 26,24 28,18 26,14 L 24,12 C 22,8 10,8 8,12 Z" fill="#f59e0b" stroke="#444" stroke-width="1.5"></path>
+                                    <path d="M 11,26 L 11,10 M 16,26 L 16,9 M 21,26 L 21,10" stroke="#333" stroke-width="2.5"></path>
+                                    <circle cx="23" cy="13" r="1.5" fill="white"></circle>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="strip"><div class="fill" id="progress-fill"></div></div>
                 </div>
                 <p id="progress-text" class="text-text-secondary mt-4">PrAI đang lắng nghe và phân tích...</p>
                 <p id="fun-fact" class="text-sm text-text-secondary/70 mt-6 italic hidden"></p>
@@ -660,7 +739,6 @@
         const funFactEl = document.getElementById('fun-fact');
         const connectedSpeechAnalysis = document.getElementById('connected-speech-analysis');
         const progressText = document.getElementById('progress-text');
-        const progressBarInner = document.getElementById('progress-bar-inner');
         const charCounter = document.getElementById('char-counter');
         const thoughtGroupDisplay = document.getElementById('thought-group-display');
         const thoughtGroupInfo = document.getElementById('thought-group-info');
@@ -698,147 +776,180 @@
         let ipaLoadingInterval;
         let fetchIpaRequestID = 0;
         let analysisRequestID = 0;
-        let progressInterval;
         let progressTextTimeoutIds = [];
         let currentIpaData = {};
         
         let isSingleWordMode = false;
 
-        /* Bee Spinner v1 */
+        /* === NEW Bee Spinner Controller v2 === */
         function createBeeSpinnerController(hostId){
             const host = document.getElementById(hostId);
             if (!host) return { show(){}, hide(){}, setProgress(){} };
+
+            const row = host.querySelector('.flower-row');
+            const bee = host.querySelector('.bee');
+            const progressFillEl = host.querySelector('.strip .fill');
             const isSmall = host.classList.contains('small');
-            const row = host.querySelector('.flower-row') || host.appendChild(document.createElement('div'));
-            const bee = host.querySelector('.bee') || host.appendChild(document.createElement('div'));
-            const progressFillEl = host.querySelector('.strip .fill') || host.appendChild(document.createElement('div'));
 
             const state = {
-                mode: 'indeterminate',
                 running: false,
-                dir: 1,
-                index: 0,
                 raf: 0,
                 lastTime: 0,
                 pauseUntil: 0,
                 progress: 0, // 0..1
-                speed: 180, // px/s
-                stopHoverMs: 260,
-                numFlowers: isSmall ? 6 : 7
+                beePos: { x: 30, y: 20 },
+                beeTarget: { x: 30, y: 20 },
+                currentTargetIndex: 0,
+                direction: 1,
+                numFlowers: isSmall ? 7 : 9,
+                flowerCenters: [],
+                arcHeight: 35,
+                stopHoverMs: 450, // Longer pause for sipping
             };
 
-            function mkFlower(){
+            const flowerColors = ['#3b82f6', '#ef4444', '#8b5cf6', '#14b8a6', '#f59e0b'];
+
+            function mkFlower(index){
                 const div = document.createElement('div');
                 div.className = 'flower';
+                const color = flowerColors[index % flowerColors.length];
                 div.innerHTML = `
-                  <svg viewBox="0 0 36 60" aria-hidden="true">
-                    <rect x="10" y="42" width="16" height="12" rx="2" fill="#a8643e" stroke="#5e3a21" stroke-width="2"/>
-                    <rect x="8" y="40" width="20" height="5" rx="1" fill="#c57b49" stroke="#5e3a21" stroke-width="2"/>
-                    <rect x="17" y="22" width="2" height="18" rx="1" fill="var(--accent-success)" />
-                    <rect x="12" y="28" width="6" height="3" rx="1" fill="var(--accent-success)" />
-                    <rect x="18" y="31" width="6" height="3" rx="1" fill="var(--accent-success)" />
-                    <rect class="petal" x="8"  y="6"  width="8" height="8" fill="var(--accent-primary)" />
-                    <rect class="petal" x="20" y="6"  width="8" height="8" fill="var(--accent-primary)" />
-                    <rect class="petal" x="8"  y="18" width="8" height="8" fill="var(--accent-primary)" />
-                    <rect class="petal" x="20" y="18" width="8" height="8" fill="var(--accent-primary)" />
-                    <rect x="14" y="12" width="8" height="8" fill="var(--accent-warning)" stroke="rgba(0,0,0,.3)" stroke-width="1"/>
+                  <svg viewBox="0 0 40 60" aria-hidden="true">
+                    <defs><filter id="soft-glow" x="-0.5" y="-0.5" width="2" height="2"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <path d="M 20,58 V 30" stroke="var(--accent-success)" stroke-width="2.5" stroke-linecap="round"/>
+                    <g transform="translate(20, 20)" filter="url(#soft-glow)">
+                        <path d="M 0,-16 A 16,16 0 0,1 14,0 L 0,0 Z" fill="${color}" opacity="0.8"/>
+                        <path d="M 16,0 A 16,16 0 0,1 0,14 L 0,0 Z" fill="${color}" opacity="0.8" transform="rotate(72)"/>
+                        <path d="M 11,-11 A 16,16 0 0,1 -11,11 L 0,0 Z" fill="${color}" opacity="0.8" transform="rotate(144)"/>
+                        <path d="M -16,0 A 16,16 0 0,1 0,-14 L 0,0 Z" fill="${color}" opacity="0.8" transform="rotate(216)"/>
+                        <path d="M -11,11 A 16,16 0 0,1 11,-11 L 0,0 Z" fill="${color}" opacity="0.8" transform="rotate(288)"/>
+                    </g>
+                    <circle cx="20" cy="20" r="5" fill="var(--accent-warning)" stroke="#fff" stroke-width="1"/>
                   </svg>
                   <div class="sparkle"></div>`;
                 return div;
             }
 
             function buildRow(){
+                if (!row) return;
                 row.innerHTML = '';
-                for (let i=0;i<state.numFlowers;i++) row.appendChild(mkFlower());
+                for (let i = 0; i < state.numFlowers; i++) row.appendChild(mkFlower(i));
+                updateFlowerCenters();
             }
-
-            function getCenters(){
+            
+            function updateFlowerCenters() {
+                if (!row || !host) return;
                 const outer = host.getBoundingClientRect();
-                return [...row.children].map(el => {
+                state.flowerCenters = [...row.children].map(el => {
                     const r = el.getBoundingClientRect();
-                    return (r.left + r.width/2) - outer.left;
+                    return {
+                        x: (r.left + r.width / 2) - outer.left,
+                        y: (r.top + r.height * 0.3) - outer.top
+                    };
                 });
             }
 
-            function setBeeX(x){
-                const rect = host.getBoundingClientRect();
-                const minX = 16, maxX = rect.width - 68;
-                const clamped = Math.max(minX, Math.min(maxX, x));
-                bee.style.transform = `translate3d(${clamped}px,0,0)`;
+            function setBeePos(x, y, flip = false) {
+                if (!bee) return;
+                const scaleX = flip ? '-1' : '1';
+                bee.style.transform = `translate3d(${x}px, ${y}px, 0) scaleX(${scaleX})`;
             }
 
             function sip(el){
+                if (!el) return;
                 el.classList.add('sip');
-                setTimeout(() => el.classList.remove('sip'), 520);
+                setTimeout(() => el.classList.remove('sip'), 700);
             }
 
-            function markDone(idx){
-                [...row.children].forEach((el,i)=>{
-                    if (i <= idx) el.classList.add('done'); else el.classList.remove('done');
+            function markVisited(idx){
+                if (!row) return;
+                [...row.children].forEach((el, i) => {
+                    if (i <= idx) el.classList.add('visited');
+                    else el.classList.remove('visited');
                 });
             }
-
+            
             function animate(ts){
                 if (!state.running) return;
                 if (!state.lastTime) state.lastTime = ts;
-                const dt = Math.min(64, ts - state.lastTime) / 1000;
+                const dt = Math.min(32, ts - state.lastTime) / 1000;
                 state.lastTime = ts;
 
-                const centers = getCenters();
-                if (!centers.length){ state.raf = requestAnimationFrame(animate); return; }
+                if (!state.flowerCenters.length) {
+                    state.raf = requestAnimationFrame(animate);
+                    return;
+                }
 
-                if (state.mode === 'progress'){
-                    const targetIndex = Math.round(state.progress * (centers.length - 1));
-                    const targetX = centers[targetIndex] - 24;
-                    const curX = parseFloat(bee.style.transform.split('(')[1]) || 0;
-                    const nx = curX + (targetX - curX) * Math.min(1, 6*dt);
-                    setBeeX(nx);
-                    markDone(targetIndex);
-                    if (Math.abs(nx - targetX) < 2) sip(row.children[targetIndex]);
+                if (performance.now() < state.pauseUntil) {
+                    // Paused for sipping, do nothing
                 } else {
-                    const targetX = centers[state.index] - 24;
-                    const curX = parseFloat(bee.style.transform.split('(')[1]) || 0;
-                    const dx = (targetX - curX);
-                    const step = Math.sign(dx) * state.speed * dt;
-                    const nx = Math.abs(dx) < Math.abs(step) ? targetX : (curX + step);
-                    setBeeX(nx);
-
-                    if (performance.now() < state.pauseUntil){
-                        // sipping...
-                    } else if (Math.abs(nx - targetX) < 2){
-                        sip(row.children[state.index]);
+                    const startPos = state.flowerCenters[state.currentTargetIndex - state.direction] || {x: state.beePos.x, y: state.beePos.y};
+                    const targetPos = state.flowerCenters[state.currentTargetIndex];
+                    
+                    const distance = Math.hypot(targetPos.x - state.beePos.x, targetPos.y - state.beePos.y);
+                    
+                    if (distance < 5) {
+                        // Reached target
+                        sip(row.children[state.currentTargetIndex]);
                         state.pauseUntil = performance.now() + state.stopHoverMs;
-                        const next = state.index + state.dir;
-                        if (next < 0 || next >= centers.length){
-                            state.dir *= -1;
-                            state.index += state.dir;
-                        } else {
-                            state.index = next;
+                        
+                        const nextIndex = state.currentTargetIndex + state.direction;
+                        if (nextIndex < 0 || nextIndex >= state.flowerCenters.length) {
+                            state.direction *= -1;
                         }
+                        state.currentTargetIndex += state.direction;
+
+                    } else {
+                        // Flying towards target
+                        const totalDist = Math.hypot(targetPos.x - startPos.x, targetPos.y - startPos.y) || 1;
+                        const traveledDist = Math.hypot(state.beePos.x - startPos.x, state.beePos.y - startPos.y);
+                        const progress = Math.min(1, traveledDist / totalDist);
+
+                        const moveAngle = Math.atan2(targetPos.y - state.beePos.y, targetPos.x - state.beePos.x);
+                        const speed = 250; // pixels per second
+                        state.beePos.x += Math.cos(moveAngle) * speed * dt;
+                        state.beePos.y += Math.sin(moveAngle) * speed * dt;
+                        
+                        // Add arc
+                        const arcY = Math.sin(progress * Math.PI) * state.arcHeight;
+                        
+                        setBeePos(state.beePos.x - bee.offsetWidth / 2, state.beePos.y - bee.offsetHeight / 2 - arcY, state.direction < 0);
                     }
                 }
+                
+                if (state.mode === 'progress') {
+                    const targetIndex = Math.round(state.progress * (state.numFlowers - 1));
+                    markVisited(targetIndex);
+                }
+
                 state.raf = requestAnimationFrame(animate);
             }
 
-            function show(newMode='indeterminate'){
+            function show(newMode = 'indeterminate'){
                 state.mode = newMode;
                 state.running = true;
                 state.lastTime = 0;
-                if (!row.children.length) buildRow();
+                if (!row || !row.children.length) buildRow();
+                else updateFlowerCenters();
+                
                 cancelAnimationFrame(state.raf);
                 host.classList.remove('hidden');
                 state.raf = requestAnimationFrame(animate);
             }
+
             function hide(){
                 state.running = false;
                 cancelAnimationFrame(state.raf);
                 host.classList.add('hidden');
             }
+
             function setProgress(p){
-                state.progress = Math.max(0, Math.min(1, Number(p)||0));
-                const fill = host.querySelector('.strip .fill');
-                if (fill) fill.style.width = (state.progress*100).toFixed(1) + '%';
+                state.progress = Math.max(0, Math.min(1, Number(p) || 0));
+                if (progressFillEl) {
+                    progressFillEl.style.width = (state.progress * 100).toFixed(1) + '%';
+                }
             }
+
             return { show, hide, setProgress };
         }
 
@@ -848,6 +959,7 @@
         window.setBeeProgress = (p) => _beeLoader.setProgress(p);
         window.hideBeeSpinner = () => _beeLoader.hide();
         window.showBeeSpinnerIPA = (mode='indeterminate') => _beeIPA.show(mode);
+        window.setBeeProgressIPA = (p) => _beeIPA.setProgress(p);
         window.hideBeeSpinnerIPA = () => _beeIPA.hide();
     
         // --- CACHING ---
@@ -1254,18 +1366,28 @@
         }
 
         function startProgressSimulation() {
-            let width = 0;
-            progressBarInner.style.width = '0%'; try{ showBeeSpinner('indeterminate'); setBeeProgress(0);}catch(e){}
-            clearInterval(progressInterval);
-            progressInterval = setInterval(() => {
-                width = Math.min(width + Math.random() * 2, 95);
-                progressBarInner.style.width = width + '%'; try{ setBeeProgress(width/100);}catch(e){}
-            }, 100);
+            try{ 
+                showBeeSpinner('progress'); 
+                setBeeProgress(0);
+            } catch(e){}
+            
+            let progress = 0;
+            const updateProgress = () => {
+                const randomIncrement = Math.random() * 0.05;
+                progress = Math.min(progress + randomIncrement, 0.95);
+                setBeeProgress(progress);
+                if (progress < 0.95) {
+                    setTimeout(updateProgress, 200 + Math.random() * 300);
+                }
+            };
+            updateProgress();
         }
 
         function stopProgressSimulation() {
-            clearInterval(progressInterval);
-            progressBarInner.style.width = '100%'; try{ setBeeProgress(1); setTimeout(()=>hideBeeSpinner(), 600);}catch(e){}
+            try{ 
+                setBeeProgress(1); 
+                setTimeout(() => hideBeeSpinner(), 800);
+            } catch(e){}
         }
 
         function startProgressTextAnimation() {
@@ -1372,15 +1494,15 @@
                             "format": "JSON",
                             "schema": {
                                 "sentence_match": "boolean",
-                                "overall_score": "number | null",
-                                "user_ipa": "string | null",
+                                "overall_score": "number (can be null)",
+                                "user_ipa": "string (can be null)",
                                 "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string\" } ]",
                                 "intonation_analysis": {
-                                    "feedback": "string // Nhận xét về ngữ điệu, tốc độ và nhịp điệu. So sánh với mẫu.",
-                                    "user_pitch_contour": "[number]"
+                                    "feedback": "string (Nhận xét về ngữ điệu, tốc độ và nhịp điệu. So sánh với mẫu.)",
+                                    "user_pitch_contour": "array of numbers"
                                 },
-                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
-                                "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
+                                "connected_speech_analysis": "array of objects, can be null. Schema: [{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }]",
+                                "practice_suggestions": "object, can be null. Schema: { \"youglish_us\": \"string\", \"youglish_uk\": \"string\" }"
                             }
                         }
                     };
