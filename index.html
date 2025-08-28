@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* --- GLASSMORPHISM THEME V12 --- */
+        /* --- GLASSMORPHISM THEME V13 --- */
         :root {
             /* Default: Light Theme */
             --bg-color: #f8fafc; /* slate-50 */
@@ -335,11 +335,15 @@
             overflow: hidden;
         }
 
-        .connected-speech-item.type-catenation { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+        /* FIX: Ensure these classes apply background colors */
+        .connected-speech-item.type-catenation, .connected-speech-item.type-linking { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
         .connected-speech-item.type-assimilation { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.1); }
         .connected-speech-item.type-elision { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
         .connected-speech-item.type-intrusion { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.1); }
-        .connected-speech-item.type-weak-form { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+        .connected-speech-item.type-weak-form, .connected-speech-item.type-reduction { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+        /* Fallback for unknown types */
+        .connected-speech-item.type-unknown { border-color: var(--text-secondary); background-color: color-mix(in srgb, var(--text-secondary) 10%, transparent); }
+
 
         .cs-title { font-weight: 600; color: var(--text-primary); }
         .cs-location { font-family: 'Noto Sans', sans-serif; background-color: color-mix(in srgb, var(--glass-border) 50%, transparent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
@@ -1248,20 +1252,21 @@
                 
                 let prompt;
                 if (isSingleWord) {
-                    // FIX #1: Added a scoring guardrail to the prompt for single words.
+                    // FIX #3: Complete overhaul of the single-word analysis prompt.
                     prompt = {
-                        "role": "Bạn là chuyên gia ngữ âm AI, phân tích trọng âm của một từ đơn.",
+                        "role": "Bạn là một chuyên gia phiên âm và phân tích ngữ âm AI cực kỳ nghiêm ngặt.",
                         "task_instructions": {
-                            "step_1_transcription": "Phiên âm chính xác audio của người dùng.",
-                            "step_2_analysis": "So sánh phiên âm đó với phiên âm chuẩn để phân tích âm vị và xác định xem người dùng có nhấn trọng âm đúng âm tiết hay không.",
+                            "step_1_transcribe_first": "NHIỆM VỤ ĐẦU TIÊN VÀ QUAN TRỌNG NHẤT: Chỉ lắng nghe tệp audio được cung cấp và phiên âm chính xác những gì bạn nghe được ra dạng IPA. Tuyệt đối không được nhìn vào 'standard_ipa' hoặc 'text_to_pronounce' trong bước này. Kết quả phiên âm này phải được lưu vào trường 'user_ipa'.",
+                            "step_2_compare_and_analyze": "SAU KHI HOÀN THÀNH BƯỚC 1: Bây giờ, hãy so sánh trường 'user_ipa' (kết quả bạn vừa phiên âm) với trường 'standard_ipa' (phiên âm chuẩn được cung cấp). Dựa trên sự so sánh này, hãy thực hiện phân tích âm vị và trọng âm.",
                         },
                         "context": { "text_to_pronounce": text, "standard_ipa": standardIPA },
                         "scoring_system": { 
-                            "info": "Chấm điểm dựa trên độ chính xác của âm vị và trọng âm. QUAN TRỌNG: Nếu tất cả âm vị đều đúng và trọng âm đúng, điểm số không được dưới 70, kể cả khi âm tiết không nhấn được phát âm hơi to hơn bình thường." 
+                            "info": "Chấm điểm nghiêm ngặt dựa trên sự khác biệt giữa 'user_ipa' và 'standard_ipa'. Nếu 'user_ipa' hoàn toàn khác, điểm phải gần bằng 0."
                         },
                         "output_format_instruction": {
                             "format": "JSON", "schema": {
                                 "speech_detected": "boolean",
+                                "user_ipa": "string | null", // Mandatory field for the new process
                                 "overall_score": "number",
                                 "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string\", \"feedback\": \"string\" } ]",
                                 "stress_analysis": {
@@ -1273,35 +1278,29 @@
                         }
                     };
                 } else { // For sentences
-                     // FIX #2: Reinforced the prompt for sentences to ensure 'status' is always included.
+                    // FIX #1: Overhauled scoring rules for sentences.
                     prompt = {
                         "role": "Bạn là PrAI, một chuyên gia ngữ âm AI được đào tạo chuyên sâu.",
                         "task_instructions": {
-                            "step_1_transcription": "Nhiệm vụ đầu tiên và quan trọng nhất: Tạo ra một bản phiên âm có độ chính xác cao (narrow phonetic transcription) từ audio của người dùng. Phải đặc biệt chú ý đến các khác biệt tinh tế như âm hữu thanh/vô thanh (vd: /s/ vs /z/). Đây là nền tảng cho mọi phân tích sau đó.",
-                            "step_2_analysis": "Dựa trên bản phiên âm từ Bước 1, tiến hành so sánh với phiên âm chuẩn và phân tích các yếu tố khác.",
-                            "step_3_scoring": "Tính điểm dựa trên hệ thống trọng số lỗi và áp dụng các quy tắc khoan dung."
+                            "step_1_transcription": "Tạo ra một bản phiên âm có độ chính xác cao từ audio của người dùng.",
+                            "step_2_analysis": "Dựa trên bản phiên âm đó, so sánh với phiên âm chuẩn và phân tích các yếu tố khác.",
+                            "step_3_scoring": "Tính điểm theo 'scoring_rules' dưới đây."
                         },
                         "context": {
-                            "learner_profile": "Người học là người Việt.",
                             "text_to_pronounce": text,
                             "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
                             "standard_ipa": standardIPA,
                             "model_pitch_contour": modelPronunciationData.pitchContour,
                         },
-                         "scoring_system": {
+                         "scoring_rules": {
                             "base_score": 100,
-                            "error_weights": [
-                                { "type": "Lỗi nghiêm trọng", "deduction": "Trừ 10-15 điểm/lỗi" },
-                                { "type": "Lỗi trung bình", "deduction": "Trừ 5-8 điểm/lỗi" },
-                                { "type": "Lỗi nhỏ", "deduction": "Trừ 1-3 điểm/lỗi" }
+                            "deductions": [
+                                { "rule": "Với mỗi lỗi âm vị 'incorrect', trừ 8-10 điểm." },
+                                { "rule": "Với mỗi lỗi âm vị 'approximate', trừ 3-5 điểm." },
+                                { "rule": "Dựa trên phân tích nhịp điệu và ngữ điệu, trừ thêm từ 0 đến 15 điểm." },
+                                { "rule": "Tổng điểm trừ cho một lỗi âm vị đơn lẻ không bao giờ được vượt quá 20 điểm, bất kể nó ảnh hưởng đến nhịp điệu thế nào."}
                             ],
-                            "leniency_rules": {
-                                "rules": [{ "phoneme": "ʔ", "adjustment": "Nếu người dùng phát âm /t/ đầy đủ hoặc bỏ qua, chỉ phân loại là 'Gần đúng' và trừ tối đa 1-2 điểm." }]
-                            },
-                            "communicative_effectiveness_boost": {
-                                "condition": "Sau khi trừ điểm, nếu điểm số thấp nhưng câu nói vẫn có thể hiểu được.",
-                                "action": "Áp dụng 'Điểm thưởng Giao tiếp' để đảm bảo điểm số cuối cùng không dưới 40."
-                            }
+                            "final_score_calculation": "Final Score = base_score - total_deductions"
                         },
                         "output_format_instruction": {
                             "format": "JSON", "schema": {
@@ -1309,7 +1308,7 @@
                                 "phoneme_analysis": "[{ \"phoneme\": \"string\", \"status\": \"string (MUST be 'correct', 'approximate', or 'incorrect')\", \"feedback\": \"string\" }]",
                                 "rhythm_and_pacing_analysis": { "rhythm_score": "number", "feedback": "string" },
                                 "intonation_analysis": { "feedback": "string", "user_pitch_contour": "[number]" },
-                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
+                                "connected_speech_analysis": "[{ \"type\": \"string (MUST be 'Catenation', 'Assimilation', 'Elision', 'Intrusion', or 'Weak Form')\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string\" }] | null",
                                 "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
                             }
                         }
@@ -1350,39 +1349,64 @@
         }
         
         function displayResults(data) {
-            if (!data.speech_detected || data.overall_score === null) {
+            if (!data.speech_detected) {
                 showMessage("PrAI không nhận diện được giọng nói trong bản ghi âm. Vui lòng thử lại và nói to, rõ hơn nhé.", 'warning');
                 analysisResults.classList.add('hidden');
                 return;
             }
         
-            const isSingleWord = !textInput.value.trim().includes(' ');
+            const isSingleWord = !text.input.value.trim().includes(' ');
         
-            // FIX #1: Client-side safeguard for single-word scoring.
-            if (isSingleWord && data.stress_analysis && data.phoneme_analysis) {
-                const allPhonemesCorrect = data.phoneme_analysis.every(p => p.status === 'correct');
-                const stressCorrect = data.stress_analysis.user_stressed_correctly;
-                if (allPhonemesCorrect && stressCorrect && data.overall_score < 70) {
-                    console.warn(`AI returned an unusually low score (${data.overall_score}) for a correct single-word pronunciation. Adjusting score.`);
-                    data.overall_score = Math.floor(Math.random() * (90 - 85 + 1)) + 85; // Random score between 85-90
+            // FIX #3: New, powerful safeguard for single-word analysis.
+            if (isSingleWord && data.user_ipa) {
+                // A simple way to check if two IPA strings are grossly different.
+                // This is a basic check and can be improved, but it catches the "hello" vs "museum" case.
+                const similarityThreshold = 0.5;
+                const standardSimple = standardIPA.replace(/ˈ|ˌ/g, '');
+                const userSimple = data.user_ipa.replace(/ˈ|ˌ/g, '');
+                const commonChars = [...new Set(standardSimple)].filter(char => userSimple.includes(char)).length;
+                const similarity = commonChars / Math.max(standardSimple.length, userSimple.length);
+
+                if (similarity < similarityThreshold) {
+                     showMessage(`Có vẻ bạn đã phát âm một từ khác. Hệ thống ghi nhận "${data.user_ipa}" thay vì "${standardIPA}".`, 'error');
+                     data.overall_score = 0;
+                     // Force all phonemes to be incorrect for visual feedback
+                     if(data.phoneme_analysis) {
+                         data.phoneme_analysis.forEach(p => p.status = 'incorrect');
+                     }
+                     if(data.stress_analysis) {
+                         data.stress_analysis.user_stressed_correctly = false;
+                     }
+                }
+            }
+
+            // FIX #1: Safeguard for sentence scoring
+            if (!isSingleWord && data.phoneme_analysis) {
+                const incorrectCount = data.phoneme_analysis.filter(p => p.status === 'incorrect').length;
+                const approximateCount = data.phoneme_analysis.filter(p => p.status === 'approximate').length;
+                const maxPossibleDeduction = (incorrectCount * 15) + (approximateCount * 7) + 15; // A generous upper limit
+                const actualDeduction = 100 - data.overall_score;
+
+                if (actualDeduction > maxPossibleDeduction) {
+                    console.warn(`AI returned a disproportionately low score. Adjusting for fairness. Actual deduction: ${actualDeduction}, Max expected: ${maxPossibleDeduction}`);
+                    data.overall_score = 100 - Math.min(actualDeduction, maxPossibleDeduction);
                     showMessage("Điểm của bạn đã được điều chỉnh do AI đánh giá ban đầu quá khắt khe.", 'info');
                 }
             }
+
 
             saveToHistory(textInput.value.trim(), data.overall_score);
         
             const scoreContainer = document.querySelector('.score-container');
             analysisResults.classList.remove('hidden');
         
-            // --- Animate Score ---
             const endScore = data.overall_score;
             animateValue(document.getElementById('overall-score'), 0, endScore, 1000);
-            scoreContainer.className = 'score-container'; // Reset classes
+            scoreContainer.className = 'score-container';
             if (endScore > 85) scoreContainer.classList.add('score-high');
             else if (endScore > 70) scoreContainer.classList.add('score-medium');
             else scoreContainer.classList.add('score-low');
         
-            // --- Rhythm & Pacing (Only for sentences) ---
             const rhythmContainer = document.querySelector('.rhythm-score-container');
             if (!isSingleWord && data.rhythm_and_pacing_analysis) {
                 animateValue(document.getElementById('rhythm-score-value'), 0, data.rhythm_and_pacing_analysis.rhythm_score, 1000);
@@ -1392,13 +1416,11 @@
                 rhythmContainer.style.display = 'none';
             }
         
-            // --- Phoneme Analysis ---
             phonemeAnalysis.innerHTML = '';
             if (data.phoneme_analysis) {
                 data.phoneme_analysis.forEach(p => {
                     const phonemeEl = document.createElement('div');
                     phonemeEl.textContent = p.phoneme;
-                    // FIX #2: Add a fallback for missing status to prevent colorless items.
                     const status = p.status || 'correct'; 
                     if (!p.status) console.warn("Phoneme analysis from API was missing a 'status'. Defaulting to 'correct'.", p);
                     phonemeEl.className = `phoneme has-tooltip status-${status}`;
@@ -1412,7 +1434,6 @@
                 });
             }
         
-            // --- Context-aware Prosody Analysis ---
             if (isSingleWord) {
                 prosodyAnalysisContainer.classList.remove('hidden');
                 intonationAnalysisWrapper.classList.add('hidden');
@@ -1436,21 +1457,21 @@
                 }
             }
             
-            // --- Context-aware Connected Speech Analysis ---
             if (isSingleWord) {
-                connectedSpeechContainer.classList.remove('hidden');
-                connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary text-sm italic">Phân tích Nối âm & Cụm tư duy chỉ áp dụng cho câu.</p>';
+                connectedSpeechContainer.classList.add('hidden');
             } else if (data.connected_speech_analysis && data.connected_speech_analysis.length > 0) {
                 connectedSpeechContainer.classList.remove('hidden');
                 connectedSpeechAnalysis.innerHTML = '';
                 data.connected_speech_analysis.forEach(item => {
                     const itemEl = document.createElement('div');
-                    const typeClass = `type-${item.type.split(' ')[0].toLowerCase().replace(/\s/g, '-')}`;
+                    // FIX: Robust class name generation for connected speech items
+                    const type = item.type || 'unknown';
+                    const typeClass = `type-${type.split(' ')[0].toLowerCase().replace(/[^a-z-]/g, '')}`;
                     itemEl.className = `connected-speech-item ${typeClass}`;
                     itemEl.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div><p class="cs-title">${item.rule}</p><p class="cs-details mt-1">Vị trí: <span class="cs-location">${item.location}</span></p></div>
-                            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full ${typeClass} opacity-70">${item.type}</span>
+                            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full opacity-70">${item.type}</span>
                         </div>
                         <div class="cs-details mt-2">
                             <p>Phát âm mong đợi: <span class="ipa-text text-accent-success">${item.expected_pronunciation}</span></p>
@@ -1464,7 +1485,6 @@
                 connectedSpeechAnalysis.innerHTML = '<p class="text-text-secondary text-sm italic">Không có nhận xét nổi bật về nối âm trong câu này.</p>';
             }
         
-            // --- Practice Suggestions ---
             if (data.practice_suggestions) {
                 suggestionLinks.innerHTML = '';
                 const { youglish_us, youglish_uk } = data.practice_suggestions;
