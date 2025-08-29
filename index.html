@@ -1151,60 +1151,71 @@
 
                 const base64Audio = reader.result.split(',')[1];
                 
-                let prompt;
-                if (isSingleWordMode) {
-                    prompt = {
-                        "role": "Bạn là chuyên gia ngữ âm AI thân thiện. Nhiệm vụ của bạn là phân tích một từ đơn mà người dùng phát âm.",
-                        "task_instructions": {
-                            "step_1_analysis": "Phiên âm audio của người dùng và so sánh từng âm vị với âm vị chuẩn. Phân tích phải cực kỳ nghiêm ngặt và chính xác. Không cần xác thực từ, hãy cứ phân tích dựa trên những gì nghe được.",
-                            "step_2_scoring": "Chấm điểm khắt khe dựa trên độ chính xác của từng âm vị. Lỗi âm cuối hoặc nguyên âm chính là lỗi nghiêm trọng. Điểm 100 chỉ khi phát âm hoàn toàn chính xác.",
-                            "step_3_review": "Nếu phát âm không khớp, hãy nhẹ nhàng chỉ ra điểm khác biệt và khuyến khích bạn ấy thử lại. Luôn dùng 'bạn' khi giao tiếp."
-                        },
-                        "context": {
-                            "text_to_pronounce": textInput.value.trim(),
-                            "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
-                            "standard_ipa": standardIPA,
-                            "standard_syllable_structure": currentIpaData.syllable_structure
-                        },
-                        "output_format_instruction": {
-                            "format": "JSON",
-                            "schema": {
-                                "word_match": "boolean",
-                                "transcribed_word": "string",
-                                "overall_score": "number",
-                                "user_ipa": "string",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" } ]",
-                                "syllable_analysis": "{ \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" }"
-                            }
-                        }
-                    };
-                } else {
-                    prompt = {
-                        "role": "Bạn là PrAI, một trợ lý AI thân thiện, thấu hiểu và luôn động viên người dùng. Nhiệm vụ của bạn là phân tích câu nói của người dùng một cách chi tiết, chính xác và đưa ra nhận xét mang tính xây dựng, giúp bạn ấy tiến bộ. Luôn xưng hô là 'bạn' trong mọi phản hồi.",
-                        "context": {
-                            "user_profile": "Người Việt, có thể gặp khó khăn với âm cuối, nguyên âm và nhịp điệu. Hãy kiên nhẫn và khích lệ.",
-                            "text_to_pronounce": textInput.value.trim(),
-                            "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
-                            "standard_ipa": standardIPA,
-                            "model_pitch_contour": modelPronunciationData.pitchContour,
-                        },
-                        "output_format_instruction": {
-                            "format": "JSON",
-                            "schema": {
-                                "sentence_match": "boolean",
-                                "overall_score": "number | null",
-                                "user_ipa": "string | null",
-                                "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" } ]",
-                                "intonation_analysis": {
-                                    "feedback": "string (Nhận xét về ngữ điệu, tốc độ và nhịp điệu một cách thân thiện, gần gũi. Bắt đầu bằng một lời khen hoặc động viên, sau đó đưa ra góp ý cụ thể. Ví dụ: 'Ngữ điệu của bạn khá tốt! Để tự nhiên hơn, bạn hãy thử nhấn mạnh vào... và lướt nhẹ ở... nhé.')",
-                                    "user_pitch_contour": "[number] (Mảng gồm 40-50 điểm, giá trị từ 0.0 đến 1.0. Phải trả về mảng này.)"
-                                },
-                                "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" }] | null",
-                                "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
-                            }
-                        }
-                    };
-                }
+// RUBRIC MỚI CHO TỪ ĐƠN (KHẮT KHE & CHI TIẾT)
+const promptForSingleWord = {
+    "role": "Bạn là một chuyên gia ngữ âm học (phonetician) tỉ mỉ và khách quan. Nhiệm vụ của bạn là phân tích phát âm của một từ đơn một cách chính xác tuyệt đối dựa trên rubric khoa học được cung cấp.",
+    "rubric": {
+        "scoring_model": "Điểm tổng 100 được phân bổ như sau:",
+        "vowels": "40 điểm - Nguyên âm phải đúng về chất (quality), độ dài (length) và độ căng (tension). Sai nguyên âm chính là lỗi nghiêm trọng nhất.",
+        "consonants": "40 điểm - Phụ âm phải rõ ràng, đúng vị trí cấu âm. Đặc biệt chú trọng vào các âm cuối (final sounds) và các cụm phụ âm (consonant clusters) mà người Việt hay bỏ sót.",
+        "stress": "20 điểm - Trọng âm phải được đặt ĐÚNG âm tiết. Nếu sai trọng âm, điểm tối đa cho mục này là 0.",
+        "common_vietnamese_errors": "Hãy đặc biệt chú ý đến các lỗi thường gặp của người Việt: không bật âm cuối (/t/, /d/, /k/, /g/, /s/, /z/), nhầm lẫn giữa /ɪ/ và /iː/, /æ/ và /e/, /θ/ và /s/, /ð/ và /z/, /ʃ/ và /s/."
+    },
+    "context": {
+        "text_to_pronounce": textInput.value.trim(),
+        "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
+        "standard_ipa": standardIPA,
+        "standard_syllable_structure": currentIpaData.syllable_structure
+    },
+    "output_format_instruction": {
+        "format": "JSON",
+        "schema": {
+            "word_match": "boolean",
+            "transcribed_word": "string",
+            "overall_score": "number (tính toán nghiêm ngặt dựa trên rubric)",
+            "user_ipa": "string",
+            "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, ngắn gọn, đi thẳng vào vấn đề kỹ thuật)\" } ]",
+            "syllable_analysis": "{ \"feedback\": \"string (Nhận xét về trọng âm, ví dụ: 'Bạn đã nhấn đúng trọng âm vào âm tiết thứ hai. Rất tốt!')\" }"
+        }
+    }
+};
+
+// RUBRIC MỚI CHO CÂU (TINH TẾ & TỔNG THỂ)
+const promptForSentence = {
+    "role": "Bạn là PrAI, một huấn luyện viên phát âm AI tận tâm và thấu hiểu. Mục tiêu của bạn là giúp người dùng nói tiếng Anh tự nhiên và dễ hiểu hơn, không chỉ là đúng từng âm một.",
+    "matching_leniency_rule": "QUAN TRỌNG: Khi xác định `sentence_match`, hãy linh hoạt. Miễn là người dùng nói đúng các từ khóa chính (key content words) theo đúng thứ tự, hãy xem là `true`. Bỏ qua các từ chức năng nhỏ bị lướt qua hoặc các ngập ngừng nhỏ. Mục tiêu là phân tích phát âm câu đã nói, không phải là một bài kiểm tra phiên âm hoàn hảo.",
+    "rubric": {
+        "scoring_model": "Chấm điểm tổng thể dựa trên sự dễ hiểu và tự nhiên (overall intelligibility and naturalness).",
+        "phonetic_accuracy": "40 điểm - Độ chính xác của các âm vị quan trọng (key sounds) ảnh hưởng đến nghĩa của câu.",
+        "prosody": "60 điểm - Bao gồm các yếu tố sau:",
+        "intonation_and_rhythm": "30 điểm - Ngữ điệu có lên xuống phù hợp với loại câu (hỏi, kể) và nhịp điệu có tự nhiên không?",
+        "sentence_stress": "20 điểm - Có nhấn mạnh vào đúng các từ chứa nội dung (content words) không?",
+        "connected_speech": "10 điểm - Có các hiện tượng nối âm, lướt âm tự nhiên không?",
+        "error_consolidation_rule": "QUAN TRỌN: Nếu người dùng mắc CÙNG MỘT LOẠI LỖI PHÁT ÂM (ví dụ: luôn bỏ âm /s/ cuối) nhiều lần trong câu, chỉ trừ điểm nặng ở lần đầu tiên. Các lần sau vẫn ghi nhận là 'incorrect' trong `phoneme_analysis` nhưng chỉ trừ điểm rất nhẹ hoặc không trừ thêm vào điểm tổng, thay vào đó, hãy đưa ra một nhận xét tổng quan trong phần feedback của `intonation_analysis` (ví dụ: 'PrAI nhận thấy bạn có xu hướng bỏ qua âm /s/ ở cuối các từ, hãy chú ý hơn nhé!')."
+    },
+    "context": {
+        "text_to_pronounce": textInput.value.trim(),
+        "target_accent": accentSelect.value === 'American English' ? 'AmE' : 'BrE',
+        "standard_ipa": standardIPA,
+        "model_pitch_contour": modelPronunciationData.pitchContour,
+    },
+    "output_format_instruction": {
+        "format": "JSON",
+        // Schema giữ nguyên như cũ để không làm hỏng cấu trúc hiển thị
+        "schema": {
+            "sentence_match": "boolean",
+            "overall_score": "number | null",
+            "user_ipa": "string | null",
+            "phoneme_analysis": "[ { \"phoneme\": \"string\", \"status\": \"string ('correct', 'approximate', 'incorrect')\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" } ]",
+            "intonation_analysis": {
+                "feedback": "string (Nhận xét tổng quan về ngữ điệu, nhịp điệu VÀ nhắc lại các lỗi lặp lại theo `error_consolidation_rule`)",
+                "user_pitch_contour": "[number]"
+            },
+            "connected_speech_analysis": "[{ \"type\": \"string\", \"rule\": \"string\", \"location\": \"string\", \"expected_pronunciation\": \"string\", \"user_pronunciation\": \"string\", \"feedback\": \"string (Vietnamese, friendly, constructive, using 'bạn')\" }] | null",
+            "practice_suggestions": "{ \"youglish_us\": \"string\", \"youglish_uk\": \"string\" } | null"
+        }
+    }
+};
 
                 const payload = {
                     contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
