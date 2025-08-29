@@ -1216,7 +1216,7 @@ const promptForSentence = {
         }
     }
 };
-
+const prompt = isSingleWordMode ? promptForSingleWord : promptForSentence;
                 const payload = {
                     contents: [ { role: "user", parts: [ { text: JSON.stringify(prompt) }, { inlineData: { mimeType: "audio/webm", data: base64Audio } } ] } ],
                     generationConfig: { responseMimeType: "application/json" }
