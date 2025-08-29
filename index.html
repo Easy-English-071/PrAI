@@ -1278,14 +1278,17 @@ const prompt = isSingleWordMode ? promptForSingleWord : promptForSentence;
                 phonemeAnalysis.appendChild(phonemeEl);
             });
 
-            // Display message if no match found for clarity
-            if ((isSingleWordMode && data.word_match === false) || (!isSingleWordMode && data.sentence_match === false)) {
-                let mismatchMessage = isSingleWordMode 
-                    ? `Hmm, hình như bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn nhé.`
-                    : `Câu bạn nói có vẻ chưa khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
-                mismatchNotificationBar.textContent = mismatchMessage;
-                mismatchNotificationBar.classList.remove('hidden');
-            }
+            const targetText = textInput.value.trim().toLowerCase();
+const transcribedText = data.transcribed_word ? data.transcribed_word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") : "";
+
+// Chỉ hiển thị thông báo khi AI báo không khớp VÀ từ phiên âm được thực sự khác với từ gốc.
+if (isSingleWordMode && data.word_match === false && transcribedText && transcribedText !== targetText) {
+    mismatchNotificationBar.textContent = `Hmm, hình như bạn đã phát âm từ "${data.transcribed_word}" thay vì "${textInput.value.trim()}". Dưới đây là kết quả phân tích dựa trên phát âm của bạn nhé.`;
+    mismatchNotificationBar.classList.remove('hidden');
+} else if (!isSingleWordMode && data.sentence_match === false) {
+    mismatchNotificationBar.textContent = `Câu bạn nói có vẻ chưa khớp với câu mẫu. Dưới đây là kết quả phân tích dựa trên những gì PrAI nghe được.`;
+    mismatchNotificationBar.classList.remove('hidden');
+}
         
             if (isSingleWordMode) {
                 prosodyAnalysisTitle.textContent = 'Phân tích Âm tiết & Trọng âm';
